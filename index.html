@@ -144,7 +144,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 .lw-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:center}
 .lw-name{font-size:14px;padding:9px 6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .islot{position:relative;aspect-ratio:1;width:100%;border-radius:6px;padding:0;background:linear-gradient(#3e2a16,#22160a);border:2px solid #5a3a1c;box-shadow:inset 0 0 10px rgba(0,0,0,.75);display:grid;place-items:center}
-.islot svg{width:78%;height:78%}
+.islot svg{width:86%;height:86%}
 .islot.has{border-color:var(--rc);box-shadow:inset 0 0 12px rgba(0,0,0,.6),0 0 6px color-mix(in srgb,var(--rc) 60%,transparent)}
 .islot .upm{position:absolute;right:3px;top:2px;font:800 12px/1 var(--f-num);color:#7fe040;font-style:normal;text-shadow:0 1px 2px #000}
 .islot .ghost{opacity:.4;color:#c9a870;width:58%;height:58%;display:grid;place-items:center}.islot .ghost svg{width:100%;height:100%}
@@ -180,7 +180,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 .tipwrap{position:absolute;inset:0;background:rgba(40,20,5,.35);display:flex;align-items:flex-start;justify-content:center;gap:12px;padding:16px;z-index:5;flex-wrap:wrap;overflow:auto;min-height:100%;box-sizing:border-box}
 .icard{width:min(320px,100%);background:var(--noise),linear-gradient(#fbf3de,#ecdcb8);border:2px solid #7a5a2a;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.5);color:var(--ink);font:500 15px/1.4 var(--f-body);display:grid;gap:3px;padding:12px 14px;align-content:start}
 .ic-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid rgba(90,60,20,.35);padding-bottom:6px;margin-bottom:4px}
-.ic-h b{font:400 21px/1.15 var(--f-ui)}
+.ic-h b{font:400 21px/1.15 var(--f-ui);flex:1;align-self:center}.ic-pic{width:46px!important;flex:none}.icard{font-size:14px;line-height:1.28;gap:1px;padding:10px 12px}.icard .ic-h{margin-bottom:2px;padding-bottom:4px}.icard .ic-btns{margin-top:6px}.icard .ic-btns .cbtn{padding:8px 10px}.ic-pic svg{width:92%!important;height:92%!important}
 .split{display:flex;justify-content:space-between;gap:10px}
 .st.g{color:#2a8a1a}.st.r{color:#c0301a}.legfx{color:#2a8a1a}
 .ic-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -693,16 +693,108 @@ function rollRar(min){const f=1+((S&&S.mf)||0)/100,w=[55,28,12*f,4.2*f,0.8*f];le
 function specRoll(k,ilvl,mult){const r=rr(.8,1.2)*mult,t=ilvl/25;
  const v={critd:(6+14*t)*r,crit:(1.2+3.5*t)*r,move:(2.5+5*t)*r,dodge:(1.2+3.5*t)*r,armP:(4+10*t)*r,hp:(12+ilvl*7)*r,mp:(10+ilvl*5)*r,mpr:(.4+ilvl*.12)*r,hpr:(.5+ilvl*.16)*r,cast:(3+8*t)*r,cdr:(2.5+6*t)*r,mf:(5+15*t)*r}[k];
  return PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}
+/* ================= Item generation: categories, armor families, materials, names, budgets ================= */
+const ARMT={bulwark:'plate',reaver:'plate',thornstalker:'leather',ashcaller:'cloth',lumen:'cloth'};
+const ARMK={plate:{n:'Plate',arm:1,lean:['str','vit']},leather:{n:'Leather',arm:.72,lean:['agi','vit']},cloth:{n:'Cloth',arm:.48,lean:['int','vit']}};
+const MATN={metal:['','Iron','Steel','Darksteel','Runesteel','Starforged'],wood:['','Ashwood','Yew','Ironwood','Ghostwood','Elderheart'],
+ leather:['','Hide','Boiled','Drakehide','Shadowhide','Nightscale'],cloth:['','Linen','Wool','Silk','Moonsilk','Starweave'],jewel:['','Copper','Silver','Gold','Mithral','Starmetal']};
+const MATC={metal:[0,['#a4a8b0','#4e525a'],['#dde2e8','#6a727c'],['#727a8c','#22262e'],['#b4ecf6','#2a6e80'],['#fff2c8','#b8883a']],
+ wood:[0,['#a68460','#5a4228'],['#c48e52','#6a4422'],['#76665a','#2e2620'],['#cfe0d8','#56706a'],['#f0c878','#7a4a20']],
+ leather:[0,['#ae8458','#5a3e24'],['#96623a','#4a2c14'],['#64784e','#26341c'],['#5a5468','#1c1824'],['#4a3c5a','#120e1a']],
+ cloth:[0,['#e2d8c2','#8a806c'],['#94a6b4','#3e4a56'],['#a868b6','#4a2058'],['#d2e0fa','#5a6aa8'],['#fcecc0','#a07830']],
+ jewel:[0,['#d89060','#7a4a28'],['#e8ecf2','#7a808a'],['#ffdc78','#a07020'],['#d0f4fa','#5a9aa8'],['#fffae6','#d0a040']]};
+// weapon categories: dmg multiplier, bonus stat, picture
+const WCAT={
+ sword1:{n:'One-Handed Sword',b:['Longsword','Broadsword','Warblade'],mat:'metal',dmg:1,shield:.22},
+ mace1:{n:'One-Handed Mace',b:['Mace','Flanged Mace','Warhammer'],mat:'metal',dmg:.96,shield:.3},
+ axe1:{n:'One-Handed Axe',b:['Hand Axe','Bearded Axe','War Axe'],mat:'metal',dmg:1.04,shield:.18},
+ axe2:{n:'Two-Handed Axe',b:['Greataxe',"Headsman's Axe",'Cleaver'],mat:'metal',dmg:1.32,bonus:{critd:.6}},
+ sword2:{n:'Two-Handed Sword',b:['Greatsword','Claymore','Executioner'],mat:'metal',dmg:1.28,bonus:{crit:.14}},
+ maul:{n:'Two-Handed Mace',b:['Maul','Warmaul','Crusher'],mat:'metal',dmg:1.3,bonus:{hp:5}},
+ polearm:{n:'Polearm',b:['Halberd','Glaive','Bardiche'],mat:'metal',dmg:1.26,bonus:{dodge:.1}},
+ staff:{n:'Staff',b:['Staff','Battle Staff','Kiln Staff'],mat:'wood',dmg:1.18,bonus:{mpr:.1}},
+ wand:{n:'Wand',b:['Wand','Cinder Rod','Spellrod'],mat:'wood',dmg:.92,bonus:{cast:.3}},
+ bow:{n:'Bow',b:['Shortbow','Longbow','Recurve'],mat:'wood',dmg:1.08,bonus:{crit:.14}},
+ xbow:{n:'Crossbow',b:['Crossbow','Arbalest','Repeater'],mat:'wood',dmg:1.22,bonus:{critd:.6}},
+ scepter:{n:'Scepter',b:['Scepter','Censer','Sunrod'],mat:'metal',dmg:1,bonus:{hpr:.1}},
+ hstaff:{n:'Staff',b:['Prayer Staff','Lantern Staff','Sun Staff'],mat:'wood',dmg:1.16,bonus:{mpr:.1}}};
+const CWEAP={bulwark:['sword1','mace1','axe1'],reaver:['axe2','sword2','maul','polearm'],ashcaller:['staff','wand'],thornstalker:['bow','xbow'],lumen:['scepter','hstaff']};
+const ABASE={helm:{plate:['Greathelm','Helm','Visored Helm'],leather:['Hood','Cap','Cowl'],cloth:['Hood','Circlet','Cowl']},
+ chest:{plate:['Cuirass','Breastplate','Hauberk'],leather:['Jerkin','Brigandine','Tunic'],cloth:['Robe','Vestments','Mantle']},
+ boots:{plate:['Sabatons','Greaves','Warboots'],leather:['Boots','Treads','Striders'],cloth:['Slippers','Sandals','Footwraps']}};
+const CLOAKB=['Cloak','Cape','Shroud','Mantle'];
+const CHARMK={ring:{n:'Ring',b:['Ring','Band','Signet']},amulet:{n:'Amulet',b:['Amulet','Pendant','Torc']},trinket:{n:'Talisman',b:['Talisman','Idol','Charm']}};
+const BEAST={str:'of the Bear',agi:'of the Lynx',int:'of the Owl',vit:'of the Ox'};
+const SPECPRE={critd:'Ruinous',crit:'Keen',move:'Fleet',dodge:'Shadowed',armP:'Warded',hp:'Hearty',mp:'Tidal',mpr:'Flowing',hpr:'Mending',cast:'Quickened',cdr:'Swift',mf:'Lucky'};
+const EPICSET=[[10,["Fenwarden's","Gravebell"]],[14,['Sunscorched',"Qarim's"]],[18,['Rimebound','Pale Mother\'s']],[22,['Hexwoven','Duskhollow']],[99,['Cinderborn','Caldera']]];
+const LEGW={bulwark:'Oathkeeper',reaver:'Gravecleaver',ashcaller:'Emberheart',thornstalker:'Thornwake',lumen:'Dawnspire'};
+const RMUL=[1,1.12,1.28,1.48,1.75];
+const ATTW={weapon:1.1,helm:1,chest:1.25,boots:.85,cloak:.75,charm:1.15};
+function itemKind(it){if(it.slot==='weapon')return WCAT[it.base]?WCAT[it.base].n:'Weapon';if(it.slot==='charm')return CHARMK[it.base]?CHARMK[it.base].n:'Charm';if(it.slot==='cloak')return'Cloak';
+ return(ARMK[it.at]?ARMK[it.at].n+' ':'')+SLOTNAME[it.slot]}
 function rollItem(ilvl,min=0,slot,rar){
- rar=rar==null?rollRar(min):rar;slot=slot||pick(SLOTS);const mult=[1,1.15,1.32,1.55,1.85][rar],tier=tierOf(ilvl),st={},main=CLASSES[P.cls].main;
- if(slot==='weapon')st.wd=Math.round((4+tier*4+ilvl*1.3)*mult*rr(.92,1.08));
- else{const sm={helm:1,chest:1.45,boots:.8,cloak:.6,charm:0}[slot];if(sm)st.arm=Math.round(sm*(3+tier*3.5+ilvl*1.5)*mult*rr(.9,1.1))}
- const na=slot==='charm'?2:rar>=1?2:1;const at=[];for(let i=0;i<na;i++){let k=R()<.6?main:pick(ATTR);if(at.includes(k))k=pick(ATTR.filter(x=>!at.includes(x)));at.push(k);st[k]=(st[k]||0)+Math.max(1,Math.round((2+ilvl*.9)*(slot==='charm'?1.4:1)*mult*rr(.85,1.15)))}
- const ns=[0,0,1,2,3][rar],sp=[...SPEC].sort(()=>R()-.5).slice(0,ns);for(const k of sp)st[k]=specRoll(k,ilvl,mult);
- const base=slot==='weapon'?pick(CLASSES[P.cls].weapons):pick(BASES[slot]);
- let name;if(rar===4)name=LEG[slot].n;else if(rar===3)name=pick(EPIC)+' '+base;else if(rar===2)name=TIERW[tier]+' '+base+' '+SUFFIX[sp[0]];else name=TIERW[tier]+' '+base;
- const it={id:P.nid++,slot,rar,ilvl,tier,st,name};if(rar===4)it.uq=LEG[slot].k;return it}
-function migrateItem(it){if(!it||!it.st)return it;const o=it.st;if(o.pow!=null||o.haste!=null||(o.vit!=null&&!it.tier)){const st={};if(o.arm)st.arm=o.arm;if(o.pow){if(it.slot==='weapon')st.wd=Math.round(o.pow*1.2);else st[CLASSES[P.cls].main]=o.pow}if(o.vit)st.vit=o.vit;if(o.crit)st.crit=o.crit;if(o.haste)st.cast=o.haste;it.st=st}if(!it.tier)it.tier=tierOf(it.ilvl);return it}
+ rar=rar==null?rollRar(min):rar;slot=slot||pick(SLOTS);const cls=P.cls,main=CLASSES[cls].main,tier=tierOf(ilvl),pw=(6+ilvl*2.1)*RMUL[rar],st={};let base,at=null,mat,bn;
+ if(slot==='weapon'){base=pick(CWEAP[cls]);const W=WCAT[base];st.wd=Math.round(pw*1.15*W.dmg*rr(.94,1.06));if(W.shield)st.arm=Math.round(st.wd*W.shield);mat=W.mat;bn=pick(W.b);
+  if(W.bonus)for(const k in W.bonus){const v=W.bonus[k]*ilvl*(rar+2)/3;st[k]=PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}}
+ else if(slot==='charm'){base=pick(Object.keys(CHARMK));mat='jewel';bn=pick(CHARMK[base].b)}
+ else if(slot==='cloak'){base='cloak';mat='cloth';bn=pick(CLOAKB);st.arm=Math.round(pw*1.25*.42*rr(.92,1.08))}
+ else{at=ARMT[cls];base=slot;mat=at==='plate'?'metal':at;bn=pick(ABASE[slot][at]);st.arm=Math.round(pw*1.25*{helm:.9,chest:1.4,boots:.75}[slot]*ARMK[at].arm*rr(.92,1.08))}
+ // attributes: armor leans to its family, weapons and jewelry to the class's main attribute
+ const lean=at?ARMK[at].lean:[main,'vit'],A=pw*.85*ATTW[slot]*rr(.9,1.1),na=rar>=1||slot==='charm'?2:1,keys=[];
+ keys.push(R()<.65?(slot==='weapon'||slot==='charm'||slot==='cloak'?main:lean[0]):pick(ATTR));if(na>1){let k2=R()<.5?lean[1]:pick(ATTR);if(k2===keys[0])k2=pick(ATTR.filter(x=>x!==keys[0]));keys.push(k2)}
+ keys.forEach((k,i)=>{st[k]=(st[k]||0)+Math.max(1,Math.round(A*(na>1?(i?.4:.6):1)))});
+ const ns=[0,0,1,2,3][rar],sp=[...SPEC].sort(()=>R()-.5).slice(0,ns);for(const k of sp)st[k]=+((st[k]||0)+specRoll(k,ilvl,RMUL[rar])).toFixed(PCT.has(k)||RATE.has(k)?1:0);
+ const mn=MATN[mat][tier];let name;
+ if(rar===4)name=slot==='weapon'?LEGW[cls]:LEG[slot].n;
+ else if(rar===3){const set=EPICSET.find(e=>ilvl<=e[0])[1];name=pick(set)+' '+bn}
+ else if(rar===2)name=SPECPRE[sp[0]]+' '+mn+' '+bn;
+ else if(rar===1)name=mn+' '+bn+' '+BEAST[keys[0]];
+ else name=mn+' '+bn;
+ const it={id:P.nid++,slot,rar,ilvl,tier,st,name,base,mt:tier};if(at)it.at=at;if(rar===4)it.uq=LEG[slot].k;return it}
+function itemBase(it){if(it.base)return;const h=(it.id*2654435761>>>0);if(it.slot==='weapon'){const L=CWEAP[P.cls];it.base=L[h%L.length]}else if(it.slot==='charm')it.base=['ring','amulet','trinket'][h%3];else if(it.slot==='cloak')it.base='cloak';else{it.base=it.slot;it.at=ARMT[P.cls]}it.mt=it.tier||tierOf(it.ilvl)}
+
+/* ================= Item pictures (drawn as SVG, 64x64) ================= */
+let ICN=0;
+const ART={
+ sword1:'<g transform="rotate(45 32 32)"><path d="M32 3l4 6v33h-8V9z" fill="url(#M)" stroke="#1a1410"/><path d="M32 9v31" stroke="#fff" stroke-opacity=".55" stroke-width="1.2"/><path d="M21 42h22a2 2 0 010 4H21a2 2 0 010-4z" fill="url(#T)" stroke="#1a1410"/><rect x="30" y="46" width="4" height="10" fill="#4a2e1a" stroke="#1a1410"/><circle cx="32" cy="59" r="3.2" fill="url(#T)" stroke="#1a1410"/><circle cx="32" cy="44" r="2" fill="url(#G)"/></g>',
+ sword2:'<g transform="rotate(45 32 32)"><path d="M32 0l5.5 7v35h-11V7z" fill="url(#M)" stroke="#1a1410"/><path d="M32 7v33" stroke="#fff" stroke-opacity=".55" stroke-width="1.4"/><path d="M17 42c4-2 26-2 30 0l-2 4c-4-1.5-22-1.5-26 0z" fill="url(#T)" stroke="#1a1410"/><rect x="30" y="46" width="4" height="13" fill="#4a2e1a" stroke="#1a1410"/><circle cx="32" cy="61" r="3" fill="url(#T)" stroke="#1a1410"/><circle cx="32" cy="44" r="2.4" fill="url(#G)"/></g>',
+ axe1:'<g transform="rotate(30 32 32)"><rect x="30" y="10" width="4.4" height="50" rx="1.5" fill="url(#W)" stroke="#1a1410"/><path d="M34 12c12-5 19 4 16 18-5-3-10-3-16-1z" fill="url(#M)" stroke="#1a1410"/><path d="M49 15c2 4 2 9 1 14" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none"/><path d="M30 14l-6 4 6 3z" fill="url(#M)" stroke="#1a1410"/><rect x="29" y="22" width="6.4" height="3" fill="url(#T)"/><circle cx="32.2" cy="17" r="1.8" fill="url(#G)"/></g>',
+ axe2:'<g transform="rotate(25 32 32)"><rect x="30" y="6" width="4.4" height="56" rx="1.5" fill="url(#W)" stroke="#1a1410"/><path d="M34 9c14-6 22 6 18 22-6-4-12-4-18-2z" fill="url(#M)" stroke="#1a1410"/><path d="M30 9c-14-6-22 6-18 22 6-4 12-4 18-2z" fill="url(#M)" stroke="#1a1410"/><path d="M51 13c2 5 2 11 1 16M13 13c-2 5-2 11-1 16" stroke="#fff" stroke-opacity=".55" stroke-width="1.3" fill="none"/><rect x="29" y="27" width="6.4" height="3" fill="url(#T)"/><circle cx="32.2" cy="18" r="2.2" fill="url(#G)"/><path d="M32 2l3 5h-6z" fill="url(#M)" stroke="#1a1410"/></g>',
+ mace1:'<g transform="rotate(35 32 32)"><rect x="30" y="20" width="4.4" height="40" rx="1.5" fill="url(#W)" stroke="#1a1410"/><circle cx="32.2" cy="15" r="9" fill="url(#M)" stroke="#1a1410"/><path d="M32 3v6M41 15h-5M23 15h5M32 27v-5" stroke="url(#D)" stroke-width="3.4"/><path d="M26 9l3 3M38 9l-3 3M26 21l3-3M38 21l-3-3" stroke="#1a1410" stroke-width="1.2"/><circle cx="32.2" cy="15" r="2.6" fill="url(#G)"/><rect x="29" y="25" width="6.4" height="3" fill="url(#T)"/></g>',
+ maul:'<g transform="rotate(30 32 32)"><rect x="30" y="16" width="4.4" height="46" rx="1.5" fill="url(#W)" stroke="#1a1410"/><rect x="15" y="4" width="34" height="16" rx="2" fill="url(#M)" stroke="#1a1410"/><rect x="15" y="8" width="34" height="3" fill="url(#T)"/><path d="M17 6h30" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/><circle cx="32.2" cy="14.5" r="2.4" fill="url(#G)"/></g>',
+ polearm:'<g transform="rotate(35 32 32)"><rect x="30.4" y="10" width="3.4" height="54" rx="1.2" fill="url(#W)" stroke="#1a1410"/><path d="M33 4c9 3 13 12 10 22-4-3-7-4-10-4z" fill="url(#M)" stroke="#1a1410"/><path d="M32 0l2.6 10h-5.2z" fill="url(#M)" stroke="#1a1410"/><path d="M31 14l-6 3 6 3z" fill="url(#M)" stroke="#1a1410"/><rect x="29.4" y="22" width="5.4" height="3" fill="url(#T)"/><circle cx="36" cy="14" r="1.8" fill="url(#G)"/></g>',
+ staff:'<rect x="30" y="16" width="4" height="46" rx="1.6" fill="url(#W)" stroke="#1a1410" transform="rotate(20 32 32)"/><g transform="rotate(20 32 32)"><path d="M26 18c-2-6 0-11 3-13M38 18c2-6 0-11-3-13" stroke="url(#T)" stroke-width="2.6" fill="none"/><circle cx="32" cy="10" r="6" fill="url(#G)" stroke="#1a1410"/><circle cx="30" cy="8" r="1.8" fill="#fff" fill-opacity=".8"/><rect x="29" y="20" width="6" height="3" fill="url(#T)"/></g>',
+ hstaff:'<g transform="rotate(20 32 32)"><rect x="30" y="16" width="4" height="46" rx="1.6" fill="url(#W)" stroke="#1a1410"/><circle cx="32" cy="11" r="8" fill="none" stroke="url(#T)" stroke-width="2.6"/><path d="M32 1v20M22 11h20" stroke="url(#T)" stroke-width="2"/><circle cx="32" cy="11" r="3.6" fill="url(#G)" stroke="#1a1410"/><rect x="29" y="22" width="6" height="3" fill="url(#T)"/></g>',
+ wand:'<g transform="rotate(45 32 32)"><path d="M30.5 22h3l1 36h-5z" fill="url(#W)" stroke="#1a1410"/><rect x="29" y="22" width="6" height="3" fill="url(#T)"/><rect x="29.5" y="50" width="5" height="2.5" fill="url(#T)"/><path d="M32 4l4 9-4 9-4-9z" fill="url(#G)" stroke="#1a1410"/><path d="M32 7v12" stroke="#fff" stroke-opacity=".7"/></g>',
+ scepter:'<g transform="rotate(35 32 32)"><rect x="30.2" y="22" width="3.8" height="38" rx="1.4" fill="url(#W)" stroke="#1a1410"/><path d="M32 4l3 5 6-1-3 5 4 5-6 0-1 6-3-5-3 5-1-6-6 0 4-5-3-5 6 1z" fill="url(#T)" stroke="#1a1410"/><circle cx="32" cy="14" r="4" fill="url(#G)" stroke="#1a1410"/><rect x="29" y="23" width="6.2" height="3" fill="url(#M)"/></g>',
+ bow:'<path d="M18 6c22 6 28 32 22 52" fill="none" stroke="url(#W)" stroke-width="5" stroke-linecap="round"/><path d="M18 6c22 6 28 32 22 52" fill="none" stroke="#1a1410" stroke-width="1" stroke-opacity=".5"/><path d="M18 6L40 58" stroke="#f0ead8" stroke-width="1.2"/><rect x="32" y="27" width="5" height="9" rx="1.5" fill="url(#T)" stroke="#1a1410" transform="rotate(-20 34 31)"/><circle cx="18" cy="6" r="2.2" fill="url(#G)"/><circle cx="40" cy="58" r="2.2" fill="url(#G)"/>',
+ xbow:'<g transform="rotate(30 32 32)"><rect x="29" y="14" width="6" height="46" rx="2" fill="url(#W)" stroke="#1a1410"/><path d="M8 20c8-6 40-6 48 0" fill="none" stroke="url(#M)" stroke-width="4.4" stroke-linecap="round"/><path d="M9 21L32 28 55 21" stroke="#f0ead8" stroke-width="1.1" fill="none"/><path d="M32 6v24" stroke="url(#D)" stroke-width="2"/><path d="M32 3l2.4 4h-4.8z" fill="url(#M)"/><rect x="28" y="40" width="8" height="3" fill="url(#T)"/><circle cx="32" cy="20" r="2.2" fill="url(#G)"/></g>',
+ helm_plate:'<path d="M14 38c0-16 8-28 18-28s18 12 18 28v12H14z" fill="url(#M)" stroke="#1a1410"/><path d="M32 6v32" stroke="url(#T)" stroke-width="4"/><path d="M18 34h28v5H18z" fill="#14100c"/><path d="M24 39v11M40 39v11" stroke="url(#D)" stroke-width="2"/><path d="M18 18c3-5 7-8 11-9" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" fill="none"/><circle cx="32" cy="27" r="2.6" fill="url(#G)"/><path d="M14 50h36v4H14z" fill="url(#T)" stroke="#1a1410"/>',
+ helm_leather:'<path d="M12 56c0-26 8-46 20-46s20 20 20 46c-4-2-8-3-10-3 0-12-4-20-10-20s-10 8-10 20c-2 0-6 1-10 3z" fill="url(#L)" stroke="#1a1410"/><path d="M22 33c0-8 4-14 10-14s10 6 10 14" fill="none" stroke="url(#T)" stroke-width="2.2"/><path d="M26 41c2 1 4 1.5 6 1.5s4-.5 6-1.5" stroke="#1a1410" stroke-width="1" fill="none"/><circle cx="32" cy="17" r="2.4" fill="url(#G)"/>',
+ helm_cloth:'<path d="M14 54c0-24 6-42 18-46 2 10 16 18 18 46-6-3-11-4-16-4s-12 1-20 4z" fill="url(#C)" stroke="#1a1410"/><path d="M18 38c8-3 20-3 28 0" stroke="url(#T)" stroke-width="3" fill="none"/><circle cx="32" cy="36.4" r="3.2" fill="url(#G)" stroke="#1a1410"/><path d="M32 8c4 2 8 6 10 12" stroke="#fff" stroke-opacity=".4" stroke-width="1.4" fill="none"/>',
+ chest_plate:'<path d="M20 12h24l6 6 8 2-2 14-6-2v22H14V32l-6 2-2-14 8-2z" fill="url(#M)" stroke="#1a1410"/><path d="M6 20c3-6 9-8 14-8M58 20c-3-6-9-8-14-8" fill="none" stroke="url(#T)" stroke-width="3"/><path d="M32 16v38M18 30h28M18 42h28" stroke="url(#D)" stroke-width="1.6"/><path d="M24 12c0 6 16 6 16 0" fill="#14100c"/><circle cx="32" cy="24" r="3" fill="url(#G)" stroke="#1a1410"/><path d="M18 52h28v4H18z" fill="url(#T)"/>',
+ chest_leather:'<path d="M22 10h20l12 8-4 14-4-2v26H18V30l-4 2-4-14z" fill="url(#L)" stroke="#1a1410"/><path d="M26 10l6 10 6-10" fill="#14100c"/><path d="M32 20v36" stroke="url(#D)" stroke-width="1.4"/><path d="M29 26l6 3M29 32l6 3M29 38l6 3M35 26l-6 3M35 32l-6 3M35 38l-6 3" stroke="url(#T)" stroke-width="1.1"/><path d="M18 46h28" stroke="url(#T)" stroke-width="3"/><circle cx="32" cy="46" r="2.4" fill="url(#G)"/>',
+ chest_cloth:'<path d="M24 8h16l10 8 6 16-6 2-2-8 4 34H12l4-34-2 8-6-2 6-16z" fill="url(#C)" stroke="#1a1410"/><path d="M26 8l6 8 6-8" fill="#14100c"/><path d="M32 16v44" stroke="url(#T)" stroke-width="2.6"/><path d="M14 56h36" stroke="url(#T)" stroke-width="3"/><path d="M22 30h20" stroke="url(#D)" stroke-width="2.4"/><circle cx="32" cy="30" r="3" fill="url(#G)" stroke="#1a1410"/>',
+ boots_plate:'<path d="M18 6h16v26l18 10v12H14V30z" fill="url(#M)" stroke="#1a1410"/><path d="M18 18h16M18 26h16" stroke="url(#D)" stroke-width="1.6"/><path d="M14 48h38v6H14z" fill="url(#T)" stroke="#1a1410"/><path d="M34 34l10 6" stroke="#fff" stroke-opacity=".5" stroke-width="1.4"/><circle cx="26" cy="12" r="2.4" fill="url(#G)"/>',
+ boots_leather:'<path d="M20 6h14v28c6 2 14 4 18 9v11H16V30z" fill="url(#L)" stroke="#1a1410"/><path d="M20 12h14" stroke="url(#T)" stroke-width="3"/><path d="M23 18l8 2M23 24l8 2" stroke="url(#D)" stroke-width="1.2"/><path d="M16 50h36v4H16z" fill="#2a1a10"/><circle cx="27" cy="12" r="2" fill="url(#G)"/>',
+ boots_cloth:'<path d="M10 40c4-6 14-8 24-8s16 4 20 8c2 4 0 8-4 10H14c-5-1-6-6-4-10z" fill="url(#C)" stroke="#1a1410"/><path d="M14 46c10 2 26 2 36-1" stroke="url(#T)" stroke-width="2.4" fill="none"/><path d="M50 40c4-6 6-10 4-14" stroke="url(#C)" stroke-width="3" fill="none"/><circle cx="34" cy="38" r="2.6" fill="url(#G)" stroke="#1a1410"/>',
+ cloak:'<path d="M22 8h20l4 6c4 14 6 30 10 44-8-4-16-4-24-2-8-2-16-2-24 2 4-14 6-30 10-44z" fill="url(#C)" stroke="#1a1410"/><path d="M28 14c-2 14-4 28-4 42M36 14c2 14 4 28 4 42" stroke="url(#D)" stroke-width="1.4" fill="none"/><path d="M18 14h28" stroke="url(#T)" stroke-width="3.4"/><circle cx="32" cy="14" r="3.4" fill="url(#G)" stroke="#1a1410"/>',
+ ring:'<ellipse cx="32" cy="38" rx="17" ry="15" fill="none" stroke="url(#J)" stroke-width="6"/><ellipse cx="32" cy="38" rx="17" ry="15" fill="none" stroke="#1a1410" stroke-width=".8" stroke-opacity=".6"/><path d="M24 22l8-10 8 10-8 6z" fill="url(#G)" stroke="#1a1410"/><path d="M28 21l4-5" stroke="#fff" stroke-opacity=".8" stroke-width="1.4"/><path d="M22 24h20" stroke="url(#J)" stroke-width="3"/>',
+ amulet:'<path d="M12 6c2 14 10 22 20 24 10-2 18-10 20-24" fill="none" stroke="url(#J)" stroke-width="2.4" stroke-dasharray="3 1.6"/><path d="M32 30l12 10-12 18-12-18z" fill="url(#J)" stroke="#1a1410"/><path d="M32 35l7 6-7 10-7-10z" fill="url(#G)" stroke="#1a1410"/><path d="M30 38l2-2" stroke="#fff" stroke-opacity=".8" stroke-width="1.4"/>',
+ trinket:'<path d="M32 6c10 0 18 8 18 22 0 16-10 28-18 30-8-2-18-14-18-30 0-14 8-22 18-22z" fill="url(#J)" stroke="#1a1410"/><path d="M32 16v26M24 24l16 10M40 24L24 34" stroke="url(#G)" stroke-width="2.4"/><circle cx="32" cy="29" r="4" fill="url(#G)" stroke="#1a1410"/>'};
+function grad(id,a,b){return`<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`}
+function itemIcon(it){if(!it.base)itemBase(it);const n='ic'+(++ICN),t=clamp(it.mt||it.tier||tierOf(it.ilvl),1,5),r=it.rar||0,RC=RAR[r];
+ let key=it.base;if(it.slot==='helm'||it.slot==='chest'||it.slot==='boots')key=it.slot+'_'+(it.at||ARMT[P&&P.cls||'bulwark']);if(!ART[key])key=it.slot==='weapon'?'sword1':'ring';
+ const W=WCAT[it.base],metal=MATC.metal[t],wood=W&&W.mat==='wood'?MATC.wood[t]:MATC.wood[Math.min(5,t+1)],L=MATC.leather[t],C=MATC.cloth[t],J=MATC.jewel[t],
+  trim=r>=2?['#ffe7a0','#b8862a']:[metal[0],metal[1]],gem=r>=1?[RC.c2,RC.c]:['#c8c8c0','#6a6a64'],dark=[metal[1],'#14100c'];
+ const wfill=W&&W.mat==='wood'?wood:MATC.wood[2];
+ const defs=grad(n+'M',metal[0],metal[1])+grad(n+'W',wfill[0],wfill[1])+grad(n+'T',trim[0],trim[1])+grad(n+'D',dark[0],dark[1])+grad(n+'L',L[0],L[1])+grad(n+'C',C[0],C[1])+grad(n+'J',J[0],J[1])+
+  `<radialGradient id="${n}G" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${gem[0]}"/><stop offset="1" stop-color="${gem[1]}"/></radialGradient>`+
+  `<radialGradient id="${n}A" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="${RC.c}" stop-opacity="${r>=3?.55:r>=2?.3:0}"/><stop offset="1" stop-color="${RC.c}" stop-opacity="0"/></radialGradient>`;
+ const art=ART[key].replace(/url\(#([A-Z])\)/g,(m,c)=>`url(#${n}${c})`);
+ const runes=t>=4?`<g stroke="${t===5?'#ffe7a0':'#9ff4ff'}" stroke-width="1" opacity=".75" fill="none"><path d="M6 6l4 4M58 6l-4 4M6 58l4-4M58 58l-4-4"/></g>`:'';
+ return`<svg viewBox="0 0 64 64" aria-hidden="true"><defs>${defs}</defs>${r>=2?`<circle cx="32" cy="32" r="31" fill="url(#${n}A)"/>`:''}${runes}<g stroke-linejoin="round" stroke-linecap="round">${art}</g></svg>`}
+function migrateItem(it){if(!it||!it.st)return it;const o=it.st;if(o.pow!=null||o.haste!=null||(o.vit!=null&&!it.tier)){const st={};if(o.arm)st.arm=o.arm;if(o.pow){if(it.slot==='weapon')st.wd=Math.round(o.pow*1.2);else st[CLASSES[P.cls].main]=o.pow}if(o.vit)st.vit=o.vit;if(o.crit)st.crit=o.crit;if(o.haste)st.cast=o.haste;it.st=st}if(!it.tier)it.tier=tierOf(it.ilvl);itemBase(it);return it}
 const itemValue=it=>Math.round(it.ilvl*(1+it.rar*it.rar)*1.6+3);
 const EN={
  rat:{name:'Mire Rat',hp:38,dmg:5,spd:72,range:22,cd:1.2,r:9,xp:10,col:'#8a7a63',shape:'rat',aggro:120,h:.55},
@@ -2255,7 +2347,6 @@ function saveOpt(){try{localStorage.setItem('veylmoor-opts',JSON.stringify(OPT))
 function applyGfx(){RSMAX={high:1,balanced:.8,fast:.62}[OPT.gfx]||1;OPT.bloom=OPT.gfx!=='fast';RS=Math.min(RS,RSMAX);resize()}
 const IFILL={weapon:'<path d="M17 2h5v5L10 19l-4-1-1-4z"/><path d="M4 14l6 6-2 2-1-1-3 3-2-2 3-3-1-1z"/>',helm:'<path d="M3 16a9 9 0 0118 0v4h-6v-4h-6v4H3z"/><path d="M11 2h2v6h-2z"/>',
  chest:'<path d="M8 3L3 6l2 6 2-1v10h10V11l2 1 2-6-5-3-2 2h-4z"/>',boots:'<path d="M6 2h7v11l8 3v6H4v-6l2-2z"/>',charm:'<circle cx="12" cy="15" r="6"/><path d="M9 6l3-4 3 4-3 3z"/>',cloak:'<path d="M8 2h8l5 20-9-4-9 4z"/>'};
-function itemIcon(it){const c=RAR[it.rar].c,id='ig'+it.id+'_'+Math.floor(R()*1e6);return`<svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="${id}" cx=".38" cy=".32" r=".85"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".42" stop-color="${c}"/><stop offset="1" stop-color="#1a1208"/></radialGradient></defs><g fill="url(#${id})" stroke="#140c04" stroke-width="1" stroke-linejoin="round">${IFILL[it.slot]}</g></svg>`}
 function itemScore(x){const s2=x.st,mn=CLS.main;let v=(s2.wd||0)*2.2+(s2.arm||0)*.6+(x.uq?40:0);for(const k of ATTR)v+=(s2[k]||0)*(k===mn?2.5:.6);for(const k of SPEC)if(s2[k])v+=PCT.has(k)?s2[k]*1.6:RATE.has(k)?s2[k]*6:s2[k]*.25;return v}
 function better(it){const cur=P.eq[it.slot];if(!cur)return true;return itemScore(it)>itemScore(cur)}
 const crateCost=()=>40+P.lvl*12;
@@ -2356,6 +2447,13 @@ function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:10,date:'3 Nov 2026',title:'New gear',items:[
+  'Every weapon and piece of armor now has its own picture, drawn in its material and glowing with its rarity.',
+  'Each class wields its own weapon types: one-handed swords, maces and axes for the Bulwark; greataxes, greatswords, mauls and polearms for the Reaver; staves and wands for the Ashcaller; bows and crossbows for the Thornstalker; scepters and staves for the Lumen.',
+  'Armor comes in three families: plate for Bulwark and Reaver, leather for Thornstalker, and cloth for Ashcaller and Lumen. Plate has the most armor, and cloth leans on Intelligence.',
+  'Gear is named by its material, from Iron up to Starforged, with new names for each rarity, and Epic sets named for each zone. Each class has its own Legendary weapon.',
+  'Weapon types play differently: two-handed weapons hit harder, one-handed weapons add armor, wands speed up your casting, crossbows add critical damage and bows add critical chance.',
+  'Your old gear keeps its stats and gets a picture too.']},
  {id:9,date:'3 Nov 2026',title:'Wading',items:[
   'Walking through shallow water, flooded floors or lava shallows now slows you down. The deeper it is, the slower you go.',
   'You stay soaked and a little slower for a moment after climbing out. A debuff icon shows how much you are slowed.',
@@ -2428,8 +2526,8 @@ function statLines(it){let h='';const st=it.st;
  if(st.wd)h+=`<div style="font-weight:700">${st.wd} Weapon Damage</div>`;if(st.arm)h+=`<div style="font-weight:700">${st.arm} Armor</div>`;
  for(const k of ATTR)if(st[k])h+=`<div>${fmtStat(k,st[k])} ${STATN[k]}${k===CLS.main?' <span style="color:var(--brass2)">◆</span>':''}</div>`;
  for(const k of SPEC)if(st[k])h+=`<div class="st g">${fmtStat(k,st[k])} ${STATN[k]}</div>`;return h}
-function itemCard(it,btns){return`<div class="icard"><div class="ic-h"><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div>
- <div>${it.rar>=2?'Binds when picked up':'Binds when equipped'}</div><div class="split"><span>${SLOTNAME[it.slot]} · Tier ${TIERR[it.tier||tierOf(it.ilvl)]}</span><span>${RAR[it.rar].n}</span></div>${statLines(it)}<div style="color:var(--ink2)">Item level ${it.ilvl}</div>
+function itemCard(it,btns){return`<div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[it.rar].c}">${itemIcon(it)}</div><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div>
+ <div>${it.rar>=2?'Binds when picked up':'Binds when equipped'}</div><div class="split"><span>${esc(itemKind(it))} · Tier ${TIERR[it.tier||tierOf(it.ilvl)]}</span><span>${RAR[it.rar].n}</span></div>${statLines(it)}<div style="color:var(--ink2)">Item level ${it.ilvl}</div>
  ${it.uq?`<div class="legfx">Equip: ${esc(legByKey(it.uq).d)}</div>`:''}${btns?`<div class="ic-btns">${btns}</div>`:''}</div>`}
 function cmpCard(it){const cur=P.eq[it.slot];if(!cur)return`<div class="icard"><div class="ic-h"><b>Equipment Comparison</b></div><div>Nothing is equipped in this slot. Equipping this is a straight upgrade.</div></div>`;
  let h='';for(const k of['wd','arm',...ATTR,...SPEC]){const d=(it.st[k]||0)-(cur.st[k]||0);if(Math.abs(d)<.05)continue;const v=PCT.has(k)?Math.abs(d).toFixed(1).replace(/\.0$/,'')+'%':RATE.has(k)?Math.abs(d).toFixed(1)+'/s':Math.abs(Math.round(d));h+=`<div class="st ${d>0?'g':'r'}">${d>0?'+':'-'}${v} ${STATN[k]}</div>`}
@@ -2790,7 +2888,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress};
+window.__veyl={itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress};
 })();
 </script>
 
