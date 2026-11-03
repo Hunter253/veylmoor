@@ -574,7 +574,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 <script>
 (function(){
 'use strict';
-const TS=32,U=1/TS,TAU=Math.PI*2,MAXL=25,SAVEKEY='veylmoor-save-v1';
+const TS=32,U=1/TS,TAU=Math.PI*2,MAXL=50,SAVEKEY='veylmoor-save-v1';
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const dist=(a,b,c,d)=>Math.hypot(c-a,d-b);
@@ -624,8 +624,8 @@ const CLASSES={
       {key:'bash',c:'#6f88a8',needT:true,name:'Shield Bash',icon:'s_bash',cd:7,mp:15,base:26,range:66,tags:['Stun','Knockback','Vulnerable'],desc:'Slam your target with your shield. It is stunned for 1.5 seconds, knocked back, and takes 20% more damage for 5 seconds.'},
       {key:'oath',c:'#c9902a',name:'Oathcry',icon:'s_oath',cd:16,mp:20,range:0,tags:['Taunt','Pull','Shield'],desc:'Pull every foe within reach toward you and force them to fight you for 4 seconds. Gain a shield worth 22% of your health and take 25% less damage for 6 seconds.'},
       {key:'split',c:'#8a5a2a',name:'Earthsplitter',icon:'s_split',cd:10,mp:28,base:40,range:240,tags:['Line','Stun','Slow'],desc:'Drive your blade into the ground. A rift tears forward, hurling foes up (0.6 second stun) and slowing them by 40% for 3 seconds.'},
-      {key:'charge',c:'#a83a28',needT:true,name:'Charge',icon:'s_charge',cd:12,mp:15,base:22,range:240,lvl:3,tags:['Gap closer','Stun','Knockback'],desc:'Rush to your target, battering aside everything in your path. Your target is stunned for 1.2 seconds.'},
-      {key:'bastion',c:'#d8b060',name:'Bastion',icon:'s_bastion',cd:24,mp:40,base:12,range:110,lvl:6,per:'per second',tags:['Aura','Reflect','Taunt'],desc:'Raise a ward of light around you for 6 seconds. You take 30% less damage and send 40% of it back at your attacker. Foes inside are taunted, slowed by 50% and burned every second.'}],
+      {key:'charge',c:'#a83a28',needT:true,name:'Charge',icon:'s_charge',cd:12,mp:15,base:22,range:240,lvl:5,tags:['Gap closer','Stun','Knockback'],desc:'Rush to your target, battering aside everything in your path. Your target is stunned for 1.2 seconds.'},
+      {key:'bastion',c:'#d8b060',name:'Bastion',icon:'s_bastion',cd:24,mp:40,base:12,range:110,lvl:11,per:'per second',tags:['Aura','Reflect','Taunt'],desc:'Raise a ward of light around you for 6 seconds. You take 30% less damage and send 40% of it back at your attacker. Foes inside are taunted, slowed by 50% and burned every second.'}],
   tal:[tal('b1',1,'Iron Hide','+6% maximum health per rank.',(m,r)=>m.hpPct+=0.06*r),tal('b2',1,'Heavy Hand','+10% Warblade Strike damage per rank.',(m,r)=>m.dmgB+=0.10*r),
        tal('b3',2,'Ringing Blow','+15% Shield Bash damage per rank.',(m,r)=>m.dmg1+=0.15*r),tal('b4',2,'Unbroken','Take 3% less damage per rank.',(m,r)=>m.dr+=0.03*r),
        tal('b5',3,'Bulwark of Faith','Your shields are 15% stronger per rank.',(m,r)=>m.shield+=0.15*r),tal('b6',3,'Bloodied Oath','Heal for 2% of damage you deal per rank.',(m,r)=>m.ls+=0.02*r)]},
@@ -635,8 +635,8 @@ const CLASSES={
       {key:'ring',c:'#f08a2a',name:'Flame Nova',icon:'s_ring',cd:7,mp:20,base:26,range:110,tags:['Area','Knockback','Burn'],desc:'Explode in a ring of fire, hurling every nearby foe away and setting them burning.'},
       {key:'snare',c:'#b0402a',needT:true,name:'Cinder Chains',icon:'s_snare',cd:12,mp:22,base:18,range:220,tags:['Chain','Root','Scorch'],desc:'Burning chains leap from your target to up to 3 more foes, rooting them for 2.5 seconds. Chained foes are Scorched and take 20% more damage for 5 seconds.'},
       {key:'meteor',c:'#d8402a',name:'Meteor',icon:'s_meteor',cd:14,cast:1,mp:40,base:72,range:260,tags:['Area','Stun','Burning ground'],desc:'Call down a burning stone. It stuns everything it lands on and leaves a crater that burns for 3 seconds.'},
-      {key:'blink',c:'#5a7ad8',name:'Blink',icon:'s_blink',cd:10,mp:15,base:20,range:0,lvl:3,tags:['Teleport','Area','Haste'],desc:'Vanish in a burst of cinders that burns foes where you stood, and reappear ahead. Your casts are 50% faster for 3 seconds.'},
-      {key:'storm',c:'#d0501e',name:'Firestorm',icon:'s_storm',cd:18,mp:45,base:15,range:240,cast:1,lvl:6,per:'per strike',tags:['Area','Slow','Burn'],desc:'Rain fire on an area for 3 seconds. Foes caught in it are slowed by 35% and keep burning.'}],
+      {key:'blink',c:'#5a7ad8',name:'Blink',icon:'s_blink',cd:10,mp:15,base:20,range:0,lvl:5,tags:['Teleport','Area','Haste'],desc:'Vanish in a burst of cinders that burns foes where you stood, and reappear ahead. Your casts are 50% faster for 3 seconds.'},
+      {key:'storm',c:'#d0501e',name:'Firestorm',icon:'s_storm',cd:18,mp:45,base:15,range:240,cast:1,lvl:11,per:'per strike',tags:['Area','Slow','Burn'],desc:'Rain fire on an area for 3 seconds. Foes caught in it are slowed by 35% and keep burning.'}],
   tal:[tal('a1',1,'Kindling','+10% Ember Bolt damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('a2',1,'Deep Reserves','+20% mana regeneration per rank.',(m,r)=>m.mpReg+=0.20*r),
        tal('a3',2,'Wildfire','Your burns deal 20% more damage per rank.',(m,r)=>m.burn+=0.20*r),tal('a4',2,'Searing Focus','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
        tal('a5',3,'Starfall','+20% Meteor damage per rank.',(m,r)=>m.dmg3+=0.20*r),tal('a6',3,'Quickened Ash','Ability cooldowns 5% shorter per rank.',(m,r)=>m.cdr+=0.05*r)]},
@@ -646,8 +646,8 @@ const CLASSES={
       {key:'volley',c:'#6aa040',name:'Volley',icon:'s_volley',cd:7,mp:18,base:12,range:230,tags:['Cone','Pierce','Slow'],desc:'Loose five piercing arrows in a wide fan. Foes hit are slowed by 30% for 2 seconds.'},
       {key:'vault',c:'#3f7a5a',name:'Vault',icon:'s_vault',cd:9,mp:12,range:0,tags:['Escape','Haste','Sure crit'],desc:'Flip away from danger, scattering caltrops that slow foes by 50%. Move 40% faster for 3 seconds, and your next attack or skill is a certain critical hit.'},
       {key:'thorns',c:'#5a8a2a',name:'Thornsnare',icon:'s_thorns',cd:12,mp:22,base:14,range:230,per:'per second',tags:['Trap','Root','Bleed'],desc:'Seed a briar patch on your target. It roots foes for 2 seconds and cuts them open, making them bleed.'},
-      {key:'mark',c:'#c0402a',needT:true,name:"Hunter's Mark",icon:'s_mark',cd:10,mp:15,base:18,range:300,lvl:3,tags:['Mark','Vulnerable','Reset'],desc:'Fire a marking arrow. The foe takes 25% more damage for 10 seconds. If it dies while marked, Vault is ready again.'},
-      {key:'pierce',c:'#2f8a4a',name:'Deadeye',icon:'s_pierce',cd:14,mp:40,base:70,range:300,cast:.9,lvl:6,tags:['Line','Pierce','Certain crit'],desc:'Draw back and fire a great arrow that always critically hits, passes through every foe in a line and knocks them back. Deals 50% more to marked foes.'}],
+      {key:'mark',c:'#c0402a',needT:true,name:"Hunter's Mark",icon:'s_mark',cd:10,mp:15,base:18,range:300,lvl:5,tags:['Mark','Vulnerable','Reset'],desc:'Fire a marking arrow. The foe takes 25% more damage for 10 seconds. If it dies while marked, Vault is ready again.'},
+      {key:'pierce',c:'#2f8a4a',name:'Deadeye',icon:'s_pierce',cd:14,mp:40,base:70,range:300,cast:.9,lvl:11,tags:['Line','Pierce','Certain crit'],desc:'Draw back and fire a great arrow that always critically hits, passes through every foe in a line and knocks them back. Deals 50% more to marked foes.'}],
   tal:[tal('t1',1,'Fletcher','+10% Quick Shot damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('t2',1,'Light Step','+4% movement speed per rank.',(m,r)=>m.spd+=0.04*r),
        tal('t3',2,'Split Shaft','+15% Volley damage per rank.',(m,r)=>m.dmg1+=0.15*r),tal('t4',2,'Keen Eye','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
        tal('t5',3,'Steady Aim','+20% Deadeye damage per rank.',(m,r)=>m.dmg5+=0.20*r),tal('t6',3,'Predator','+5% damage with everything per rank.',(m,r)=>m.dmg+=0.05*r)]},
@@ -657,8 +657,8 @@ const CLASSES={
       {key:'mend',c:'#5ab84a',name:'Mend',icon:'s_mend',cd:10,cast:.6,mp:25,range:0,tags:['Heal','Heal over time'],desc:'Restore 22% of your health at once, then another 18% over 6 seconds.'},
       {key:'halo',c:'#e8c060',name:'Halo',icon:'s_halo',cd:8,mp:22,base:22,range:115,tags:['Area','Dazzle','Heal'],desc:'Flash a halo of light. Foes struck are Dazzled and deal 30% less damage for 4 seconds. You heal for each foe struck.'},
       {key:'judge',c:'#e0a030',needT:true,name:'Judgement',icon:'s_judge',cd:11,cast:.5,mp:32,base:58,range:220,tags:['Stun','Smite'],desc:'Strike your target with a column of light and stun it for 1.2 seconds. Deals 60% more to Dazzled foes.'},
-      {key:'sanct',c:'#d0a840',name:'Sanctuary',icon:'s_sanct',cd:22,mp:30,base:8,range:95,lvl:3,per:'per second',tags:['Zone','Heal','Damage reduction'],desc:'Consecrate the ground for 7 seconds. While you stand in it you take 35% less damage and heal 3.5% of your health each second. Foes inside are slowed and burned.'},
-      {key:'dawn',c:'#f0c860',name:'Dawnbreak',icon:'s_dawn',cd:20,mp:45,base:64,range:240,cast:.7,lvl:6,tags:['Area','Stun','Heal','Shield'],desc:'Call the dawn down on an area. Foes are struck and stunned for 1.5 seconds. You heal 8% for each foe struck (up to 40%) and gain a shield worth 15% of your health.'}],
+      {key:'sanct',c:'#d0a840',name:'Sanctuary',icon:'s_sanct',cd:22,mp:30,base:8,range:95,lvl:5,per:'per second',tags:['Zone','Heal','Damage reduction'],desc:'Consecrate the ground for 7 seconds. While you stand in it you take 35% less damage and heal 3.5% of your health each second. Foes inside are slowed and burned.'},
+      {key:'dawn',c:'#f0c860',name:'Dawnbreak',icon:'s_dawn',cd:20,mp:45,base:64,range:240,cast:.7,lvl:11,tags:['Area','Stun','Heal','Shield'],desc:'Call the dawn down on an area. Foes are struck and stunned for 1.5 seconds. You heal 8% for each foe struck (up to 40%) and gain a shield worth 15% of your health.'}],
   tal:[tal('l1',1,'Bright Hand','+10% Light Mote damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('l2',1,'Devotion','+12% healing per rank.',(m,r)=>m.heal+=0.12*r),
        tal('l3',2,'Radiance','+15% Halo damage per rank.',(m,r)=>m.dmg2+=0.15*r),tal('l4',2,'Wellspring','+20% mana regeneration per rank.',(m,r)=>m.mpReg+=0.20*r),
        tal('l5',3,'Verdict','+20% Judgement damage per rank.',(m,r)=>m.dmg3+=0.20*r),tal('l6',3,'Grace','Take 3% less damage per rank.',(m,r)=>m.dr+=0.03*r)]},
@@ -668,8 +668,8 @@ const CLASSES={
       {key:'rend',c:'#c02838',needT:true,name:'Rending Strike',icon:'s_rend',cd:6,mp:15,base:24,range:70,tags:['Bleed','Lifesteal'],desc:'Tear into your target, leaving it bleeding heavily for 5 seconds. Bleeds you cause heal you for 25% of their damage.'},
       {key:'roar',c:'#d0802a',name:'Battle Roar',icon:'s_roar',cd:18,mp:20,range:0,tags:['Buff','Haste','Weaken'],desc:'Roar for 8 seconds of fury: +25% damage, +15% movement speed and 8% lifesteal. Nearby foes are Shaken and deal 25% less damage for 5 seconds.'},
       {key:'leap',c:'#8a5a2a',name:'Leap Slam',icon:'s_leap',cd:10,mp:28,base:42,range:220,tags:['Gap closer','Stun','Knockback'],desc:'Leap onto your target and slam the ground. Everything nearby is stunned, thrown back and slowed by 40% for 3 seconds.'},
-      {key:'exec',c:'#7a1e1e',needT:true,name:'Execute',icon:'s_exec',cd:9,mp:20,base:32,range:70,lvl:3,tags:['Finisher','Reset'],desc:'A brutal finisher that deals two and a half times damage to foes under 35% health. If it kills, its cooldown resets and you heal 10%.'},
-      {key:'bstorm',c:'#c06a2a',name:'Bladestorm',icon:'s_bstorm',cd:18,mp:40,base:15,range:90,lvl:6,per:'per hit',tags:['Area','Pull','Damage reduction'],desc:'Spin for 2.4 seconds, striking everything around you eight times and dragging foes inward. You take 30% less damage and can move while spinning.'}],
+      {key:'exec',c:'#7a1e1e',needT:true,name:'Execute',icon:'s_exec',cd:9,mp:20,base:32,range:70,lvl:5,tags:['Finisher','Reset'],desc:'A brutal finisher that deals two and a half times damage to foes under 35% health. If it kills, its cooldown resets and you heal 10%.'},
+      {key:'bstorm',c:'#c06a2a',name:'Bladestorm',icon:'s_bstorm',cd:18,mp:40,base:15,range:90,lvl:11,per:'per hit',tags:['Area','Pull','Damage reduction'],desc:'Spin for 2.4 seconds, striking everything around you eight times and dragging foes inward. You take 30% less damage and can move while spinning.'}],
   tal:[tal('r1',1,'Heavy Swings','+10% Hew damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('r2',1,'Thick Blood','+6% maximum health per rank.',(m,r)=>m.hpPct+=0.06*r),
        tal('r3',2,'Deep Wounds','Your bleeds deal 20% more damage per rank.',(m,r)=>m.bleed+=0.20*r),tal('r4',2,'Fury','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
        tal('r5',3,'Executioner','+20% Execute damage per rank.',(m,r)=>m.dmg4+=0.20*r),tal('r6',3,'Unstoppable','Cooldowns 5% shorter per rank.',(m,r)=>m.cdr+=0.05*r)]},
@@ -684,7 +684,7 @@ const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','c
 const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find'};
 const PCT=new Set(['critd','crit','move','dodge','armP','cast','cdr','mf']),RATE=new Set(['mpr','hpr']);
 const TIERW=['','Worn','Tempered','Masterwork','Runed','Exalted'],TIERR=['','I','II','III','IV','V'];
-const tierOf=l=>clamp(1+Math.floor((l-1)/5),1,5);
+const tierOf=l=>clamp(1+Math.floor((PL(l)-1)/5),1,5);
 const BASES={helm:['Coif','Helm','Hood','Circlet'],chest:['Hauberk','Brigandine','Robe','Jerkin'],boots:['Greaves','Boots','Treads','Sabatons'],charm:['Ring','Amulet','Seal','Token'],cloak:['Cape','Mantle','Cloak','Shroud']};
 const SUFFIX={critd:'of Ruin',crit:'of the Hawk',move:'of the Gale',dodge:'of Shadows',armP:'of the Bulwark',hp:'of the Hearth',mp:'of the Tide',mpr:'of the Spring',hpr:'of Mending',cast:'of Quickening',cdr:'of Swiftness',mf:'of Fortune'};
 const EPIC=["Fenwarden's",'Gravebell','Mirelight','Saltmarsh',"Barrowking's",'Old Oath'];
@@ -737,8 +737,8 @@ const RMUL=[1,1.12,1.28,1.48,1.75];
 const ATTW={weapon:1.1,helm:1,chest:1.25,boots:.85,cloak:.75,charm:1.15};
 function itemKind(it){if(it.slot==='weapon')return WCAT[it.base]?WCAT[it.base].n:'Weapon';if(it.slot==='charm')return CHARMK[it.base]?CHARMK[it.base].n:'Charm';if(it.slot==='cloak')return'Cloak';
  return(ARMK[it.at]?ARMK[it.at].n+' ':'')+SLOTNAME[it.slot]}
-function rollItem(ilvl,min=0,slot,rar){
- rar=rar==null?rollRar(min):rar;slot=slot||pick(SLOTS);const cls=P.cls,main=CLASSES[cls].main,tier=tierOf(ilvl),pw=(6+ilvl*2.1)*RMUL[rar],st={};let base,at=null,mat,bn;
+function rollItem(lv,min=0,slot,rar){const ilvl=PL(lv);
+ rar=rar==null?rollRar(min):rar;slot=slot||pick(SLOTS);const cls=P.cls,main=CLASSES[cls].main,tier=tierOf(lv),pw=(6+ilvl*2.1)*RMUL[rar],st={};let base,at=null,mat,bn;
  if(slot==='weapon'){base=pick(CWEAP[cls]);const W=WCAT[base];st.wd=Math.round(pw*1.15*W.dmg*rr(.94,1.06));if(W.shield)st.arm=Math.round(st.wd*W.shield);mat=W.mat;bn=pick(W.b);
   if(W.bonus)for(const k in W.bonus){const v=W.bonus[k]*ilvl*(rar+2)/3;st[k]=PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}}
  else if(slot==='charm'){base=pick(Object.keys(CHARMK));mat='jewel';bn=pick(CHARMK[base].b)}
@@ -755,7 +755,7 @@ function rollItem(ilvl,min=0,slot,rar){
  else if(rar===2)name=SPECPRE[sp[0]]+' '+mn+' '+bn;
  else if(rar===1)name=mn+' '+bn+' '+BEAST[keys[0]];
  else name=mn+' '+bn;
- const it={id:P.nid++,slot,rar,ilvl,tier,st,name,base,mt:tier};if(at)it.at=at;if(rar===4)it.uq=LEG[slot].k;return it}
+ const it={id:P.nid++,slot,rar,ilvl:lv,tier,st,name,base,mt:tier};if(at)it.at=at;if(rar===4)it.uq=LEG[slot].k;return it}
 function itemBase(it){if(it.base)return;const h=(it.id*2654435761>>>0);if(it.slot==='weapon'){const L=CWEAP[P.cls];it.base=L[h%L.length]}else if(it.slot==='charm')it.base=['ring','amulet','trinket'][h%3];else if(it.slot==='cloak')it.base='cloak';else{it.base=it.slot;it.at=ARMT[P.cls]}it.mt=it.tier||tierOf(it.ilvl)}
 
 /* ================= Item pictures (drawn as SVG, 64x64) ================= */
@@ -817,8 +817,8 @@ const EN={
  prior:{name:'The Drowned Prior',hp:1300,dmg:20,spd:70,range:30,cd:1.6,r:24,xp:120,col:'#7fc8d8',shape:'prior',aggro:250,boss:true,h:2.6},
 };
 let eid=0;
-function mkEnemy(type,lvl,x,y){const d=EN[type];const hp=Math.round(d.hp*1.12*(1+0.35*(lvl-1)));
- return{type,d,lvl,x,y,hx:x,hy:y,hp,max:hp,dmg:d.dmg*1.1*(1+0.22*(lvl-1)),state:'idle',cd:rr(0,1),wander:rr(1,4),tx:x,ty:y,stun:0,root:0,wind:0,dead:false,respawn:0,hitFlash:0,rot:R()*TAU,anim:R()*10,id:++eid,slam:5,fade:0,px:x,py:y,mv:0,ph:R()*6}}
+function mkEnemy(type,lvl,x,y){const d=EN[type];const hp=Math.round(d.hp*1.12*(1+0.35*(PL(lvl)-1)));
+ return{type,d,lvl,x,y,hx:x,hy:y,hp,max:hp,dmg:d.dmg*1.1*(1+0.22*(PL(lvl)-1)),state:'idle',cd:rr(0,1),wander:rr(1,4),tx:x,ty:y,stun:0,root:0,wind:0,dead:false,respawn:0,hitFlash:0,rot:R()*TAU,anim:R()*10,id:++eid,slam:5,fade:0,px:x,py:y,mv:0,ph:R()*6}}
 const NPCS={
  marwen:{town:'Hollowmere',name:'Elder Marwen',title:'Village elder',col:'#9a86c2',x:14,y:24,idle:'Keep to the roads after dark. The fen remembers every path that was ever drowned.'},
  corra:{town:'Hollowmere',name:'Huntress Corra',title:'Ridge warden',col:'#7f9c58',x:22.6,y:24.4,idle:'The wolves on the ridge hunt in threes. Watch your flanks.'},
@@ -857,112 +857,112 @@ const NODEK={herb:{act:'Gather',verb:'Gathering',c:'#9be07a'},ore:{act:'Mine',ve
  totem:{act:'Smash',verb:'Smashing',c:'#c080ff'},banner:{act:'Burn',verb:'Burning',c:'#ff9a4a'},altar:{act:'Break',verb:'Breaking',c:'#ff7a30'}};
 const QKIND={kill:'Slay',collect:'Collect',gather:'Gather',explore:'Explore',deliver:'Deliver',hunt:'Hunt',rescue:'Rescue',destroy:'Destroy',defend:'Defend',boss:'Area boss'};
 const QUESTS=[
- /* ---------------- Veylmoor (levels 1-10) ---------------- */
+ /* ---------------- Veylmoor (levels 1-19) ---------------- */
  {id:'q1',giver:'marwen',map:'vale',lv:1,camp:1,title:'Rats in the Grain',kind:'kill',target:'rat',n:6,obj:'Mire Rats killed',item:{slot:'boots',rar:1},req:[],
   offer:'Rats have come up out of the mire and into our grain stores. Thin them out in the meadow north of the square. Six should teach the rest some manners.',wait:'The meadow is just up the north road. Six rats, no more mercy than that.',done:'That will do. Take these boots. My late husband walked the fen in them for thirty years.'},
- {id:'v1',giver:'ysolde',map:'vale',lv:2,title:'Bog-myrtle',kind:'gather',node:'herb',nodeName:'Bog-myrtle',nodes:[[5,37],[9,42],[14,44],[21,37],[28,44],[31,38]],n:5,obj:'Bog-myrtle gathered',potions:2,req:['q1'],
+ {id:'v1',giver:'ysolde',map:'vale',lv:3,title:'Bog-myrtle',kind:'gather',node:'herb',nodeName:'Bog-myrtle',nodes:[[5,37],[9,42],[14,44],[21,37],[28,44],[31,38]],n:5,obj:'Bog-myrtle gathered',potions:2,req:['q1'],
   offer:'My fever-draughts need bog-myrtle, and it only grows wild in Southfield, below the waystone. Five sprigs, please. Look for the pale blue flowers.',wait:'Southfield is just south of the waystone. Five sprigs of bog-myrtle.',done:'Lovely, and fresh. Here, take a couple of tonics for your trouble.'},
- {id:'q2',giver:'corra',map:'vale',lv:3,camp:1,title:'Thornbacks on the Ridge',kind:'kill',target:'wolf',n:6,obj:'Thornback Wolves killed',item:{slot:'weapon',rar:2},req:['q1'],
+ {id:'q2',giver:'corra',map:'vale',lv:5,camp:1,title:'Thornbacks on the Ridge',kind:'kill',target:'wolf',n:6,obj:'Thornback Wolves killed',item:{slot:'weapon',rar:2},req:['q1'],
   offer:'Thornback wolves have taken the wooded ridge east of the meadow. They had two of Pell\'s goats last week. Bring down six and the rest will move on.',wait:'Six wolves. The ridge is north and east of the village, past the crossroads.',done:'Clean work. You will want a better weapon for what is coming. Take this one.'},
- {id:'v2',giver:'corra',map:'vale',lv:4,title:'Eyes on the Ridge',kind:'explore',spots:[[48,6,'The Old Watchtower'],[38,24,'Crossroads Shrine'],[39,37,'The Fen Causeway']],n:3,obj:'Lookouts scouted',req:['q2'],
+ {id:'v2',giver:'corra',map:'vale',lv:7,title:'Eyes on the Ridge',kind:'explore',spots:[[48,6,'The Old Watchtower'],[38,24,'Crossroads Shrine'],[39,37,'The Fen Causeway']],n:3,obj:'Lookouts scouted',req:['q2'],
   offer:'Something is moving the wolves around. Walk the high ground for me: the old watchtower on the ridge, the crossroads shrine, and the causeway into the fen. Just look, and come back.',wait:'The watchtower, the crossroads shrine, and the fen causeway. Look, then report.',done:'Tracks heading south toward the fen, all of them. That settles it. Something down there is calling.'},
- {id:'v3',giver:'corra',map:'vale',lv:5,title:'Old Greymuzzle',kind:'hunt',elite:{type:'wolf',name:'Old Greymuzzle',x:51,y:15,sc:1.5,tint:[1.5,1.5,1.5]},n:1,obj:'Old Greymuzzle slain',item:{slot:'cloak',rar:2},req:['v2'],
+ {id:'v3',giver:'corra',map:'vale',lv:9,title:'Old Greymuzzle',kind:'hunt',elite:{type:'wolf',name:'Old Greymuzzle',x:51,y:15,sc:1.5,tint:[1.5,1.5,1.5]},n:1,obj:'Old Greymuzzle slain',item:{slot:'cloak',rar:2},req:['v2'],
   offer:'There is one wolf the pack follows: an old grey brute with a torn ear. Hunters call him Greymuzzle. He dens on the far side of the ridge. Kill him and the pack breaks.',wait:'Greymuzzle dens on the far east of the ridge. He is bigger than the rest. You will know him.',done:'Greymuzzle. I have chased that hide for six years. Take this cloak, you earned it twice over.'},
- {id:'q3',giver:'ysolde',map:'vale',lv:5,title:'Lantern-moss',kind:'collect',target:'wisp',thing:'Lantern-moss',chance:.7,n:5,obj:'Lantern-moss gathered',potions:3,req:['v1'],
+ {id:'q3',giver:'ysolde',map:'vale',lv:9,title:'Lantern-moss',kind:'collect',target:'wisp',thing:'Lantern-moss',chance:.7,n:5,obj:'Lantern-moss gathered',potions:3,req:['v1'],
   offer:'Will-wisps drift over Lantern Fen, south of the crossroads. When one burns out it leaves a clump of glowing moss. I need five clumps for poultices.',wait:'Five clumps. Only the wisps leave it, and not every one of them.',done:'Five clumps, still glowing. These tonics are yours, and I will brew more for Pell\'s stall.'},
- {id:'q4',giver:'marwen',map:'vale',lv:6,camp:1,title:'Ghouls of the Fen',kind:'kill',target:'ghoul',n:8,obj:'Bog Ghouls put down',item:{slot:'chest',rar:2},req:['q2'],
+ {id:'q4',giver:'marwen',map:'vale',lv:11,camp:1,title:'Ghouls of the Fen',kind:'kill',target:'ghoul',n:8,obj:'Bog Ghouls put down',item:{slot:'chest',rar:2},req:['q2'],
   offer:'Something is pulling the dead up out of the fen. Bog ghouls walk the causeway at night. Put eight of them back in the mud.',wait:'Eight ghouls. Follow the causeway south from the crossroads into the fen.',done:'The fen is quieter. But the ghouls were all walking the same way: toward the old abbey.'},
- {id:'v4',giver:'marwen',map:'vale',lv:7,camp:1,title:'Lost in the Fen',kind:'rescue',node:'captive',nodeName:'Trapped villager',nodes:[[44,32],[53,38],[58,43]],n:3,obj:'Villagers freed',ambush:{type:'ghoul',n:2},req:['q4'],
+ {id:'v4',giver:'marwen',map:'vale',lv:13,camp:1,title:'Lost in the Fen',kind:'rescue',node:'captive',nodeName:'Trapped villager',nodes:[[44,32],[53,38],[58,43]],n:3,obj:'Villagers freed',ambush:{type:'ghoul',n:2},req:['q4'],
   offer:'Three of our peat-cutters never came home. The ghouls drag the living into the fen and bind them in reed-cages. Find them, cut them loose, and expect company when you do.',wait:'Three villagers, caged somewhere in Lantern Fen. The ghouls will not let them go quietly.',done:'All three, alive. Hollowmere will not forget it. Now we deal with whoever is ringing that bell.'},
- {id:'v5',giver:'ysolde',map:'vale',lv:7,title:'The Lantern Vigil',kind:'defend',beacon:[37,29],beaconName:'Ward-lantern',waves:['ghoul','wisp'],dur:40,n:1,obj:'Hold the ward-lantern',item:{slot:'charm',rar:2},req:['q3'],
+ {id:'v5',giver:'ysolde',map:'vale',lv:13,title:'The Lantern Vigil',kind:'defend',beacon:[37,29],beaconName:'Ward-lantern',waves:['ghoul','wisp'],dur:40,n:1,obj:'Hold the ward-lantern',item:{slot:'charm',rar:2},req:['q3'],
   offer:'There is an old ward-lantern at the mouth of the fen. Light it and the dead will come to put it out. Hold it for forty breaths and its light will keep them off the village roads.',wait:'Light the ward-lantern at the mouth of the fen, then hold it. Stay close to it, or it gutters out.',done:'I saw it from my window, burning green. That light will hold for a generation. Take this charm, it was my mother\'s.'},
- {id:'q5',giver:'marwen',map:'abbey',lv:9,camp:1,title:'The Sunken Abbey',kind:'boss',target:'prior',n:1,obj:'Silence the Drowned Prior',item:{rar:3},req:['v4'],
+ {id:'q5',giver:'marwen',map:'abbey',lv:17,camp:1,title:'The Sunken Abbey',kind:'boss',target:'prior',n:1,obj:'Silence the Drowned Prior',item:{rar:3},req:['v4'],
   offer:'A hundred years ago the abbey sank into the marsh with its prior still inside. The ghouls answer his bell. Take the gate-key. The abbey lies at the end of the north road, past the ridge. Go and silence him.',wait:'The abbey gate is at the end of the north road. Bring the bell back quiet.',done:'The bell is silent. Hollowmere owes you more than it can pay, but take this, and our thanks. And look to the waystone: it has woken.'},
- {id:'v6',giver:'marwen',turn:'hassa',map:'dunes',lv:9,camp:1,title:'Word to the South',kind:'deliver',n:1,obj:"Speak to Warden Hassa in Qarim's Rest",req:['q5'],
+ {id:'v6',giver:'marwen',turn:'hassa',map:'dunes',lv:17,camp:1,title:'Word to the South',kind:'deliver',n:1,obj:"Speak to Warden Hassa in Qarim's Rest",req:['q5'],
   offer:'The waystone now hums with a second light: the south. Warden Hassa in Qarim\'s Rest wrote to me last spring, begging for a blade. Take the waystone to the Sunscar Dunes and tell her I sent you.',wait:"Use the waystone to reach Qarim's Rest and find Warden Hassa by the well.",done:'Marwen\'s hero, at last. You have come at a bad time, which is the only time anyone ever comes.'},
- /* ---------------- Sunscar Dunes (levels 9-14) ---------------- */
- {id:'d1',giver:'hassa',map:'dunes',lv:9,camp:1,title:'Stingers in the Sand',kind:'kill',target:'scorp',n:8,obj:'Dune Scorpions killed',item:{slot:'weapon',rar:2},req:['v6'],
+ /* ---------------- Sunscar Dunes (levels 17-27) ---------------- */
+ {id:'d1',giver:'hassa',map:'dunes',lv:17,camp:1,title:'Stingers in the Sand',kind:'kill',target:'scorp',n:8,obj:'Dune Scorpions killed',item:{slot:'weapon',rar:2},req:['v6'],
   offer:'Scorpions the size of goats have come up out of the flats east of the well. They stung a camel to death yesterday. Kill eight before they find the children.',wait:'The flats are east of the well. Eight scorpions.',done:'Eight. Good. Take this blade. The forge in Qarim was the best in the south once.'},
- {id:'d4',giver:'tamsin',map:'dunes',lv:9,title:'Sunbloom Water',kind:'gather',node:'herb',nodeName:'Sunbloom',nodes:[[8,21],[18,21],[8,27],[18,27],[10,20],[16,28]],n:5,obj:'Sunblooms gathered',potions:3,req:['v6'],
+ {id:'d4',giver:'tamsin',map:'dunes',lv:17,title:'Sunbloom Water',kind:'gather',node:'herb',nodeName:'Sunbloom',nodes:[[8,21],[18,21],[8,27],[18,27],[10,20],[16,28]],n:5,obj:'Sunblooms gathered',potions:3,req:['v6'],
   offer:'Sunbloom grows around the oasis, just south of town. Steep it and the water stays sweet for a month on the road. Five blooms and I will pay you in tonics.',wait:'The oasis is just south of town. Five sunblooms.',done:'Ah, that smell. The caravan thanks you. Here, tonics, as promised.'},
- {id:'d3',giver:'hassa',map:'dunes',lv:10,camp:1,title:'Scout the Hollow',kind:'explore',spots:[[30,25,'The Broken Well'],[46,24,'Raider Lookout'],[34,40,'The Bone Arch']],n:3,obj:"Raider's Hollow scouted",req:['d1'],
+ {id:'d3',giver:'hassa',map:'dunes',lv:19,camp:1,title:'Scout the Hollow',kind:'explore',spots:[[30,25,'The Broken Well'],[46,24,'Raider Lookout'],[34,40,'The Bone Arch']],n:3,obj:"Raider's Hollow scouted",req:['d1'],
   offer:'The raiders in the hollow have a new master. They call him the Sun-King. Before I send anyone in, I need eyes: the broken well, the raider lookout, and the bone arch. Look and get out.',wait:"The broken well, the raider lookout and the bone arch, all in Raider's Hollow south-east of town.",done:'Banners, a throne in the south-east, a hundred raiders. Worse than I feared.'},
- {id:'d2',giver:'hassa',map:'dunes',lv:11,camp:1,title:'Raiders of the Hollow',kind:'kill',target:'nomad',n:8,obj:'Dune Raiders defeated',item:{slot:'chest',rar:2},req:['d3'],
+ {id:'d2',giver:'hassa',map:'dunes',lv:21,camp:1,title:'Raiders of the Hollow',kind:'kill',target:'nomad',n:8,obj:'Dune Raiders defeated',item:{slot:'chest',rar:2},req:['d3'],
   offer:'Raiders camp in the hollow south of here and rob every caravan that passes. Break eight of them and the rest will think twice.',wait:'Eight raiders. The hollow is south and east, past the oasis.',done:'The road south is open again. Tamsin says the caravans will pay you in songs, but I pay in armor.'},
- {id:'d5',giver:'tamsin',map:'dunes',lv:11,title:'Shade-glass',kind:'collect',target:'sandsh',thing:'Shade-glass',chance:.6,n:6,obj:'Shade-glass shards',item:{slot:'helm',rar:2},req:['d4'],
+ {id:'d5',giver:'tamsin',map:'dunes',lv:21,title:'Shade-glass',kind:'collect',target:'sandsh',thing:'Shade-glass',chance:.6,n:6,obj:'Shade-glass shards',item:{slot:'helm',rar:2},req:['d4'],
   offer:'When a sand shade dies, the heat turns it to glass. Collectors in the north pay a fortune for it. The shades drift in the barrens south-west of the oasis. Six shards?',wait:'Six shards of shade-glass, from the sand shades in the barrens.',done:'Look at them catch the light. You have a fortune here, and I have a commission. Take this helm.'},
- {id:'d9',giver:'hassa',map:'dunes',lv:11,title:'Old Mother Stinger',kind:'hunt',elite:{type:'scorp',name:'Old Mother Stinger',x:46,y:7,sc:1.7,tint:[1.5,1,.7]},n:1,obj:'Old Mother Stinger slain',item:{slot:'boots',rar:2},req:['d1'],
+ {id:'d9',giver:'hassa',map:'dunes',lv:21,title:'Old Mother Stinger',kind:'hunt',elite:{type:'scorp',name:'Old Mother Stinger',x:46,y:7,sc:1.7,tint:[1.5,1,.7]},n:1,obj:'Old Mother Stinger slain',item:{slot:'boots',rar:2},req:['d1'],
   offer:'The scorpions keep coming because something keeps laying them. Old Mother Stinger, the herders call her, out in the far north-east of the flats. End her brood.',wait:'Old Mother Stinger nests in the north-east of the flats.',done:'No more broods. You have saved more camels than you know. Take these boots, they are made for sand.'},
- {id:'d6',giver:'hassa',map:'dunes',lv:12,camp:1,title:"The Sun-King's Banners",kind:'destroy',node:'banner',nodeName:'War banner',nodes:[[28,28],[38,26],[50,29],[30,38]],n:4,obj:'War banners burned',ambush:{type:'nomad',n:2},req:['d2'],
+ {id:'d6',giver:'hassa',map:'dunes',lv:23,camp:1,title:"The Sun-King's Banners",kind:'destroy',node:'banner',nodeName:'War banner',nodes:[[28,28],[38,26],[50,29],[30,38]],n:4,obj:'War banners burned',ambush:{type:'nomad',n:2},req:['d2'],
   offer:'Every raider in the hollow has sworn to a banner of the Sun-King. Burn the four war banners and their courage burns with them. They will fight for those rags, so be ready.',wait:"Four war banners stand in Raider's Hollow. Burn them all.",done:'I watched the smoke from the wall. Now, while they are shaken, we finish this.'},
- {id:'d10',giver:'tamsin',map:'dunes',lv:12,title:'Hold the Caravan',kind:'defend',beacon:[30,12],beaconName:'Caravan signal',waves:['nomad','scorp'],dur:45,n:1,obj:'Guard the stranded caravan',item:{slot:'cloak',rar:2},req:['d5'],
+ {id:'d10',giver:'tamsin',map:'dunes',lv:23,title:'Hold the Caravan',kind:'defend',beacon:[30,12],beaconName:'Caravan signal',waves:['nomad','scorp'],dur:45,n:1,obj:'Guard the stranded caravan',item:{slot:'cloak',rar:2},req:['d5'],
   offer:'One of my wagons broke an axle on the east road. Raiders will smell it by nightfall. Go, light the signal by the wagon, and keep them off it until the drivers can fix the wheel.',wait:'The wagon is on the east road. Light the signal and hold the ground beside it.',done:'Not a crate lost! You are better than any hired guard. Take this cloak from the wagon, with my thanks.'},
- {id:'d7',giver:'hassa',map:'dunes',lv:13,camp:1,title:'The Sun-King',kind:'boss',target:'qassar',n:1,obj:'Defeat Qassar the Sun-King',item:{rar:3},req:['d6'],
+ {id:'d7',giver:'hassa',map:'dunes',lv:25,camp:1,title:'The Sun-King',kind:'boss',target:'qassar',n:1,obj:'Defeat Qassar the Sun-King',item:{rar:3},req:['d6'],
   offer:'Qassar sits on a throne of stolen gold in the far south-east of the hollow. Kill him and the raiders become a dozen squabbling bands again. This is what Marwen sent you for.',wait:"Qassar's throne is in the far south-east of Raider's Hollow.",done:'The Sun-King is dead. The south is free. And the waystone sings again: north, to the cold.'},
- {id:'d8',giver:'hassa',turn:'brun',map:'frost',lv:13,camp:1,title:'North to Kellhold',kind:'deliver',n:1,obj:'Speak to Brun Ironhide in Kellhold',req:['d7'],
+ {id:'d8',giver:'hassa',turn:'brun',map:'frost',lv:25,camp:1,title:'North to Kellhold',kind:'deliver',n:1,obj:'Speak to Brun Ironhide in Kellhold',req:['d7'],
   offer:'Brun Ironhide holds Kellhold in Frostfang Reach. His last letter asked for help with "the Mother". Take the waystone north and find him.',wait:'Take the waystone to Frostfang Reach and find Brun Ironhide in Kellhold.',done:'Hassa\'s champion. Good. Warm your hands by the fire, then we talk about wolves.'},
- /* ---------------- Frostfang Reach (levels 13-18) ---------------- */
- {id:'f1',giver:'brun',map:'frost',lv:13,camp:1,title:'Pelts for Kellhold',kind:'kill',target:'frostwolf',n:8,obj:'Frostfang Wolves killed',item:{slot:'cloak',rar:2},req:['d8'],
+ /* ---------------- Frostfang Reach (levels 25-35) ---------------- */
+ {id:'f1',giver:'brun',map:'frost',lv:25,camp:1,title:'Pelts for Kellhold',kind:'kill',target:'frostwolf',n:8,obj:'Frostfang Wolves killed',item:{slot:'cloak',rar:2},req:['d8'],
   offer:'Frostfang packs are taking our goats and, last week, a woodcutter. Hunt eight in the pines to the north-west and Odette will turn the pelts into cloaks.',wait:'The pines are north-west of the hold. Eight wolves.',done:'Fine pelts. Odette made this one up already. Wear it, it gets colder.'},
- {id:'f7',giver:'odette',map:'frost',lv:14,title:'Frostcap Lichen',kind:'gather',node:'herb',nodeName:'Frostcap lichen',nodes:[[16,28],[28,29],[16,34],[28,34],[22,27],[22,36]],n:5,obj:'Frostcap lichen gathered',potions:3,req:['d8'],
+ {id:'f7',giver:'odette',map:'frost',lv:27,title:'Frostcap Lichen',kind:'gather',node:'herb',nodeName:'Frostcap lichen',nodes:[[16,28],[28,29],[16,34],[28,34],[22,27],[22,36]],n:5,obj:'Frostcap lichen gathered',potions:3,req:['d8'],
   offer:'Frostcap lichen grows on the stones around Mirror Lake. Boiled, it keeps fingers from blackening. Five patches and you will have tonics and my gratitude.',wait:'Mirror Lake is west of the hold. Five patches of frostcap.',done:'Good thick patches. These will save a few fingers this winter. Take some tonics.'},
- {id:'f3',giver:'brun',map:'frost',lv:14,camp:1,title:'Lost Woodcutters',kind:'rescue',node:'captive',nodeName:'Snowbound woodcutter',nodes:[[18,14],[24,6],[28,17]],n:3,obj:'Woodcutters rescued',ambush:{type:'frostwolf',n:2},req:['f1'],
+ {id:'f3',giver:'brun',map:'frost',lv:27,camp:1,title:'Lost Woodcutters',kind:'rescue',node:'captive',nodeName:'Snowbound woodcutter',nodes:[[18,14],[24,6],[28,17]],n:3,obj:'Woodcutters rescued',ambush:{type:'frostwolf',n:2},req:['f1'],
   offer:'Three woodcutters went into the pines and did not come back. The wolves corner men in the drifts and wait for them to freeze. Find them before the wolves get bored.',wait:'Three woodcutters, trapped in the snow of Frostfang Pines.',done:'All three? Their wives will kiss your boots. I will settle for shaking your hand.'},
- {id:'f2',giver:'brun',map:'frost',lv:15,camp:1,title:'The Rime Wraiths',kind:'kill',target:'rimewr',n:8,obj:'Rime Wraiths banished',item:{slot:'helm',rar:2},req:['f3'],
+ {id:'f2',giver:'brun',map:'frost',lv:29,camp:1,title:'The Rime Wraiths',kind:'kill',target:'rimewr',n:8,obj:'Rime Wraiths banished',item:{slot:'helm',rar:2},req:['f3'],
   offer:'Wraiths of rime drift over the north ice, freezing anyone they touch. Banish eight and Kellhold sleeps easier.',wait:'Eight wraiths. They drift on the ice fields north and east.',done:'The ice is quiet. Take this helm, it has kept three captains alive.'},
- {id:'f8',giver:'odette',map:'frost',lv:15,title:'Frozen Hearts',kind:'collect',target:'rimedead',thing:'Frozen heart',chance:.6,n:6,obj:'Frozen hearts taken',item:{slot:'chest',rar:2},req:['f7'],
+ {id:'f8',giver:'odette',map:'frost',lv:29,title:'Frozen Hearts',kind:'collect',target:'rimedead',thing:'Frozen heart',chance:.6,n:6,obj:'Frozen hearts taken',item:{slot:'chest',rar:2},req:['f7'],
   offer:'The frostbitten dead around the lake carry their hearts frozen solid. Do not ask what I want them for. Six, please.',wait:'Six frozen hearts, from the frostbitten dead near Mirror Lake.',done:'Six. Perfect. ...What? Furriers have secrets. Take this coat and do not look in the barrel.'},
- {id:'f9',giver:'odette',map:'frost',lv:15,title:'The Frozen Shrines',kind:'explore',spots:[[6,40,'Shrine of the Lake'],[32,26,'Shrine of the Hold Road'],[50,6,'Shrine of the North Ice']],n:3,obj:'Shrines visited',item:{slot:'charm',rar:2},req:['f7'],
+ {id:'f9',giver:'odette',map:'frost',lv:29,title:'The Frozen Shrines',kind:'explore',spots:[[6,40,'Shrine of the Lake'],[32,26,'Shrine of the Hold Road'],[50,6,'Shrine of the North Ice']],n:3,obj:'Shrines visited',item:{slot:'charm',rar:2},req:['f7'],
   offer:'There are three old shrines to the winter gods in the Reach. My grandmother made me visit them every year. Go in my place, and touch each one for luck.',wait:'The shrine by the lake, the shrine on the hold road, and the shrine on the north ice.',done:'You went to all three? Then the luck is yours now. Here, this was hers too.'},
- {id:'f10',giver:'brun',map:'frost',lv:16,title:'The Pale Stalker',kind:'hunt',elite:{type:'rimewr',name:'The Pale Stalker',x:48,y:10,sc:1.6,tint:[1.6,1.8,2.2]},n:1,obj:'The Pale Stalker banished',item:{slot:'weapon',rar:2},req:['f2'],
+ {id:'f10',giver:'brun',map:'frost',lv:31,title:'The Pale Stalker',kind:'hunt',elite:{type:'rimewr',name:'The Pale Stalker',x:48,y:10,sc:1.6,tint:[1.6,1.8,2.2]},n:1,obj:'The Pale Stalker banished',item:{slot:'weapon',rar:2},req:['f2'],
   offer:'One wraith did not fade with the others. The Pale Stalker, the men call it. It hunts the north ice alone. Put it down for good.',wait:'The Pale Stalker drifts on the north ice, north-east of the hold.',done:'Gone? Truly? Take this blade from the armory. You have earned the good steel.'},
- {id:'f4',giver:'brun',map:'frost',lv:16,camp:1,title:'The Signal Fire',kind:'defend',beacon:[42.5,14],beaconName:'Signal fire',waves:['rimewr','rimedead','frostwolf'],dur:50,n:1,obj:'Keep the signal fire burning',item:{slot:'boots',rar:2},req:['f2'],
+ {id:'f4',giver:'brun',map:'frost',lv:31,camp:1,title:'The Signal Fire',kind:'defend',beacon:[42.5,14],beaconName:'Signal fire',waves:['rimewr','rimedead','frostwolf'],dur:50,n:1,obj:'Keep the signal fire burning',item:{slot:'boots',rar:2},req:['f2'],
   offer:'There is a signal fire on the north road. Light it and every hold in the Reach knows we stand. Light it and every horror in the Reach knows where you are, too. Hold it until it catches.',wait:'Light the signal fire on the north road, then stand by it until it roars.',done:'I saw it from the wall. Every hold answered. Now there is only the Mother left.'},
- {id:'f5',giver:'brun',map:'frost',lv:17,camp:1,title:'The Pale Mother',kind:'boss',target:'hrimfang',n:1,obj:'Defeat Hrimfang, the Pale Mother',item:{rar:3},req:['f4'],
+ {id:'f5',giver:'brun',map:'frost',lv:33,camp:1,title:'The Pale Mother',kind:'boss',target:'hrimfang',n:1,obj:'Defeat Hrimfang, the Pale Mother',item:{rar:3},req:['f4'],
   offer:'Hrimfang. The Pale Mother. Every frostfang in the Reach is her whelp. She dens in a clearing deep in the north-west pines. End her, and the Reach is ours again.',wait:"Hrimfang's den is a clearing in the far north-west of the pines.",done:'The Mother is dead. You did what Kellhold could not do in a hundred years. The waystone burns violet now: the Gloam has opened.'},
- {id:'f6',giver:'brun',turn:'imra',map:'gloam',lv:17,camp:1,title:'Into the Gloam',kind:'deliver',n:1,obj:'Speak to Sister Imra in Duskhollow',req:['f5'],
+ {id:'f6',giver:'brun',turn:'imra',map:'gloam',lv:33,camp:1,title:'Into the Gloam',kind:'deliver',n:1,obj:'Speak to Sister Imra in Duskhollow',req:['f5'],
   offer:'Past the Reach lies Gloamwood, where the sun never quite rises. Sister Imra keeps a lantern-house at Duskhollow. If anyone knows what is wrong there, she does.',wait:'Take the waystone to Gloamwood and find Sister Imra in Duskhollow.',done:'A traveller who came by waystone, and did not bring the dark with them. You are welcome here.'},
- /* ---------------- Gloamwood (levels 17-22) ---------------- */
- {id:'g1',giver:'imra',map:'gloam',lv:17,camp:1,title:'Wolves of the Gloam',kind:'kill',target:'gloomwolf',n:8,obj:'Gloom Stalkers slain',item:{slot:'weapon',rar:2},req:['f6'],
+ /* ---------------- Gloamwood (levels 33-43) ---------------- */
+ {id:'g1',giver:'imra',map:'gloam',lv:33,camp:1,title:'Wolves of the Gloam',kind:'kill',target:'gloomwolf',n:8,obj:'Gloom Stalkers slain',item:{slot:'weapon',rar:2},req:['f6'],
   offer:'The wolves here are not wolves. They are shadows wearing wolves. They circle the Whisperpines north of town. Eight of them, and the pilgrims can walk again.',wait:'Eight gloom stalkers in the Whisperpines, north of town.',done:'The road north is quiet. Something is hexing the woods, though. I can feel it in my teeth.'},
- {id:'g7',giver:'fennick',map:'gloam',lv:18,title:'Moonpetal',kind:'gather',node:'herb',nodeName:'Moonpetal',nodes:[[5,5],[10,12],[18,6],[24,14],[28,4],[20,10]],n:5,obj:'Moonpetals gathered',potions:3,req:['f6'],
+ {id:'g7',giver:'fennick',map:'gloam',lv:35,title:'Moonpetal',kind:'gather',node:'herb',nodeName:'Moonpetal',nodes:[[5,5],[10,12],[18,6],[24,14],[28,4],[20,10]],n:5,obj:'Moonpetals gathered',potions:3,req:['f6'],
   offer:'Moonpetal blooms in the Whisperpines, glowing pale where the shadow is thickest. I need five for a ward-tonic. Mind the wolves.',wait:'Five moonpetals from the Whisperpines, north of town.',done:'Still glowing! These go straight in the pot. Tonics for you.'},
- {id:'g2',giver:'imra',map:'gloam',lv:18,camp:1,title:'Hex-totems',kind:'destroy',node:'totem',nodeName:'Hex-totem',nodes:[[36,6],[44,12],[52,5],[50,20]],n:4,obj:'Hex-totems smashed',ambush:{type:'blightghoul',n:2},req:['g1'],
+ {id:'g2',giver:'imra',map:'gloam',lv:35,camp:1,title:'Hex-totems',kind:'destroy',node:'totem',nodeName:'Hex-totem',nodes:[[36,6],[44,12],[52,5],[50,20]],n:4,obj:'Hex-totems smashed',ambush:{type:'blightghoul',n:2},req:['g1'],
   offer:'Someone has staked hex-totems through the Blightgrove, east of here. They pull the dead up out of the ground. Smash all four, and expect the dead to object.',wait:'Four hex-totems in the Blightgrove, east of town.',done:'I felt each one break. Like a knot coming loose. Now, the stones.'},
- {id:'g8',giver:'fennick',map:'gloam',lv:19,title:'Hexed Bones',kind:'collect',target:'blightghoul',thing:'Hexed bone',chance:.6,n:6,obj:'Hexed bones taken',item:{slot:'charm',rar:2},req:['g7'],
+ {id:'g8',giver:'fennick',map:'gloam',lv:37,title:'Hexed Bones',kind:'collect',target:'blightghoul',thing:'Hexed bone',chance:.6,n:6,obj:'Hexed bones taken',item:{slot:'charm',rar:2},req:['g7'],
   offer:'The blighted dead carry bones etched with hexes. I want to read them, and maybe turn them around. Six bones, please.',wait:'Six hexed bones from the blighted dead.',done:'Ooh, nasty work. I can unpick this. Take this charm, it is the first one I made from them.'},
- {id:'g3',giver:'imra',map:'gloam',lv:19,camp:1,title:'The Standing Stones',kind:'explore',spots:[[8,8,'The Whispering Stone'],[40,12,'The Weeping Stone'],[24,40,'The Drowned Stone']],n:3,obj:'Standing stones visited',req:['g2'],
+ {id:'g3',giver:'imra',map:'gloam',lv:37,camp:1,title:'The Standing Stones',kind:'explore',spots:[[8,8,'The Whispering Stone'],[40,12,'The Weeping Stone'],[24,40,'The Drowned Stone']],n:3,obj:'Standing stones visited',req:['g2'],
   offer:'Three standing stones hold Gloamwood together: the Whispering Stone in the pines, the Weeping Stone in the Blightgrove, the Drowned Stone in the mire. Visit each and tell me what you see.',wait:'The Whispering Stone, the Weeping Stone and the Drowned Stone.',done:'Roots, all of them pointing south-east, to the throne. He is drawing the forest into himself.'},
- {id:'g9',giver:'fennick',map:'gloam',lv:20,title:'Mother Bramble',kind:'hunt',elite:{type:'thornwitch',name:'Mother Bramble',x:54,y:14,sc:1.6,tint:[.9,1.3,.6]},n:1,obj:'Mother Bramble slain',item:{slot:'helm',rar:2},req:['g8'],
+ {id:'g9',giver:'fennick',map:'gloam',lv:39,title:'Mother Bramble',kind:'hunt',elite:{type:'thornwitch',name:'Mother Bramble',x:54,y:14,sc:1.6,tint:[.9,1.3,.6]},n:1,obj:'Mother Bramble slain',item:{slot:'helm',rar:2},req:['g8'],
   offer:'The witch who carves those bones is called Mother Bramble. She keeps to the far east of the Blightgrove. I would like her to stop.',wait:'Mother Bramble lurks in the far east of the Blightgrove.',done:'No more hexed bones. Wear this, it was meant for her head, but yours will do.'},
- {id:'g10',giver:'imra',map:'gloam',lv:20,title:'The Last Lantern',kind:'defend',beacon:[30,25],beaconName:'Pilgrim lantern',waves:['blightghoul','gloomwolf','hexwisp'],dur:50,n:1,obj:'Keep the pilgrim lantern lit',item:{slot:'chest',rar:2},req:['g3'],
+ {id:'g10',giver:'imra',map:'gloam',lv:39,title:'The Last Lantern',kind:'defend',beacon:[30,25],beaconName:'Pilgrim lantern',waves:['blightghoul','gloomwolf','hexwisp'],dur:50,n:1,obj:'Keep the pilgrim lantern lit',item:{slot:'chest',rar:2},req:['g3'],
   offer:'There is a pilgrim lantern on the east road. While it burns, pilgrims can find their way here. The dark wants it out. Light it and keep it lit.',wait:'Light the pilgrim lantern on the east road and stand by it.',done:'I watched it burn all night. Six pilgrims came in by its light. Take this, from the lantern-house stores.'},
- {id:'g4',giver:'imra',map:'gloam',lv:20,camp:1,title:'Pilgrims in the Mire',kind:'rescue',node:'captive',nodeName:'Hexbound pilgrim',nodes:[[6,38],[16,42],[26,36]],n:3,obj:'Pilgrims freed',ambush:{type:'hexwisp',n:2},req:['g3'],
+ {id:'g4',giver:'imra',map:'gloam',lv:39,camp:1,title:'Pilgrims in the Mire',kind:'rescue',node:'captive',nodeName:'Hexbound pilgrim',nodes:[[6,38],[16,42],[26,36]],n:3,obj:'Pilgrims freed',ambush:{type:'hexwisp',n:2},req:['g3'],
   offer:'Three pilgrims were taken into Hag\'s Mire, south of town, and bound with hexes. Cut them loose. The hexlights will come for you when you do.',wait:"Three pilgrims, hexbound in Hag's Mire south of town.",done:'They are safe, and they saw his throne. It is time.'},
- {id:'g5',giver:'imra',map:'gloam',lv:21,camp:1,title:'The Hollow King',kind:'boss',target:'hollowking',n:1,obj:'Defeat the Hollow King',item:{rar:3},req:['g4'],
+ {id:'g5',giver:'imra',map:'gloam',lv:41,camp:1,title:'The Hollow King',kind:'boss',target:'hollowking',n:1,obj:'Defeat the Hollow King',item:{rar:3},req:['g4'],
   offer:'The Hollow King was a forest spirit once, before he ate his own heart. He sits on a throne of roots in the south-east. End him, and Gloamwood can heal.',wait:"The Hollow King's throne is in the far south-east.",done:'The sun. I can see the sun through the branches. Thank you. The waystone has turned to fire: the Caldera.'},
- {id:'g6',giver:'imra',turn:'vael',map:'ember',lv:21,camp:1,title:'To Cinderwatch',kind:'deliver',n:1,obj:'Speak to Commander Vael in Cinderwatch',req:['g5'],
+ {id:'g6',giver:'imra',turn:'vael',map:'ember',lv:41,camp:1,title:'To Cinderwatch',kind:'deliver',n:1,obj:'Speak to Commander Vael in Cinderwatch',req:['g5'],
   offer:'The last waystone leads to Emberfall Caldera. Commander Vael holds the watch-fort at Cinderwatch against whatever is waking in the fire. Go to her. Go with my lantern.',wait:'Take the waystone to Emberfall Caldera and find Commander Vael.',done:'So you are the one walking the waystones. Good. We need everyone who can hold a weapon.'},
- /* ---------------- Emberfall Caldera (levels 21-25) ---------------- */
- {id:'e1',giver:'vael',map:'ember',lv:21,camp:1,title:'Hounds of Ash',kind:'kill',target:'ashhound',n:10,obj:'Ash Hounds slain',item:{slot:'weapon',rar:2},req:['g6'],
+ /* ---------------- Emberfall Caldera (levels 41-49) ---------------- */
+ {id:'e1',giver:'vael',map:'ember',lv:41,camp:1,title:'Hounds of Ash',kind:'kill',target:'ashhound',n:10,obj:'Ash Hounds slain',item:{slot:'weapon',rar:2},req:['g6'],
   offer:'Ash hounds run the slopes north of the fort in packs. They tear down our scouts before they can report. Ten of them, and the slopes are ours.',wait:'Ten ash hounds on the Ashen Slopes north of the fort.',done:'The slopes are clear. My scouts can move again. Take this, it was forged in the Caldera itself.'},
- {id:'e6',giver:'rusk',map:'ember',lv:22,title:'Ember Cores',kind:'collect',target:'flameshade',thing:'Ember core',chance:.6,n:6,obj:'Ember cores gathered',potions:4,req:['g6'],
+ {id:'e6',giver:'rusk',map:'ember',lv:43,title:'Ember Cores',kind:'collect',target:'flameshade',thing:'Ember core',chance:.6,n:6,obj:'Ember cores gathered',potions:4,req:['g6'],
   offer:'Flame shades burn out and leave an ember core behind. One core heats the fort for a week. Six, and I will stock you with tonics.',wait:'Six ember cores, from the flame shades of the Glassfields, north-east.',done:'Six! The barracks will be warm for a month. Tonics, as promised.'},
- {id:'e2',giver:'vael',map:'ember',lv:22,camp:1,title:'Glass and Fire',kind:'gather',node:'ore',nodeName:'Fireglass',nodes:[[32,5],[38,10],[44,4],[50,9],[55,14],[36,15],[47,15]],n:6,obj:'Fireglass mined',item:{slot:'chest',rar:2},req:['e1'],
+ {id:'e2',giver:'vael',map:'ember',lv:43,camp:1,title:'Glass and Fire',kind:'gather',node:'ore',nodeName:'Fireglass',nodes:[[32,5],[38,10],[44,4],[50,9],[55,14],[36,15],[47,15]],n:6,obj:'Fireglass mined',item:{slot:'chest',rar:2},req:['e1'],
   offer:'Fireglass grows in the Glassfields to the north-east. Our smiths can forge it into armor that does not melt. Bring six chunks.',wait:'Six chunks of fireglass from the Glassfields.',done:'Six. The smiths are already at the anvil. This is the first piece.'},
- {id:'e7',giver:'rusk',map:'ember',lv:23,title:'Pyreclaw',kind:'hunt',elite:{type:'magmascorp',name:'Pyreclaw',x:52,y:24,sc:1.8,tint:[1.5,.7,.2]},n:1,obj:'Pyreclaw slain',item:{slot:'boots',rar:2},req:['e6'],
+ {id:'e7',giver:'rusk',map:'ember',lv:45,title:'Pyreclaw',kind:'hunt',elite:{type:'magmascorp',name:'Pyreclaw',x:52,y:24,sc:1.8,tint:[1.5,.7,.2]},n:1,obj:'Pyreclaw slain',item:{slot:'boots',rar:2},req:['e6'],
   offer:'Pyreclaw is a scuttler the size of a wagon. She lives in the Magma Rift and eats supply carts. I have lost three. Please.',wait:'Pyreclaw hunts in the east of the Magma Rift.',done:'You killed Pyreclaw? I will drink to that. Take these boots, they do not burn.'},
- {id:'e8',giver:'rusk',map:'ember',lv:23,title:'Captured Scouts',kind:'rescue',node:'captive',nodeName:'Captured scout',nodes:[[6,6],[20,12],[8,24]],n:3,obj:'Scouts freed',ambush:{type:'ashhound',n:2},req:['e6'],
+ {id:'e8',giver:'rusk',map:'ember',lv:45,title:'Captured Scouts',kind:'rescue',node:'captive',nodeName:'Captured scout',nodes:[[6,6],[20,12],[8,24]],n:3,obj:'Scouts freed',ambush:{type:'ashhound',n:2},req:['e6'],
   offer:'The hounds drag scouts back to their dens on the Ashen Slopes. Some of them are still alive. Three, last count.',wait:'Three scouts, held in hound dens on the Ashen Slopes.',done:'Three scouts home. The commander will hear your name tonight.'},
- {id:'e3',giver:'vael',map:'ember',lv:23,camp:1,title:'Altars of the Flame',kind:'destroy',node:'altar',nodeName:'Flame altar',nodes:[[33,24],[41,28],[49,22],[55,27]],n:4,obj:'Flame altars broken',ambush:{type:'cinderdead',n:2},req:['e2'],
+ {id:'e3',giver:'vael',map:'ember',lv:45,camp:1,title:'Altars of the Flame',kind:'destroy',node:'altar',nodeName:'Flame altar',nodes:[[33,24],[41,28],[49,22],[55,27]],n:4,obj:'Flame altars broken',ambush:{type:'cinderdead',n:2},req:['e2'],
   offer:'Cultists raised flame altars in the Magma Rift to feed Vorgath. Every altar makes him stronger. Break all four.',wait:'Four flame altars in the Magma Rift, east of the fort.',done:'I felt the ground shudder. He is weaker. He is also angry.'},
- {id:'e9',giver:'rusk',map:'ember',lv:24,title:'Vents of the Rift',kind:'explore',spots:[[35,20,'The Southern Vent'],[46,26,'The Great Vent'],[55,20,'The Eastern Vent']],n:3,obj:'Vents surveyed',item:{slot:'charm',rar:2},req:['e7'],
+ {id:'e9',giver:'rusk',map:'ember',lv:47,title:'Vents of the Rift',kind:'explore',spots:[[35,20,'The Southern Vent'],[46,26,'The Great Vent'],[55,20,'The Eastern Vent']],n:3,obj:'Vents surveyed',item:{slot:'charm',rar:2},req:['e7'],
   offer:'The vents in the Rift tell us when the Caldera is about to blow. Nobody wants to walk out and read them. Would you?',wait:'The southern, great and eastern vents of the Magma Rift.',done:'Rising, but slowly. We have time. Take this charm; it cools when danger is near.'},
- {id:'e4',giver:'vael',map:'ember',lv:24,camp:1,title:'Hold Cinderwatch Gate',kind:'defend',beacon:[24,37],beaconName:'Gate brazier',waves:['ashhound','cinderdead','flameshade'],dur:60,n:1,obj:'Hold the gate',item:{slot:'helm',rar:2},req:['e3'],
+ {id:'e4',giver:'vael',map:'ember',lv:47,camp:1,title:'Hold Cinderwatch Gate',kind:'defend',beacon:[24,37],beaconName:'Gate brazier',waves:['ashhound','cinderdead','flameshade'],dur:60,n:1,obj:'Hold the gate',item:{slot:'helm',rar:2},req:['e3'],
   offer:'Vorgath knows we are coming. He is sending everything at the gate. Light the brazier on the east road so the archers can see, and hold until the wave breaks.',wait:'Light the gate brazier on the east road and hold until the wave breaks.',done:'The gate held. Because of you. Rest a moment. Then we finish it.'},
- {id:'e5',giver:'vael',map:'ember',lv:25,camp:1,title:'Heart of Cinders',kind:'boss',target:'vorgath',n:1,obj:'Defeat Vorgath, Heart of Cinders',item:{rar:4},req:['e4'],
+ {id:'e5',giver:'vael',map:'ember',lv:49,camp:1,title:'Heart of Cinders',kind:'boss',target:'vorgath',n:1,obj:'Defeat Vorgath, Heart of Cinders',item:{rar:4},req:['e4'],
   offer:'Vorgath waits on the Molten Throne, south-east of the fort. Every fire in the Caldera is his heartbeat. Put it out. Then Veylmoor is free, from fen to fire.',wait:'The Molten Throne lies south-east of the fort, past the end of the east road.',done:'It is over. From the fen to the fire, Veylmoor is free, and it was you. Take this. It is the finest thing we own.'}];
-function initQuestXP(){for(const q of QUESTS){q.xp=Math.round(XPN(q.lv)*(q.kind==='boss'?.35:q.kind==='deliver'?.03:q.camp?.12:.08));q.gold=Math.round(8+q.lv*(q.kind==='boss'?30:q.camp?11:8))}}
+function initQuestXP(){for(const q of QUESTS){q.xp=Math.round(XPN(q.lv)*2.2*(q.kind==='boss'?.35:q.kind==='deliver'?.03:q.camp?.12:.08));q.gold=Math.round(8+PL(q.lv)*(q.kind==='boss'?30:q.camp?11:8))}}
 const AREA_ORDER=['vale','dunes','frost','gloam','ember'];
 /* ================= Maps ================= */
 const T={GRASS:0,TREE:1,WATER:2,PATH:3,WALL:4,FLOOR:5,DWALL:6,BOG:7,FLOWER:8,COBBLE:9,ROOF:10,FLOOD:11,PILLAR:12,RUIN:13,FOUNT:14,WAY:15,ROCK:16,PROP:17};
@@ -1058,9 +1058,9 @@ function buildVale(){
  m.start={x:14.5*TS,y:27*TS};
  m.portals=[{x:59.6*TS,y:3.55*TS,rot:0,label:'Enter the Sunken Abbey',to:'abbey',locked:()=>!P||!P.q.q5,lockMsg:'The abbey gate is sealed with river-weed and old iron. Elder Marwen may know how to open it.'}];
  m.npcs=['marwen','corra','ysolde','pell'];
- m.spawns=[{type:'rat',x0:5,y0:4,x1:31,y1:15,n:9,l0:1,l1:2},{type:'rat',x0:4,y0:34,x1:30,y1:45,n:6,l0:2,l1:3},{type:'wolf',x0:35,y0:4,x1:53,y1:21,n:9,l0:3,l1:5},{type:'ghoul',x0:36,y0:29,x1:60,y1:45,n:9,l0:5,l1:7},{type:'wisp',x0:36,y0:29,x1:60,y1:45,n:6,l0:5,l1:7}];
- m.zones=[{n:'Abbey Gate',s:'The north road ends',x0:53,y0:1,x1:62,y1:11},{n:'Hollowmere',s:'Village',x0:5,y0:17,x1:24,y1:33},{n:'Barrowgrass Meadow',s:'Levels 1–2',x0:2,y0:2,x1:33,y1:16},
-  {n:'Thornback Ridge',s:'Levels 3–5',x0:33,y0:2,x1:62,y1:22},{n:'Lantern Fen',s:'Levels 5–7',x0:34,y0:27,x1:62,y1:46},{n:'Southfield',s:'Levels 2–3',x0:2,y0:34,x1:33,y1:46}];
+ m.spawns=[{type:'rat',x0:5,y0:4,x1:31,y1:15,n:9,l0:1,l1:3},{type:'rat',x0:4,y0:34,x1:30,y1:45,n:6,l0:3,l1:5},{type:'wolf',x0:35,y0:4,x1:53,y1:21,n:9,l0:5,l1:9},{type:'ghoul',x0:36,y0:29,x1:60,y1:45,n:9,l0:9,l1:13},{type:'wisp',x0:36,y0:29,x1:60,y1:45,n:6,l0:9,l1:13}];
+ m.zones=[{n:'Abbey Gate',s:'The north road ends',x0:53,y0:1,x1:62,y1:11},{n:'Hollowmere',s:'Village',x0:5,y0:17,x1:24,y1:33},{n:'Barrowgrass Meadow',s:'Levels 1–3',x0:2,y0:2,x1:33,y1:16},
+  {n:'Thornback Ridge',s:'Levels 5–9',x0:33,y0:2,x1:62,y1:22},{n:'Lantern Fen',s:'Levels 9–13',x0:34,y0:27,x1:62,y1:46},{n:'Southfield',s:'Levels 3–5',x0:2,y0:34,x1:33,y1:46}];
  m.set(17,33,T.WAY);m.way=[17.5,33.5];m.wild='The Low Road';m.theme=0;
  m.portals.push({x:17.5*TS,y:33.5*TS,label:'Use the Waystone',to:'way'});
  m.labels=[[15,15.6,'Hollowmere',17],[17,7,'Barrowgrass Meadow'],[45,15,'Thornback Ridge'],[48,40,'Lantern Fen'],[16,42,'Southfield'],[58,11.7,'Sunken Abbey',14],[25,12.6,'Barrow Ring',12],[48.5,8.2,'Old Watchtower',12]];
@@ -1088,9 +1088,9 @@ function buildDunes(){const[m,Rn]=wildBase('dunes',56,44,1,41);
  prop(m,'cart',36,10,{rot:.9,foot:[[0,0]]});prop(m,'crate',37.6,10.6);prop(m,'pillar',45,40.5);prop(m,'pillar',50,41.2);
  for(const[x,y]of[[30,25],[46,24],[34,40],[30,12],[46,7],[28,28],[38,26],[50,29],[30,38]])ensureWalk(m,x+.5,y+.5,1);
  m.npcs=['hassa','tamsin'];m.wild='Open Sands';
- m.spawns=[{type:'scorp',x0:22,y0:3,x1:52,y1:18,n:12,l0:9,l1:10},{type:'nomad',x0:24,y0:20,x1:52,y1:32,n:10,l0:10,l1:12},{type:'sandsh',x0:3,y0:29,x1:21,y1:41,n:7,l0:11,l1:12},{type:'nomad',x0:22,y0:33,x1:41,y1:42,n:5,l0:12,l1:13}];
- m.fixed=[['qassar',14,47,37]];
- m.zones=[{n:"Qarim's Rest",s:'Town',x0:5,y0:5,x1:20,y1:18},{n:'Whispering Oasis',s:'Sunscar Dunes',x0:6,y0:19,x1:21,y1:28},{n:'Sunscar Flats',s:'Levels 9–10',x0:21,y0:2,x1:54,y1:19},{n:"The Sun-King's Throne",s:'Area boss · Level 14',x0:41,y0:31,x1:54,y1:43},{n:"Raider's Hollow",s:'Levels 10–13',x0:22,y0:20,x1:54,y1:42},{n:'Shade Barrens',s:'Levels 11–12',x0:2,y0:28,x1:21,y1:42}];
+ m.spawns=[{type:'scorp',x0:22,y0:3,x1:52,y1:18,n:12,l0:17,l1:19},{type:'nomad',x0:24,y0:20,x1:52,y1:32,n:10,l0:19,l1:23},{type:'sandsh',x0:3,y0:29,x1:21,y1:41,n:7,l0:21,l1:23},{type:'nomad',x0:22,y0:33,x1:41,y1:42,n:5,l0:23,l1:25}];
+ m.fixed=[['qassar',27,47,37]];
+ m.zones=[{n:"Qarim's Rest",s:'Town',x0:5,y0:5,x1:20,y1:18},{n:'Whispering Oasis',s:'Sunscar Dunes',x0:6,y0:19,x1:21,y1:28},{n:'Sunscar Flats',s:'Levels 17–19',x0:21,y0:2,x1:54,y1:19},{n:"The Sun-King's Throne",s:'Area boss · Level 27',x0:41,y0:31,x1:54,y1:43},{n:"Raider's Hollow",s:'Levels 19–25',x0:22,y0:20,x1:54,y1:42},{n:'Shade Barrens',s:'Levels 21–23',x0:2,y0:28,x1:21,y1:42}];
  m.labels=[[12.5,4.3,"Qarim's Rest",17],[37,6,'Sunscar Flats'],[34,24,"Raider's Hollow"],[12,39,'Shade Barrens'],[13,24,'Oasis',13],[47.5,31.2,"Sun-King's Throne",13],[38,28.6,'The Dry Wadi',11]];m.badges=[[12.5,12,'⌂'],[16.5,15.5,'✦','#bff0ff'],[47.5,37.5,'☠','#e8d4c0']];
  return m}
 function buildFrost(){const[m,Rn]=wildBase('frost',56,44,2,57);
@@ -1106,9 +1106,9 @@ function buildFrost(){const[m,Rn]=wildBase('frost',56,44,2,57);
  stoneRing(m,48.5,15,1.8,5,{h:1.5,glow:true});
  for(const[x,y]of[[6,40],[32,26],[50,6],[18,14],[24,6],[28,17],[42,14],[48,10],[16,28],[28,29],[16,34],[28,34],[22,27],[22,36]])ensureWalk(m,x+.5,y+.5,.8);
  m.npcs=['brun','odette'];m.wild='Frozen Wilds';
- m.spawns=[{type:'frostwolf',x0:4,y0:14,x1:30,y1:21,n:8,l0:13,l1:14},{type:'frostwolf',x0:16,y0:3,x1:30,y1:14,n:5,l0:14,l1:15},{type:'rimedead',x0:4,y0:24,x1:30,y1:41,n:10,l0:14,l1:15},{type:'rimewr',x0:31,y0:3,x1:52,y1:20,n:9,l0:15,l1:16},{type:'frostwolf',x0:3,y0:3,x1:16,y1:14,n:3,l0:16,l1:17}];
- m.fixed=[['hrimfang',18,9,7.5]];
- m.zones=[{n:'Kellhold',s:'Town',x0:35,y0:25,x1:51,y1:39},{n:"Hrimfang's Den",s:'Area boss · Level 18',x0:2,y0:2,x1:16,y1:13},{n:'Frostfang Pines',s:'Levels 13–15',x0:2,y0:2,x1:31,y1:22},{n:'Mirror Lake',s:'Levels 14–15',x0:2,y0:23,x1:34,y1:42},{n:'The North Ice',s:'Levels 15–16',x0:31,y0:2,x1:54,y1:24}];
+ m.spawns=[{type:'frostwolf',x0:4,y0:14,x1:30,y1:21,n:8,l0:25,l1:27},{type:'frostwolf',x0:16,y0:3,x1:30,y1:14,n:5,l0:27,l1:29},{type:'rimedead',x0:4,y0:24,x1:30,y1:41,n:10,l0:27,l1:29},{type:'rimewr',x0:31,y0:3,x1:52,y1:20,n:9,l0:29,l1:31},{type:'frostwolf',x0:3,y0:3,x1:16,y1:14,n:3,l0:31,l1:33}];
+ m.fixed=[['hrimfang',35,9,7.5]];
+ m.zones=[{n:'Kellhold',s:'Town',x0:35,y0:25,x1:51,y1:39},{n:"Hrimfang's Den",s:'Area boss · Level 35',x0:2,y0:2,x1:16,y1:13},{n:'Frostfang Pines',s:'Levels 25–29',x0:2,y0:2,x1:31,y1:22},{n:'Mirror Lake',s:'Levels 27–29',x0:2,y0:23,x1:34,y1:42},{n:'The North Ice',s:'Levels 29–31',x0:31,y0:2,x1:54,y1:24}];
  m.labels=[[43,24.3,'Kellhold',17],[20,11,'Frostfang Pines'],[18,40,'Mirror Lake'],[44,15,'The North Ice'],[9.5,14,"Hrimfang's Den",13],[48.5,18,'Rime Circle',11]];m.badges=[[42,30.5,'⌂'],[39.5,35.5,'✦','#bff0ff'],[9.5,8,'☠','#e8d4c0']];
  return m}
 function buildGloam(){const[m,Rn]=wildBase('gloam',60,46,3,73);
@@ -1125,9 +1125,9 @@ function buildGloam(){const[m,Rn]=wildBase('gloam',60,46,3,73);
  prop(m,'pillar',44,30);prop(m,'pillar',53,30.5);prop(m,'pillar',43,41);
  for(const[x,y]of[[8,8],[40,12],[24,40],[36,6],[44,12],[52,5],[50,20],[6,38],[16,42],[26,36],[54,14],[30,25],[5,5],[10,12],[18,6],[24,14],[28,4],[20,10]])ensureWalk(m,x+.5,y+.5,.8);
  m.npcs=['imra','fennick'];m.wild='The Deep Gloam';
- m.spawns=[{type:'gloomwolf',x0:3,y0:3,x1:30,y1:17,n:11,l0:17,l1:18},{type:'hexwisp',x0:3,y0:33,x1:30,y1:43,n:7,l0:18,l1:19},{type:'blightghoul',x0:3,y0:33,x1:30,y1:43,n:5,l0:18,l1:19},{type:'blightghoul',x0:32,y0:3,x1:57,y1:27,n:8,l0:19,l1:20},{type:'thornwitch',x0:32,y0:3,x1:57,y1:27,n:7,l0:20,l1:21},{type:'thornwitch',x0:36,y0:29,x1:57,y1:43,n:3,l0:21,l1:21},{type:'gloomwolf',x0:36,y0:29,x1:57,y1:43,n:3,l0:21,l1:21}];
- m.fixed=[['hollowking',22,49,36]];
- m.zones=[{n:'Duskhollow',s:'Town',x0:5,y0:19,x1:20,y1:32},{n:'The Hollow Throne',s:'Area boss · Level 22',x0:42,y0:30,x1:57,y1:43},{n:'Whisperpines',s:'Levels 17–18',x0:2,y0:2,x1:31,y1:18},{n:"Hag's Mire",s:'Levels 18–19',x0:2,y0:32,x1:31,y1:44},{n:'Blightgrove',s:'Levels 19–21',x0:31,y0:2,x1:58,y1:28},{n:'The Gloam Road',s:'Levels 20–21',x0:20,y0:19,x1:58,y1:44}];
+ m.spawns=[{type:'gloomwolf',x0:3,y0:3,x1:30,y1:17,n:11,l0:33,l1:35},{type:'hexwisp',x0:3,y0:33,x1:30,y1:43,n:7,l0:35,l1:37},{type:'blightghoul',x0:3,y0:33,x1:30,y1:43,n:5,l0:35,l1:37},{type:'blightghoul',x0:32,y0:3,x1:57,y1:27,n:8,l0:37,l1:39},{type:'thornwitch',x0:32,y0:3,x1:57,y1:27,n:7,l0:39,l1:41},{type:'thornwitch',x0:36,y0:29,x1:57,y1:43,n:3,l0:41,l1:41},{type:'gloomwolf',x0:36,y0:29,x1:57,y1:43,n:3,l0:41,l1:41}];
+ m.fixed=[['hollowking',43,49,36]];
+ m.zones=[{n:'Duskhollow',s:'Town',x0:5,y0:19,x1:20,y1:32},{n:'The Hollow Throne',s:'Area boss · Level 43',x0:42,y0:30,x1:57,y1:43},{n:'Whisperpines',s:'Levels 33–35',x0:2,y0:2,x1:31,y1:18},{n:"Hag's Mire",s:'Levels 35–37',x0:2,y0:32,x1:31,y1:44},{n:'Blightgrove',s:'Levels 37–41',x0:31,y0:2,x1:58,y1:28},{n:'The Gloam Road',s:'Levels 39–41',x0:20,y0:19,x1:58,y1:44}];
  m.labels=[[12.5,18.4,'Duskhollow',17],[18,14,'Whisperpines'],[16,44,"Hag's Mire"],[47,22,'Blightgrove'],[49.5,29.6,'The Hollow Throne',13],[54.5,17.6,"Bramble's Hut",11]];m.badges=[[12.5,24,'⌂'],[16.5,28.5,'✦','#bff0ff'],[49.5,36.5,'☠','#e8d4c0']];
  return m}
 function buildEmber(){const[m,Rn]=wildBase('ember',60,46,4,97);
@@ -1143,16 +1143,16 @@ function buildEmber(){const[m,Rn]=wildBase('ember',60,46,4,97);
  prop(m,'pillar',43.5,41.5);prop(m,'pillar',55,32);
  for(const[x,y]of[[35,20],[46,26],[55,20],[33,24],[41,28],[49,22],[55,27],[32,5],[38,10],[44,4],[50,9],[55,14],[36,15],[47,15],[6,6],[20,12],[8,24],[52,24],[24,37]])ensureWalk(m,x+.5,y+.5,.8);
  m.npcs=['vael','rusk'];m.wild='The Burning Waste';
- m.spawns=[{type:'ashhound',x0:3,y0:3,x1:28,y1:30,n:12,l0:21,l1:22},{type:'cinderdead',x0:3,y0:14,x1:28,y1:30,n:6,l0:22,l1:23},{type:'flameshade',x0:29,y0:3,x1:57,y1:17,n:9,l0:22,l1:23},{type:'magmascorp',x0:29,y0:18,x1:57,y1:31,n:9,l0:23,l1:24},{type:'cinderdead',x0:20,y0:32,x1:42,y1:43,n:5,l0:24,l1:25},{type:'flameshade',x0:36,y0:31,x1:57,y1:43,n:3,l0:25,l1:25}];
- m.fixed=[['vorgath',26,49,37]];
- m.zones=[{n:'Cinderwatch',s:'Town',x0:4,y0:31,x1:19,y1:43},{n:'The Molten Throne',s:'Area boss · Level 26',x0:42,y0:31,x1:57,y1:44},{n:'Ashen Slopes',s:'Levels 21–23',x0:2,y0:2,x1:28,y1:30},{n:'The Glassfields',s:'Levels 22–23',x0:29,y0:2,x1:58,y1:17},{n:'Magma Rift',s:'Levels 23–24',x0:29,y0:18,x1:58,y1:30},{n:'The Cinder Road',s:'Levels 24–25',x0:19,y0:31,x1:42,y1:44}];
+ m.spawns=[{type:'ashhound',x0:3,y0:3,x1:28,y1:30,n:12,l0:41,l1:43},{type:'cinderdead',x0:3,y0:14,x1:28,y1:30,n:6,l0:43,l1:45},{type:'flameshade',x0:29,y0:3,x1:57,y1:17,n:9,l0:43,l1:45},{type:'magmascorp',x0:29,y0:18,x1:57,y1:31,n:9,l0:45,l1:47},{type:'cinderdead',x0:20,y0:32,x1:42,y1:43,n:5,l0:47,l1:49},{type:'flameshade',x0:36,y0:31,x1:57,y1:43,n:3,l0:49,l1:49}];
+ m.fixed=[['vorgath',51,49,37]];
+ m.zones=[{n:'Cinderwatch',s:'Town',x0:4,y0:31,x1:19,y1:43},{n:'The Molten Throne',s:'Area boss · Level 51',x0:42,y0:31,x1:57,y1:44},{n:'Ashen Slopes',s:'Levels 41–45',x0:2,y0:2,x1:28,y1:30},{n:'The Glassfields',s:'Levels 43–45',x0:29,y0:2,x1:58,y1:17},{n:'Magma Rift',s:'Levels 45–47',x0:29,y0:18,x1:58,y1:30},{n:'The Cinder Road',s:'Levels 47–49',x0:19,y0:31,x1:42,y1:44}];
  m.labels=[[11.5,30.4,'Cinderwatch',17],[15,11,'Ashen Slopes'],[46,4.6,'The Glassfields'],[44,30,'Magma Rift'],[49.5,30.6,'The Molten Throne',13],[26.5,16.4,'Old Forge',11]];m.badges=[[11.5,36,'⌂'],[11.5,39.5,'✦','#bff0ff'],[49.5,37.5,'☠','#e8d4c0']];
  return m}
-const AREAS={vale:{name:'Veylmoor',town:'Hollowmere',lv:'Levels 1–10',min:1,col:'#6aa84a',boss:'prior',blurb:'Green moor, wolf ridge and the drowned fen.'},
- dunes:{name:'Sunscar Dunes',town:"Qarim's Rest",lv:'Levels 9–14',min:9,col:'#e0a050',boss:'qassar',blurb:'Sun-baked flats and raider camps.'},
- frost:{name:'Frostfang Reach',town:'Kellhold',lv:'Levels 13–18',min:13,col:'#8fc8f0',boss:'hrimfang',blurb:'Snow pines, a frozen lake, the north ice.'},
- gloam:{name:'Gloamwood',town:'Duskhollow',lv:'Levels 17–22',min:17,col:'#8a6ac0',boss:'hollowking',blurb:'A forest where the sun never rises.'},
- ember:{name:'Emberfall Caldera',town:'Cinderwatch',lv:'Levels 21–25',min:21,col:'#e0603a',boss:'vorgath',blurb:'Ash slopes, fireglass and a lake of fire.'}};
+const AREAS={vale:{name:'Veylmoor',town:'Hollowmere',lv:'Levels 1–19',min:1,col:'#6aa84a',boss:'prior',blurb:'Green moor, wolf ridge and the drowned fen.'},
+ dunes:{name:'Sunscar Dunes',town:"Qarim's Rest",lv:'Levels 17–27',min:17,col:'#e0a050',boss:'qassar',blurb:'Sun-baked flats and raider camps.'},
+ frost:{name:'Frostfang Reach',town:'Kellhold',lv:'Levels 25–35',min:25,col:'#8fc8f0',boss:'hrimfang',blurb:'Snow pines, a frozen lake, the north ice.'},
+ gloam:{name:'Gloamwood',town:'Duskhollow',lv:'Levels 33–43',min:33,col:'#8a6ac0',boss:'hollowking',blurb:'A forest where the sun never rises.'},
+ ember:{name:'Emberfall Caldera',town:'Cinderwatch',lv:'Levels 41–50',min:41,col:'#e0603a',boss:'vorgath',blurb:'Ash slopes, fireglass and a lake of fire.'}};
 const BUILD={vale:()=>buildVale(),dunes:()=>buildDunes(),frost:()=>buildFrost(),gloam:()=>buildGloam(),ember:()=>buildEmber()};
 function areaOpen(id){const i=AREA_ORDER.indexOf(id);return i<=0||!!(P&&P.bosses&&P.bosses[AREA_ORDER[i-1]])}
 function buildAbbey(){
@@ -1164,10 +1164,10 @@ function buildAbbey(){
  m.start={x:5.5*TS,y:12*TS};
  m.portals=[{x:2.45*TS,y:12*TS,rot:Math.PI/2,label:'Return to the moor',to:'vale'}];
  m.npcs=[];
- m.fixed=[['acolyte',7,17,8],['acolyte',7,22,9],['acolyte',7,19,15],['acolyte',7,23,16],['acolyte',8,34,9],['acolyte',8,37,14],['acolyte',8,35,18],['wraith',8,39,5],['wraith',8,32,12],
-  ['acolyte',9,49,9],['acolyte',9,52,14],['acolyte',9,48,15],['wraith',9,53,8],['wraith',9,50,12],['prior',10,66,11.5]];
- m.zones=[{n:'Flooded Narthex',s:'Sunken Abbey',x0:0,y0:0,x1:13,y1:23},{n:'Hall of Vigils',s:'Levels 7–8',x0:14,y0:0,x1:29,y1:23},{n:'Cloister of Bells',s:'Level 8',x0:30,y0:0,x1:45,y1:23},
-  {n:'Ossuary Walk',s:'Level 9',x0:46,y0:0,x1:58,y1:23},{n:'Nave of the Prior',s:'Level 10',x0:59,y0:0,x1:73,y1:23}];
+ m.fixed=[['acolyte',13,17,8],['acolyte',13,22,9],['acolyte',13,19,15],['acolyte',13,23,16],['acolyte',15,34,9],['acolyte',15,37,14],['acolyte',15,35,18],['wraith',15,39,5],['wraith',15,32,12],
+  ['acolyte',17,49,9],['acolyte',17,52,14],['acolyte',17,48,15],['wraith',17,53,8],['wraith',17,50,12],['prior',19,66,11.5]];
+ m.zones=[{n:'Flooded Narthex',s:'Sunken Abbey',x0:0,y0:0,x1:13,y1:23},{n:'Hall of Vigils',s:'Levels 13–15',x0:14,y0:0,x1:29,y1:23},{n:'Cloister of Bells',s:'Level 15',x0:30,y0:0,x1:45,y1:23},
+  {n:'Ossuary Walk',s:'Level 17',x0:46,y0:0,x1:58,y1:23},{n:'Nave of the Prior',s:'Level 19',x0:59,y0:0,x1:73,y1:23}];
 m.torches=[];for(const[x0,y0,x1,y1]of[[2,8,9,15],[14,5,25,18],[30,3,41,20],[46,6,55,17],[59,3,71,20]])for(let x=x0+1;x<x1;x+=3)m.torches.push([x+.5,y0+.22],[x+.5,y1+.78]);
  m.statues=[[63.5,3.7,0],[67.5,3.7,0],[63.5,19.3,Math.PI],[67.5,19.3,Math.PI],[17,5.7,0],[22,5.7,0],[35.5,3.7,0]];
  m.braziers=[[8.4,8.6,'#ff9a4a'],[14.6,5.6,'#ff9a4a'],[25.4,17.4,'#ff9a4a'],[30.6,3.6,'#ff9a4a'],[41.4,19.4,'#ff9a4a'],[46.6,6.6,'#ff9a4a'],[55.4,16.4,'#ff9a4a'],[59.6,3.6,'#6fd8ea'],[71.4,3.6,'#6fd8ea'],[59.6,19.4,'#6fd8ea'],[71.4,19.4,'#6fd8ea']];
@@ -1180,9 +1180,9 @@ const input={up:0,down:0,left:0,right:0,atk:false,sx:0,sy:0};
 const CAM={yaw:Math.PI,pitch:.5,zoom:1,lastDrag:-99,x:0,y:0,z:0,tx:0,ty:0,tz:0};
 function newPlayer(cls){return{cls,lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
 function talentSpent(){let s=0;for(const k in P.tal)s+=P.tal[k];return s}
-const talentPoints=()=>Math.max(0,P.lvl-1-talentSpent());
+const talentPoints=()=>Math.max(0,Math.floor(P.lvl/2)-talentSpent());
 function recalc(keep=true){
- const c=CLASSES[P.cls],L=P.lvl,m={dmg:1,dmgB:1,dmg1:1,dmg2:1,dmg3:1,dmg4:1,dmg5:1,cdr:0,hpPct:0,crit:0,ls:0,mpReg:1,dr:0,spd:0,heal:1,cost:0,burn:1,bleed:1,shield:1};
+ const c=CLASSES[P.cls],L=PL(P.lvl),m={dmg:1,dmgB:1,dmg1:1,dmg2:1,dmg3:1,dmg4:1,dmg5:1,cdr:0,hpPct:0,crit:0,ls:0,mpReg:1,dr:0,spd:0,heal:1,cost:0,burn:1,bleed:1,shield:1};
  for(const t of c.tal){const r=P.tal[t.id]||0;if(r)t.apply(m,r)}
  const g={wd:0,arm:0,str:0,agi:0,int:0,vit:0},uq={};for(const k of SPEC)g[k]=0;
  for(const sl of SLOTS){const it=P.eq[sl];if(!it)continue;for(const k in it.st)if(k in g)g[k]+=it.st[k];if(it.uq)uq[it.uq]=1}
@@ -1199,8 +1199,10 @@ function recalc(keep=true){
  S.dodge=Math.min(45,35*a.agi/(a.agi+120)+g.dodge);S.crit=5+g.crit+m.crit;S.critD=175+g.critd;S.amp=a.int*.5;
  S.atk=(1+S.main/100)*(1+g.wd/80);S.castSp=g.cast;S.cdr=Math.min(.5,m.cdr+g.cdr/100);S.mf=g.mf;S.speed=c.spd*(1+m.spd+g.move/100);
  if(keep&&oldHp){P.hp=Math.min(S.maxHp,P.hp*S.maxHp/oldHp);P.mp=Math.min(S.maxMp,P.mp*S.maxMp/oldMp);P.st=Math.min(S.maxSt,(P.st??S.maxSt)*S.maxSt/(oldSt||S.maxSt))}}
-const XPN=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10;
-function xpMul(l){const d=P.lvl-l;return d>=6?.1:d>=4?.4:d>=2?.8:d<0?Math.min(1.5,1-.1*d):1}
+/* Levels run 1 to 50. PL turns a level into the 'power level' the stat formulas were built on (1 to 25.5), so each level is half a step of power. */
+const PL=l=>(l+1)/2;
+const XPN=l=>{const p=PL(l);return Math.round(240*(12+1.1*p)*p*(.4+.185*p)*.045)*10};
+function xpMul(l){const d=(P.lvl-l)/2;return d>=6?.1:d>=4?.4:d>=2?.8:d<0?Math.min(1.5,1-.1*d):1}
 initQuestXP();
 
 /* ================= Sound (synthesised, no files) ================= */
@@ -1293,7 +1295,7 @@ let lastMsg=0;function msg(s){if(G.time-lastMsg<1.2)return;lastMsg=G.time;toast(
 
 /* ================= Combat ================= */
 const live=()=>G.enemies.filter(e=>!e.dead&&e.fade<=0);
-function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(P.lvl-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit;if(crit)a*=S.critD/100;return{a:Math.max(1,Math.round(a)),crit}}
+function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit;if(crit)a*=S.critD/100;return{a:Math.max(1,Math.round(a)),crit}}
 function healP(a,quiet){if(P.dead)return;a=Math.round(a*(1+S.amp/200));if(a<=0)return;const b=P.hp;P.hp=Math.min(S.maxHp,P.hp+a);const got=Math.round(P.hp-b);if(!quiet&&got>0)txt(P.x,P.y,1.9,'+'+got,'#6aff5a',19)}
 function hitEnemy(e,r,o={}){
  if(e.dead)return;let a=r.a;if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
@@ -1308,8 +1310,8 @@ function hitEnemy(e,r,o={}){
 function killEnemy(e){
  if(!e.dead)foeDeath(e); if(e.markT>0&&P.cls==='thornstalker'&&P.cds[2]>0){P.cds[2]=0;txt(P.x,P.y,2.3,'Vault ready','#c8ff9a',13)}e.dots=null;e.slowT=e.vulnT=e.weakT=e.markT=e.taunt=0;e.kb=null;sfx('kill');
  e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite)e.respawn=-1;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
- gainXP(Math.max(1,Math.round(e.d.xp*e.lvl*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
- const gold=Math.round(e.lvl*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
+ gainXP(Math.max(1,Math.round(e.d.xp*PL(e.lvl)*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
+ const gold=Math.round(PL(e.lvl)*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
  for(const q of QUESTS){const st=P.q[q.id];if(!st||st.s!=='active')continue;
   if(q.kind==='hunt'){if(e.elite===q.id)qProgress(q);continue}
   if(q.kind!=='kill'&&q.kind!=='collect'&&q.kind!=='boss')continue;if(Array.isArray(q.target)?!q.target.includes(e.type):q.target!==e.type)continue;
@@ -1320,11 +1322,11 @@ function killEnemy(e){
   for(const f of G.enemies)if(!f.dead&&f!==e&&(ab||f.summoned))killEnemy(f);toast(esc(e.d.deathMsg||'The guardian falls.'),'lvl');shake(9);sfx('explode');nova(e.x,e.y,140,e.d.glow||'#ffd27a','#ffffff');
   if(!ab)e.respawn=900;const first=!P.bosses[area];P.bosses[area]=true;const nx=AREA_ORDER[AREA_ORDER.indexOf(area)+1];
   if(first&&nx)later(2,()=>{toast(`The waystone to <b>${esc(AREAS[nx].name)}</b> has awakened.`,'lvl');sfx('portal')});if(first&&!nx)later(2,()=>toast('Every guardian has fallen. Veylmoor is free.','lvl'))}
- else if(R()<(e.lvl>=7?0.22:0.16)*(1+S.mf/100))dropItem(e.x,e.y,rollItem(e.lvl,0));
+ else if(R()<(e.lvl>=13?0.22:0.16)*(1+S.mf/100))dropItem(e.x,e.y,rollItem(e.lvl,0));
  if(G.tgt===e){G.tgt=null;const nx=live().filter(f=>f.state==='chase').sort((a,b)=>dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y))[0];if(nx&&dist(nx.x,nx.y,P.x,P.y)<260)G.tgt=nx;else P.auto=false}updateTracker();save()}
 function gainXP(x){if(P.lvl>=MAXL)return;P.xp+=x;txt(P.x,P.y,2.2,'+'+x+' xp','#c9b37a',11);
- let up=false;while(P.lvl<MAXL&&P.xp>=XPN(P.lvl)){P.xp-=XPN(P.lvl);P.lvl++;up=true}if(P.lvl>=MAXL)P.xp=0;
- if(up){sfx('lvl');recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;ring(P.x,P.y,70,'#f0c860',1.2,4,true);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#ffd870',t:0,max:1.6});burst(P.x,P.y,'#f0d58a',30,140,1.1,3,0.3);toast(`Level ${P.lvl}. You have a talent point to spend.`,'lvl');updateBadges()}}
+ let up=false;const tp0=Math.floor(P.lvl/2);while(P.lvl<MAXL&&P.xp>=XPN(P.lvl)){P.xp-=XPN(P.lvl);P.lvl++;up=true}if(P.lvl>=MAXL)P.xp=0;
+ if(up){sfx('lvl');recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;ring(P.x,P.y,70,'#f0c860',1.2,4,true);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#ffd870',t:0,max:1.6});burst(P.x,P.y,'#f0d58a',30,140,1.1,3,0.3);toast(Math.floor(P.lvl/2)>tp0?`Level ${P.lvl}. You have a talent point to spend.`:`Level ${P.lvl}.`,'lvl');updateBadges()}}
 function hurtPlayer(raw,src,o={}){
  if(P.dead)return;if(o.dot){let a=Math.max(1,Math.round(raw*(1-Math.min(.5,S.drArm*.5))*rr(.9,1.1)));if(P.shield>0){const ab=Math.min(P.shield,a);P.shield-=ab;a-=ab;if(a<=0)return}P.hp-=a;P.lastHurt=G.time;txt(P.x,P.y,1.5,'-'+a,DEBN[o.dot][1],15);if(P.hp<=0){P.hp=0;die()}return}if(P.iframes>0||R()*100<S.dodge){txt(P.x,P.y,1.7,'Dodge','#bff8ff',17);sfx('dodge');return}if(P.mounted)dismount();if(P.cast&&P.cast.i===-1)P.cast=null;if(src&&!src.dead&&(!G.tgt||G.tgt.dead)){G.tgt=src;P.auto=true}
  if(src&&src.weakT>0)raw*=1-src.weakA;
@@ -1340,7 +1342,7 @@ function respawn(){closePanel(true);const rm=G.map&&G.map.id!=='abbey'?G.map.id:
 /* ================= Abilities ================= */
 function findTarget(range){let best=null,bd=1e9;for(const e of live()){const d=dist(P.x,P.y,e.x,e.y)-e.d.r;if(d<=range&&d<bd){bd=d;best=e}}return best}
 function faceTo(x,y){const a=Math.atan2(y-P.y,x-P.x);P.fx=Math.cos(a);P.fy=Math.sin(a);P.faceLock=0.45}
-function estDmg(i){const ab=CLS.ab[i],m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];return Math.round(ab.base*(1+0.16*(P.lvl-1))*S.atk*m.dmg*m[k]*(i>0?1+S.amp/100:1))}
+function estDmg(i){const ab=CLS.ab[i],m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];return Math.round(ab.base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*(i>0?1+S.amp/100:1))}
 function cdFor(i){const ab=CLS.ab[i];return ab.cd*(1-S.cdr)}
 let lastNR=0;
 function notReady(s){if(G.time-lastNR<.7)return;lastNR=G.time;txt(P.x,P.y,2.3,s,'#ff4a3a',16)}
@@ -1608,7 +1610,7 @@ function bossMove(e,mv){const d=e.d,col=d.glow||'#ff8a6a',dm=e.dmg*(e.enr?1.2:1)
  else if(mv==='rain'){txt(e.x,e.y,3.2,'Ruin from above',col,16);e.castT=.8;const n=e.enr?6:4;for(let k=0;k<n;k++)later(k*.3,()=>{if(e.dead)return;const tx=P.x+rr(-70,70),ty=P.y+rr(-70,70);
   G.tele.push({x:tx,y:ty,r:60,t:0,max:1.1,team:'e',meteor:d.area==='ember',cb(){ring(tx,ty,60,col,.45,5);burst(tx,ty,col,24,180,.7,3.5,.2);sfx('explode',.5);shake(3);if(!P.dead&&dist(P.x,P.y,tx,ty)<66)hurtPlayer(dm*1.5,e)}})})}}
 function summon(b){const d=b.d;if(!d.adds)return;toast(esc(d.summonMsg||'Reinforcements arrive.'),'warn');
- for(const[dx,dy]of[[-110,-80],[110,-80],[0,110]]){const a=mkEnemy(d.adds,Math.max(1,b.lvl-2),b.x+dx,b.y+dy);if(blocked(G.map,a.x,a.y,10)){a.x=b.x;a.y=b.y}a.state='chase';a.fade=0.5;a.hx=a.x;a.hy=a.y;a.summoned=true;G.enemies.push(a);burst(a.x,a.y,d.glow||'#7fc8d8',16,90,0.7,3,0.2)}}
+ for(const[dx,dy]of[[-110,-80],[110,-80],[0,110]]){const a=mkEnemy(d.adds,Math.max(1,b.lvl-4),b.x+dx,b.y+dy);if(blocked(G.map,a.x,a.y,10)){a.x=b.x;a.y=b.y}a.state='chase';a.fade=0.5;a.hx=a.x;a.hy=a.y;a.summoned=true;G.enemies.push(a);burst(a.x,a.y,d.glow||'#7fc8d8',16,90,0.7,3,0.2)}}
 function bossReset(e){if(G.boss===e)G.boss=null;e.ph1=e.ph2=e.enr=0;e.mvT=3;e.bd=null;for(const f of G.enemies)if(f.summoned&&!f.dead){f.dead=true;f.respawn=-1}}
 
 /* ================= Farmable resources: ore, herbs and crystals graded by zone ================= */
@@ -1736,7 +1738,7 @@ function updateDebuffs(dt){if(!P.deb||!P.deb.length)return;for(const d of P.deb)
 /* ================= Quest world ================= */
 const qTurn=q=>q.turn||q.giver;
 const qById=id=>QUESTS.find(q=>q.id===id);
-const qAvail=q=>!P.q[q.id]&&q.req.every(r=>P.q[r]&&P.q[r].s==='done')&&P.lvl>=q.lv-2;
+const qAvail=q=>!P.q[q.id]&&q.req.every(r=>P.q[r]&&P.q[r].s==='done')&&P.lvl>=q.lv-4;
 const qArea=q=>q.map==='abbey'?'vale':q.map;
 function walkSpot(m,tx,ty){const ok=(x,y)=>{const v=m.get(x,y);return v>=0&&!SOLID[v]};let bx=Math.floor(tx),by=Math.floor(ty);if(ok(bx,by))return[tx,ty];
  for(let r=1;r<8;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;if(ok(bx+dx,by+dy))return[bx+dx+.5,by+dy+.5]}return[tx,ty]}
@@ -1745,7 +1747,7 @@ function refreshQuestWorld(){G.nodes=[];G.spots=[];G.beacons=[];const m=G.map;if
   if(q.nodes)q.nodes.forEach((p,i)=>{if(st.got.includes(i))return;const[x,y]=walkSpot(m,p[0]+.5,p[1]+.5);G.nodes.push({q,i,x:x*TS,y:y*TS,kind:q.node,name:q.nodeName})});
   if(q.spots)q.spots.forEach((p,i)=>{if(st.got.includes(i))return;G.spots.push({q,i,x:(p[0]+.5)*TS,y:(p[1]+.5)*TS,name:p[2]})});
   if(q.beacon){const[x,y]=walkSpot(m,q.beacon[0]+.5,q.beacon[1]+.5);G.beacons.push({q,x:x*TS,y:y*TS,name:q.beaconName})}
-  if(q.elite&&!G.enemies.some(e=>e.elite===q.id&&!e.dead)){const E=q.elite,base=EN[E.type],[x,y]=walkSpot(m,E.x+.5,E.y+.5);const e=mkEnemy(E.type,q.lv+1,x*TS,y*TS);
+  if(q.elite&&!G.enemies.some(e=>e.elite===q.id&&!e.dead)){const E=q.elite,base=EN[E.type],[x,y]=walkSpot(m,E.x+.5,E.y+.5);const e=mkEnemy(E.type,q.lv+2,x*TS,y*TS);
    e.d=Object.assign({},base,{name:E.name,sc:E.sc||1.5,tint:E.tint||base.tint,xp:base.xp*4,elite:true,h:base.h*(E.sc||1.5),r:base.r*1.3});e.hp=e.max=Math.round(e.max*4);e.dmg*=1.5;e.elite=q.id;G.enemies.push(e)}}
  for(const e of G.enemies)if(e.elite&&!e.dead){const st=P.q[e.elite];if(!st||st.s!=='active'){e.dead=true;e.respawn=-1}}}
 function qProgress(q,inc=1){const st=P.q[q.id];if(!st||st.s!=='active')return;st.n=Math.min(q.n,st.n+inc);
@@ -2580,7 +2582,7 @@ function renderOverlay(){
  if(!P.dead){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(P.name,s[0],s[1]);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],s[1])}}
  for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=proj(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
   const w=46,x=s[0]-w/2,y=s[1];ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(x-1,y-1,w+2,7);ctx.fillStyle=e.state==='chase'?'#d24a3e':'#b89a5a';ctx.fillRect(x,y,w*Math.max(0,e.hp/e.max),5);
-  ctx.font='800 11px "Alegreya Sans",sans-serif';ctx.textAlign='right';const hard=e.lvl>=P.lvl+3;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(e.lvl,x-4,y+6);ctx.fillStyle=hard?'#ff7a6b':'#f3ead6';ctx.fillText(e.lvl,x-4,y+6);ctx.textAlign='center';
+  ctx.font='800 11px "Alegreya Sans",sans-serif';ctx.textAlign='right';const hard=e.lvl>=P.lvl+5;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(e.lvl,x-4,y+6);ctx.fillStyle=hard?'#ff7a6b':'#f3ead6';ctx.fillText(e.lvl,x-4,y+6);ctx.textAlign='center';
   if(e===G.tgt||e.state==='chase'||e.d.elite){ctx.font='13px Marcellus,serif';ctx.strokeText(e.d.name,s[0],y-5);ctx.fillStyle=e.d.elite?'#ffd060':e===G.tgt?'#ffb090':'#ff6a4a';ctx.fillText(e.d.name,s[0],y-5)}}
  for(const t of G.texts){const s=proj(t.x*U,groundH(t.x*U,t.y*U)+t.h,t.y*U);if(!s)continue;const f=t.t/t.max;ctx.globalAlpha=f<.7?1:1-(f-.7)/.3;const sc=f<.12?1+(.12-f)*4:1;
   ctx.font=`800 ${Math.round(t.size*sc)}px "Alegreya Sans",sans-serif`;ctx.lineWidth=4.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(t.s,s[0],s[1]);ctx.fillStyle=t.c;ctx.fillText(t.s,s[0],s[1])}
@@ -2597,7 +2599,7 @@ const IFILL={weapon:'<path d="M17 2h5v5L10 19l-4-1-1-4z"/><path d="M4 14l6 6-2 2
  chest:'<path d="M8 3L3 6l2 6 2-1v10h10V11l2 1 2-6-5-3-2 2h-4z"/>',boots:'<path d="M6 2h7v11l8 3v6H4v-6l2-2z"/>',charm:'<circle cx="12" cy="15" r="6"/><path d="M9 6l3-4 3 4-3 3z"/>',cloak:'<path d="M8 2h8l5 20-9-4-9 4z"/>'};
 function itemScore(x){const s2=x.st,mn=CLS.main;let v=(s2.wd||0)*2.2+(s2.arm||0)*.6+(x.uq?40:0);for(const k of ATTR)v+=(s2[k]||0)*(k===mn?2.5:.6);for(const k of SPEC)if(s2[k])v+=PCT.has(k)?s2[k]*1.6:RATE.has(k)?s2[k]*6:s2[k]*.25;return v}
 function better(it){if(it.slot==='mat')return false;const cur=P.eq[it.slot];if(!cur)return true;return itemScore(it)>itemScore(cur)}
-const crateCost=()=>40+P.lvl*12;
+const crateCost=()=>40+Math.round(PL(P.lvl)*12);
 
 function npcMark(k){if(!P)return null;for(const q of QUESTS){if(qTurn(q)!==k)continue;const s=P.q[q.id];if(s&&s.s==='ready')return'?'}for(const q of QUESTS)if(q.giver===k&&qAvail(q))return'!';return null}
 
@@ -2684,7 +2686,7 @@ function updateTracker(){if(!P||!EL.tracker)return;const out=[],here=G.map?(G.ma
  const act=QUESTS.filter(q=>P.q[q.id]&&P.q[q.id].s!=='done').sort((a,b)=>((G.event&&G.event.q===b)-(G.event&&G.event.q===a))||((qArea(b)===here)-(qArea(a)===here))||((b.camp||0)-(a.camp||0)));
  for(const q of act){const s=P.q[q.id];out.push(`<div><div class="qt">${q.camp?'★ ':''}${esc(q.title)}</div><div class="qo ${s.s==='ready'?'ready':''}">${esc(qLine(q,s))}</div></div>`)}
  if(!out.length){const avs=QUESTS.filter(qAvail);const av=avs.find(q=>G.map&&G.map.npcs.includes(q.giver))||avs.find(q=>q.camp)||avs[0];if(av)out.push(`<div><div class="qt">New work</div><div class="qo">${esc(NPCS[av.giver].name)} in ${esc(NPCS[av.giver].town)} has a task for you.</div></div>`)
-  else{const nq=QUESTS.find(q=>!P.q[q.id]&&q.req.every(r=>P.q[r]&&P.q[r].s==='done'));if(nq)out.push(`<div><div class="qt">Grow stronger</div><div class="qo">Reach level ${nq.lv-2} for ${esc(NPCS[nq.giver].name)}'s next task.</div></div>`)}}
+  else{const nq=QUESTS.find(q=>!P.q[q.id]&&q.req.every(r=>P.q[r]&&P.q[r].s==='done'));if(nq)out.push(`<div><div class="qt">Grow stronger</div><div class="qo">Reach level ${nq.lv-4} for ${esc(NPCS[nq.giver].name)}'s next task.</div></div>`)}}
  EL.tracker.innerHTML=out.slice(0,3).join('')}
 const nearLoot=()=>G.loot.filter(l=>dist(l.x,l.y,P.x,P.y)<80);
 function updLoot(){const L=P.dead||G.panel?[]:nearLoot();const key=L.map(l=>l.it.id).join();if(key===lastLootKey)return;lastLootKey=key;if(!L.length||key===lootHide){EL.lootwin.hidden=true;return}lootHide='';EL.lootwin.hidden=false;
@@ -2696,6 +2698,12 @@ function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:15,date:'3 Nov 2026',title:'Level cap raised to 50',items:[
+  'You can now reach level 50. Every level is a smaller step than before, so the climb feels steadier, and the total time to the top is about the same.',
+  'Zones now span the new range: Veylmoor 1–19, Sunscar Dunes 17–27, Frostfang Reach 25–35, Gloamwood 33–43 and Emberfall Caldera 41–50. Monsters, quests, area bosses and gear have moved up to match.',
+  'You earn a talent point every second level, so you still finish with 25.',
+  'Your later spells are now learned at levels 5 and 11.',
+  'Your saved hero carries over. Your level, your progress toward the next one and your gear move onto the new scale, and nothing is lost.']},
  {id:14,date:'3 Nov 2026',title:'New spell icons',items:[
   'Every spell has its own picture now, drawn to show what it does: Shield Bash shows the impact, Cinder Chains a burning chain, Volley a fan of arrows, Mend a healing heart, Execute the falling blade, and so on.',
   'No two spells share an icon any more. Oathcry and Battle Roar used to look the same.',
@@ -2869,8 +2877,8 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   else{if(!P.bag.length)h+='<p>Your bag is empty.</p>';else{const si=P.bag[G.sellSel]?G.sellSel:0,it=P.bag[si];h+=`<div class="igrid">${P.bag.map((x,i)=>`<button class="islot has" style="--rc:${RAR[x.rar].c};${i===si?'outline:3px solid #f2a83a;':''}" data-act="sellsel" data-idx="${i}" aria-label="${esc(x.name)}">${itemIcon(x)}</button>`).join('')}</div>
    <div class="row" style="justify-content:space-between;align-items:center;margin-top:14px;max-width:620px;margin-inline:auto"><span><b style="font:400 18px var(--f-ui);color:${RAR[it.rar].c2}">${esc(it.name)}</b><br><span style="color:var(--ink2)">${RAR[it.rar].n} ${it.slot==='mat'?'material · ×'+it.qty:SLOTNAME[it.slot].toLowerCase()}</span></span><button class="gbar" style="border-radius:8px;min-width:170px" data-act="sell" data-idx="${si}"><span>${G.confirm===it.id?'Press again':'Sell'}</span><b>${itemValue(it)}<i class="coin"></i></b></button></div>`}}
   h+=tab==='buy'?'</div></div>':'</div>'}
- else if(k==='travel'){title='Waystone';h=`<div class="travel">${AREA_ORDER.map((id,i)=>{const a=AREAS[id],here=G.map.id===id||(G.map.id==='abbey'&&id==='vale'),open=areaOpen(id)||here,beat=P.bosses&&P.bosses[id],low=P.lvl<a.min-1;
-   return`<div class="tcard ${open?'':'locked'}" style="--tc:${a.col}"><div class="tart"><canvas class="tvc" data-id="${id}"></canvas>${here?'<span class="here">HERE</span>':''}${beat?'<span class="beat">☠ Cleared</span>':''}</div><div class="tt">${esc(a.name)}</div><div class="td"><b>${esc(a.town)} · ${a.lv}</b>${esc(a.blurb)}</div>
+ else if(k==='travel'){title='Waystone';h=`<div class="travel">${AREA_ORDER.map((id,i)=>{const a=AREAS[id],here=G.map.id===id||(G.map.id==='abbey'&&id==='vale'),open=areaOpen(id)||here,beat=P.bosses&&P.bosses[id],low=P.lvl<a.min-2;
+   return`<div class="tcard ${open?'':'locked'}" style="--tc:${a.col}"><div class="tart"><canvas class="tvc" data-id="${id}"></canvas>${here?'<span class="here">HERE</span>':''}${beat?'<span class="beat">☠ Cleared</span>':''}</div><div class="tt">${esc(a.name)}</div><div class="td"><b>${esc(a.town)} · <span style="white-space:nowrap">${a.lv}</span></b>${esc(a.blurb)}</div>
    ${here?'<button class="gbar" disabled><span>You are here</span><b></b></button>':!open?`<span class="obar tlock">Defeat ${esc(EN[AREAS[AREA_ORDER[i-1]].boss].name)}</span>`:`<button class="gbar" data-act="travel" data-id="${id}"><span>${low?'Travel · Danger':'Travel'}</span><b>✦</b></button>`}</div>`}).join('')}</div><p class="tnote">Each waystone wakes only when the guardian of the land before it has fallen.</p>`}
  else if(k==='dead'){title='Fallen';h=`<div class="deadbox"><h2>You have fallen</h2><p>The healers will put you back on your feet in ${esc(AREAS[G.map&&AREAS[G.map.id]?G.map.id:'vale'].town)}.${a&&a.lost?` You dropped ${a.lost} gold on the way.`:''}</p><div class="row"><button class="gbtn" data-act="respawn">Revive in ${esc(AREAS[G.map&&AREAS[G.map.id]?G.map.id:'vale'].town)}</button></div></div>`}
  $h('bkTitle').textContent=title;main.innerHTML=h+tipHTML();if(k==='map')drawWorldMap($h('mapCan'));if(k==='travel')for(const c of main.querySelectorAll('.tvc'))paintArea(c)}
@@ -2880,7 +2888,7 @@ function paintArea(c){const w=c.width=c.offsetWidth*2||300,h=c.height=c.offsetHe
  for(let l=0;l<3;l++){x.fillStyle=P3[2+l];x.beginPath();x.moveTo(0,h);for(let i=0;i<=24;i++){const xx=i/24*w,yy=h*(.45+l*.17)+Math.sin(i*.9+l*3+Rn()*1.5)*h*(.07-l*.015)-(id==='frost'&&l===0?Math.abs(Math.sin(i*.7))*h*.25:0);x.lineTo(xx,yy)}x.lineTo(w,h);x.fill()}
  x.fillStyle='rgba(160,240,255,.85)';x.fillRect(w*.72,h*.32,w*.025,h*.5);const rg=x.createRadialGradient(w*.732,h*.32,0,w*.732,h*.32,h*.3);rg.addColorStop(0,'rgba(200,250,255,.9)');rg.addColorStop(1,'rgba(200,250,255,0)');x.fillStyle=rg;x.fillRect(0,0,w,h)}
 const SHOPLIST=()=>[{id:'tonic',n:'Marsh Tonic',d:'Restores 45% health and mana.',price:15,icon:'potion',col:'#c0402a'},{id:'tonic5',n:'Marsh Tonic ×5',d:'A satchel of five tonics.',price:70,icon:'potion',col:'#a0302a'},
- {id:'crate',n:"Pedlar's Crate",d:'One piece of gear at your level, Uncommon or better.',price:crateCost(),icon:'bag',col:'#8a5a2a',gear:true},{id:'cloak',n:"Traveler's Cloak",d:'An Uncommon cloak made for your level.',price:30+P.lvl*8,icon:'cloak',col:'#3a5a9a',gear:true}];
+ {id:'crate',n:"Pedlar's Crate",d:'One piece of gear at your level, Uncommon or better.',price:crateCost(),icon:'bag',col:'#8a5a2a',gear:true},{id:'cloak',n:"Traveler's Cloak",d:'An Uncommon cloak made for your level.',price:30+Math.round(PL(P.lvl)*8),icon:'cloak',col:'#3a5a9a',gear:true}];
 $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){closePanel();return}if(t.classList&&t.classList.contains('tipwrap')){G.tip=null;G.confirm=null;renderPanel();return}
  const nb=t.closest('[data-nav]');if(nb){openPanel(nb.dataset.nav);return}const b=t.closest('[data-act]');if(!b||b.disabled)return;const act=b.dataset.act;
  if(act==='close')return closePanel();if(act==='respawn')return respawn();if(act==='tipclose'){G.tip=null;G.confirm=null}
@@ -3095,9 +3103,12 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:3,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,potions:P.potions,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:4,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,potions:P.potions,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 function save(){if(G.mode!=='play')return;try{localStorage.setItem(SAVEKEY,JSON.stringify(serialize()))}catch(_){}}
-function readSave(){try{const s=localStorage.getItem(SAVEKEY);return s?JSON.parse(s):null}catch(_){return null}}
+function readSave(){try{const s=localStorage.getItem(SAVEKEY);return s?migrateSave(JSON.parse(s)):null}catch(_){return null}}
+/* Saves before v4 used levels 1-25. Map each level to its new place on the 1-50 scale and keep progress through it. */
+function migrateSave(d){if(!d||(d.v||0)>=4)return d;const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);
+ d.xp=L>=25?0:Math.round((d.xp||0)/old(L)*XPN(nl));d.lvl=nl;const up=it=>{if(it&&it.ilvl)it.ilvl=2*it.ilvl-1};(d.bag||[]).forEach(up);for(const k in d.eq||{})up(d.eq[k]);d.v=4;return d}
 function clearSave(){try{localStorage.removeItem(SAVEKEY)}catch(_){}}
 addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 const NAMES={reaver:['Grimm','Brakka','Ulfar','Kestra'],bulwark:['Aldric','Brenna','Torvald','Hesketh'],ashcaller:['Embra','Corvin','Ysra','Kaelen'],thornstalker:['Wren','Fennick','Rook','Sable'],lumen:['Lumi','Aurel','Seraphine','Ione']};
@@ -3163,7 +3174,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress};
+window.__veyl={pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave};
 })();
 </script>
 
