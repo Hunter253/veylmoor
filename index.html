@@ -463,6 +463,13 @@ kbd{display:none}#app.kbm kbd{display:block}
 
 /* Desktop play: applies while the last input was a mouse or keyboard */
 #app.kbm .tch,#app:not(.kbm) .kb{display:none!important}
+#app.pad .kb{display:none!important}#app:not(.pad) .pd{display:none!important}#app.kbm.pad .tch.pdv{display:block!important}
+.gpb{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--g) 55%,#fff),var(--g) 55%,color-mix(in srgb,var(--g) 55%,#000));color:#fff;font:800 .78em/1 var(--f-num);font-style:normal;text-shadow:0 1px 1px rgba(0,0,0,.6);box-shadow:0 1px 2px rgba(0,0,0,.6);vertical-align:middle;margin:0 1px}
+.gps{display:inline-block;padding:.18em .42em;border-radius:4px;background:#2a333a;border:1px solid #6a7a84;color:#e8f4f8;font:800 .72em/1 var(--f-num);font-style:normal;vertical-align:middle;margin:0 1px;white-space:nowrap}
+.keys.pd{grid-template-columns:repeat(3,minmax(0,1fr));gap:1px 16px;font-size:12.5px;padding:3px 10px}.keys.pd span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.keys.pd .gpk{overflow:visible}
+.gpk{display:inline-flex;gap:2px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+#app.kbm.pad #skillbar .sk kbd{background:none;padding:0;font-size:17px;bottom:-3px}#app.kbm.pad #skillbar .sk kbd .gps{font-size:11px;padding:2px 4px}#app.kbm.pad .mb kbd{display:none}#app.pad .act kbd{font-size:15px;opacity:1}
+.padfocus{outline:3px solid var(--rune)!important;outline-offset:2px;box-shadow:0 0 14px rgba(95,224,240,.75)!important;filter:brightness(1.22);z-index:2}
 #app:not(.kbm) #micro,#app:not(.kbm) #skTip{display:none}
 #app.kbm #stickZone,#app.kbm #quick,#app.kbm #barTog,#app.kbm #jumpBtn,#app.kbm #rollBtn{display:none}
 #gl.drag{cursor:grabbing}
@@ -538,7 +545,7 @@ kbd{display:none}#app.kbm kbd{display:block}
   <button id="menuBtn" aria-label="Show or hide the minimap" title="Minimap (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg></button>
   <div id="zone"><div class="z1" id="zone1"></div><div class="z2" id="zone2"></div></div>
   <div id="toasts" aria-live="polite"></div>
-  <div id="camHint"><span class="tch">Drag here to turn the camera</span><span class="kb">Move with WASD. Hold a mouse button and drag to look around.</span></div>
+  <div id="camHint"><span class="tch">Drag here to turn the camera</span><span class="kb">Move with WASD. Hold a mouse button and drag to look around.</span><span class="pd">Left stick moves. Right stick turns the camera.</span></div>
   <div id="stickZone"><div id="stickBase"><div id="stickKnob"></div></div></div>
   <div id="castbar" hidden><i id="castI"></i><span id="castT"></span></div>
   <div id="skillbar"></div>
@@ -1119,7 +1126,7 @@ function hurtPlayer(raw,src){
  const rf=buffSum('reflect');if(rf&&src&&!src.dead){hitEnemy(src,{a:Math.max(1,Math.round(raw*rf)),crit:false},{col:'#ffd27a',quiet:true});spark(src.x,src.y,'#ffd27a',6,src.d.h*.6,80)}
  if(P.shield>0){const ab=Math.min(P.shield,a);P.shield-=ab;a-=ab;if(a<=0){txt(P.x,P.y,1.7,'Absorbed','#ffe6a0',15);sfx('absorb');ring(P.x,P.y,24,'#ffe6a0',.25,3);return}}
  P.hp-=a;P.lastHurt=G.time;P.hurtFlash=0.18;
- txt(P.x,P.y,1.7,'-'+a,'#ff4030',21);sfx('hurt');if(OPT.vib!==false&&a>S.maxHp*.08&&navigator.vibrate)try{navigator.vibrate(a>S.maxHp*.2?70:30)}catch(_){}shake(a>S.maxHp*0.2?7:2);if(P.hp<=0){P.hp=0;die()}}
+ txt(P.x,P.y,1.7,'-'+a,'#ff4030',21);sfx('hurt');if(OPT.vib!==false&&a>S.maxHp*.08){if(PAD)padRumble(a>S.maxHp*.2?.85:.45);else if(navigator.vibrate)try{navigator.vibrate(a>S.maxHp*.2?70:30)}catch(_){}}shake(a>S.maxHp*0.2?7:2);if(P.hp<=0){P.hp=0;die()}}
 function die(){P.dead=true;P.mounted=false;P.cast=null;P.auto=false;const lost=Math.floor(P.gold*0.1);P.gold-=lost;burst(P.x,P.y,'#c9463c',24,120,0.9,3);for(const e of G.enemies)if(e.state==='chase')e.state='return';later(1.3,()=>openPanel('dead',{lost}))}
 function respawn(){closePanel(true);const rm=G.map&&G.map.id!=='abbey'?G.map.id:'vale';P.dead=false;P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;P.buffs=[];P.cds=[0,0,0,0,0,0];enterMap(rm,G.maps[rm].start)}
 
@@ -2281,7 +2288,7 @@ function cacheEls(){for(const id of['pfHp','pfMp','pfLv','pfNum','pfCan','tf','t
 const SK=[0,1,2,3,4,5,'pot','tgt','mnt'],QK=[0,1,2];
 function setupButtons(){
  const skHTML=(s,cls)=>{let ic,c,lbl,key;if(s==='pot'){ic='potion';c='#c0402a';lbl='Marsh Tonic';key='Q'}else if(s==='tgt'){ic='target';c='#8a6a3a';lbl='Next target';key='Tab'}else if(s==='mnt'){ic='horse';c='#9a7a4a';lbl='Summon or dismiss your mount';key='R'}else{const ab=CLS.ab[s];ic=ab.icon;c=ab.c;lbl=ab.name;key=s===0?'F':String(s)}
-  return`<button class="sk ${cls}" data-s="${s}" style="--c:${c}" aria-label="${esc(lbl)}"><span class="ic">${svg(ic)}</span><span class="cdn"></span><span class="lk" hidden></span>${s==='pot'?'<span class="cnt"></span>':''}<kbd>${key}</kbd></button>`};
+  return`<button class="sk ${cls}" data-s="${s}" style="--c:${c}" aria-label="${esc(lbl)}"><span class="ic">${svg(ic)}</span><span class="cdn"></span><span class="lk" hidden></span>${s==='pot'?'<span class="cnt"></span>':''}<kbd>${PAD?gpg(PADSK[s]):key}</kbd></button>`};
  const MK={bag:'B',char:'C',quests:'L',spells:'K',map:'M',options:'O',updates:'U'};$h('micro').innerHTML=NAV.map(([k,l,ic])=>`<button class="mb" data-p="${k}" title="${l} (${MK[k]})" aria-label="${l}">${svg(ic)}<kbd>${MK[k]}</kbd>${k==='spells'?'<span id="microDot" hidden></span>':''}${k==='updates'?updDotHTML():''}</button>`).join('');EL.skillbar.innerHTML=SK.map(x=>skHTML(x,'')).join('');EL.quick.innerHTML=QK.map(x=>skHTML(x,'qk')).join('');
  EL.jumpBtn.innerHTML=svg('boot');EL.rollBtn.innerHTML=svg('roll');$h('pfName').textContent=P.name||CLS.name;setMini(OPT.mini!==false);$h('hud').classList.toggle('baropen',!!OPT.barOpen);updateBadges();updateTracker();lastTgt=null;lastNear=undefined;lastLootKey='~'}
 let hudF=0,lastTgt=null,lastNear,lastLootKey='~',lootHide='';
@@ -2301,7 +2308,7 @@ function hud(){hudF++;
  EL.carrow.style.transform=`rotate(${((Math.PI-P.rot)*180/Math.PI).toFixed(1)}deg)`;
  if(hudF%6===0){let h='';for(const b of P.buffs){const ic=BUFFI[b.id];if(ic)h+=`<div class="bf">${svg(ic)}<b>${Math.ceil(b.t)}</b></div>`}if(P.mounted)h+=`<div class="bf">${svg('boot')}</div>`;EL.buffs.innerHTML=h}
  const n=G.near,key=n?(n.kind==='npc'?n.id:n.kind==='portal'?n.p.label:n.kind+n.o.name+(n.o.i??'')):null;
- if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):esc(n.p.label))+'<kbd>E</kbd>'}}
+ if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):esc(n.p.label))+'<kbd>'+(PAD?gpg('a'):'E')+'</kbd>'}}
  if(hudF%5===0)updLoot();
  if(OPT.mini!==false&&hudF%3===1)drawMini();
  EL.tracker.hidden=!OPT.tracker||!!G.boss}
@@ -2340,6 +2347,12 @@ function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:8,date:'3 Nov 2026',title:'Controller support',items:[
+  'Play with a controller. Xbox controllers work out of the box, and PlayStation button names can be picked under Options > Controls.',
+  'Left stick moves and right stick looks. A jumps, or talks and uses things when you are next to them. X attacks, B dodges.',
+  'Skills sit on LB, RB, LT, RT and Y. The D-pad drinks a tonic, calls your mount, picks the next target and shows the minimap.',
+  'Menus work with the controller too: the D-pad moves between buttons, A selects, B goes back, and LB and RB switch tabs.',
+  'Your controller rumbles when you take a heavy hit. Turn it off with the Vibration setting.']},
  {id:7,date:'3 Nov 2026',title:'Play on PC',items:[
   'Full keyboard and mouse controls. Every key is listed under Options > Controls.',
   'All your skills now sit on one action bar, with tooltips when you hover over them.',
@@ -2452,12 +2465,12 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   const tg=(key,l,d,def=false)=>{const on=OPT[key]==null?def:!!OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><button class="cbtn tog ${on?'on':''}" data-act="opt" data-k="${key}" data-d="${def?1:0}" aria-pressed="${on}">${on?'On':'Off'}</button></div>`};
   const sg=(key,l,d,opts,def)=>{const cur=OPT[key]==null?def:OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><div class="seg">${opts.map(([v,t])=>`<button class="cbtn segb ${cur==v?'on':''}" data-act="oseg" data-k="${key}" data-v="${v}">${t}</button>`).join('')}</div></div>`};
   h=`<div class="tabs"><button class="tab ${tab==='ctl'?'on':''}" data-act="otab" data-t="ctl">${svg('target')}Controls</button><button class="tab ${tab==='av'?'on':''}" data-act="otab" data-t="av">${svg('gear')}Display &amp; sound</button><button class="tab ${tab==='game'?'on':''}" data-act="otab" data-t="game">${svg('person')}Game</button></div><div class="pad optlist">`;
-  if(tab==='ctl')h+=`<div class="keys kb">${KEYS.map(([a,k])=>`<div><span>${a}</span><kbd>${k}</kbd></div>`).join('')}</div>${tg('invX','Invert horizontal look','Dragging left turns the camera right.')}${tg('invY','Invert vertical look','Dragging up tilts the camera down.')}
+  if(tab==='ctl')h+=`<div class="keys pd">${PADKEYS.map(([a,k])=>`<div><span>${a}</span><span class="gpk">${k.split(' ').map(gpg).join('')}</span></div>`).join('')}</div>${sg('padStyle','Controller buttons','Which button names to show.',[['xbox','Xbox'],['ps','PlayStation']],'xbox')}<div class="keys kb">${KEYS.map(([a,k])=>`<div><span>${a}</span><kbd>${k}</kbd></div>`).join('')}</div><div class="optrow"><div><b>Invert look</b><span>Flip the camera for dragging and the right stick.</span></div><div class="seg">${['invX','invY'].map((k,i)=>`<button class="cbtn tog ${OPT[k]?'on':''}" data-act="opt" data-k="${k}" data-d="0" aria-pressed="${!!OPT[k]}">${i?'Vertical':'Horizontal'}: ${OPT[k]?'On':'Off'}</button>`).join('')}</div></div>
    ${sg('sens','Look sensitivity','How fast the camera turns.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
    ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
   else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
    ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}
-   <div class="tch">${tg('vib','Vibration','Buzz when you take a heavy hit (Android phones).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
+   <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
    <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
@@ -2503,9 +2516,9 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='tal'){if(talentPoints()>0){P.tal[b.dataset.id]=(P.tal[b.dataset.id]||0)+1;recalc();updateBadges();save()}}
  if(act==='respec'){P.tal={};recalc();updateBadges();save()}
  if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
- if(act==='oseg'){const k=b.dataset.k,v=+b.dataset.v;OPT[k]=v;if(k==='camD')CAM.zoom=v;if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
+ if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
- if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
+ if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
  if(act==='fs'){toggleFS();return}
  if(act==='install'){if(installEv){installEv.prompt();installEv=null}}
  if(act==='gfx'){OPT.gfx=b.dataset.g;applyGfx();saveOpt()}
@@ -2562,8 +2575,8 @@ const camKeys={left:0,right:0};
 const PK={KeyB:'bag',KeyI:'bag',KeyC:'char',KeyL:'quests',KeyK:'spells',KeyT:'spells',KeyM:'map',KeyO:'options',KeyU:'updates'};
 function attackPress(){if(!G.tgt||G.tgt.dead){const t=findTarget(320);if(t)G.tgt=t}P.auto=!!G.tgt;if(G.tgt)useAbility(0);else notReady('No target nearby')}
 function setInput(kbm){if(KBM===kbm)return;KBM=kbm;resize();restStick();scanOverlays()}
-addEventListener('pointerdown',e=>setInput(e.pointerType==='mouse'),{capture:true,passive:true});
-addEventListener('keydown',e=>{if(e.code&&e.code!=='Unidentified'&&!(e.target&&e.target.tagName==='INPUT'))setInput(true)},{capture:true});
+addEventListener('pointerdown',e=>{setPad(false);setInput(e.pointerType==='mouse')},{capture:true,passive:true});
+addEventListener('keydown',e=>{if(e.code&&e.code!=='Unidentified'&&!(e.target&&e.target.tagName==='INPUT')){setPad(false);setInput(true)}},{capture:true});
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
  if(G.mode==='title'&&G.panel){if(e.code==='Escape'&&!e.repeat)closePanel();return}
  if(G.mode==='title'&&e.code==='Enter'&&!e.repeat&&!(e.target&&e.target.tagName==='BUTTON')){const b=document.querySelector('#title [data-t=play]');if(b){e.preventDefault();b.click()}return}
@@ -2578,6 +2591,65 @@ addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
  for(let i=1;i<=5;i++)if(e.code==='Digit'+i)useAbility(i);
  if(e.code==='KeyQ')usePotion();if(e.code==='KeyR')toggleMount();if(e.code==='KeyV')dodgeRoll();if(e.code==='ShiftLeft'||e.code==='ShiftRight')input.sprint=true;if(e.code==='KeyN')setMini(OPT.mini===false);if(e.code==='KeyX'){OPT.barOpen=!OPT.barOpen;saveOpt();$h('hud').classList.toggle('baropen',OPT.barOpen)}if(e.code==='KeyE'||e.code==='Enter')interact();if(PK[e.code])openPanel(PK[e.code])});
 addEventListener('keyup',e=>{if(KEYMAP[e.code])input[KEYMAP[e.code]]=0;if(e.code==='ShiftLeft'||e.code==='ShiftRight')input.sprint=false;if(e.code==='ArrowLeft')camKeys.left=0;if(e.code==='ArrowRight')camKeys.right=0});
+/* ================= Controller (Gamepad API, standard mapping; Xbox layout by default) ================= */
+const GPS={xbox:{a:['A','#4caf50'],b:['B','#e0463a'],x:['X','#2f86d8'],y:['Y','#e6b821'],lb:'LB',rb:'RB',lt:'LT',rt:'RT',view:'View',menu:'Menu',ls:'LS',rs:'RS',up:'D▲',down:'D▼',left:'D◀',right:'D▶'},
+ ps:{a:['✕','#7aa8ff'],b:['○','#ff6a6a'],x:['□','#ff8ad8'],y:['△','#4fd8a0'],lb:'L1',rb:'R1',lt:'L2',rt:'R2',view:'Share',menu:'Options',ls:'L3',rs:'R3',up:'D▲',down:'D▼',left:'D◀',right:'D▶'}};
+function gpg(k){const s=GPS[OPT.padStyle==='ps'?'ps':'xbox'],v=s[k];if(!v)return'';return Array.isArray(v)?`<i class="gpb" style="--g:${v[1]}">${v[0]}</i>`:`<i class="gps">${v}</i>`}
+const PADSK={0:'x',1:'lb',2:'rb',3:'lt',4:'rt',5:'y',pot:'up',tgt:'right',mnt:'down'};
+const PADKEYS=[['Move','ls'],['Look','rs'],['Jump, or talk and use','a'],['Dodge roll','b'],['Attack','x'],['Skills 1 to 4','lb rb lt rt'],['Skill 5','y'],['Sprint (click the stick)','ls'],['Tonic · mount','up down'],['Next target','right rs'],['Minimap','left'],['Map · menu','view menu']];
+let PAD=false,padIdx=-1,padPrev=[],padCur=null,padSig='',padNth=0,padRep={k:null,t:0},padSprint=false,padMoved=false;
+function setPad(on){if(PAD===on)return;PAD=on;APP.classList.toggle('pad',on);if(on)setInput(true);if(G.mode==='play'&&P){setupButtons();lastNear=undefined}if(!on){if(padCur)padCur.classList.remove('padfocus');padCur=null;if(padMoved){input.sx=input.sy=0;padMoved=false}padSprint=false;input.sprint=false}}
+function padRumble(m,ms=140){if(!PAD||OPT.vib===false)return;const gp=navigator.getGamepads?navigator.getGamepads()[padIdx]:null,va=gp&&gp.vibrationActuator;if(va&&va.playEffect)try{va.playEffect('dual-rumble',{duration:ms,strongMagnitude:m,weakMagnitude:m*.7}).catch(()=>{})}catch(_){}}
+addEventListener('gamepadconnected',e=>{if(padIdx<0)padIdx=e.gamepad.index;toast(`Controller connected. ${OPT.padStyle==='ps'?'PlayStation':'Xbox'} button layout.`,'q')});
+addEventListener('gamepaddisconnected',e=>{if(e.gamepad.index===padIdx){padIdx=-1;if(PAD){input.sx=input.sy=0;setPad(false)}toast('Controller disconnected.','warn')}});
+const dz=(x,y,d=.2)=>{const l=Math.hypot(x,y);if(l<d)return[0,0];const k=Math.min(1,(l-d)/(1-d))/l;return[x*k,y*k]};
+/* ---- menu navigation: move a highlight between the buttons on screen ---- */
+function padRoot(){const bk=$h('book');if(bk&&!bk.hidden){const tw=bk.querySelector('.tipwrap');return tw||bk}const t=$('#title');if(G.mode==='title'&&t&&!t.hidden)return t;return null}
+function padCands(root){return[...root.querySelectorAll('button,input,[data-act],[data-nav]')].filter(el=>{if(el.disabled)return false;const up=el.parentElement&&el.parentElement.closest('button,[data-act],[data-nav]');if(up&&root.contains(up))return false;const r=el.getBoundingClientRect();return r.width>2&&r.height>2&&!el.closest('[hidden]')&&getComputedStyle(el).visibility!=='hidden'})}
+const padCtr=el=>{const r=el.getBoundingClientRect();return toLocal(r.left+r.width/2,r.top+r.height/2)};
+const sigOf=el=>[...el.attributes].filter(a=>a.name.startsWith('data-')||a.name==='id').map(a=>a.name+'='+a.value).join('&')||el.tagName+':'+(el.textContent||'').trim().slice(0,24);
+function padFocus(el){if(padCur&&padCur!==el)padCur.classList.remove('padfocus');padCur=el;if(!el)return;el.classList.add('padfocus');try{el.focus({preventScroll:true})}catch(_){}el.scrollIntoView({block:'nearest',inline:'nearest'});padSig=sigOf(el);const root=padRoot();if(root)padNth=padCands(root).indexOf(el)}
+let padKey='';
+function padEnsure(){const root=padRoot();if(!root){if(padCur){padCur.classList.remove('padfocus');padCur=null}padKey='';return null}
+ const key=G.mode+'|'+G.panel+'|'+(G.tip?1:0);if(key!==padKey){padKey=key;padSig='';padNth=0;if(padCur)padCur.classList.remove('padfocus');padCur=null}
+ const C=padCands(root);if(!C.length)return null;
+ if(padCur&&C.includes(padCur)){if(!padCur.classList.contains('padfocus'))padCur.classList.add('padfocus');return C}
+ let el=padSig?C.find(e=>sigOf(e)===padSig):null;if(!el&&padSig)el=C[Math.min(padNth,C.length-1)];
+ if(!el){const pref=root.querySelector('[data-t=play],[data-act=respawn],[data-act=turnin],[data-act=accept],.tab.on,.navb.on');el=pref&&C.includes(pref)?pref:C[0]}
+ padFocus(el);return C}
+function padMove(dx,dy){const C=padEnsure();if(!C||!padCur)return;const c0=padCtr(padCur);let best=null,bs=1e9;
+ for(const el of C){if(el===padCur)continue;const c=padCtr(el),vx=c[0]-c0[0],vy=c[1]-c0[1],along=vx*dx+vy*dy;if(along<=6)continue;const sc=along+Math.abs(vx*dy-vy*dx)*2.4;if(sc<bs){bs=sc;best=el}}
+ if(best){padFocus(best);sfx('absorb',.4)}}
+function padBack(){const bk=$h('book');if(bk&&!bk.hidden){if(G.tip){G.tip=null;G.confirm=null;renderPanel();return}if(G.panel!=='dead')closePanel();return}}
+function padTabs(d){if(!G.panel||!NAVK.includes(G.panel)||G.mode!=='play')return;const i=NAVK.indexOf(G.panel);openPanel(NAVK[(i+d+NAVK.length)%NAVK.length]);padSig='';padNth=0;padCur=null}
+/* ---- per-frame poll ---- */
+function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGamepads();let gp=padIdx>=0?all[padIdx]:null;
+ if(!gp){for(const g of all)if(g&&g.connected&&(g.buttons.some(b=>b.pressed)||g.axes.some(a=>Math.abs(a)>.5))){gp=g;padIdx=g.index;break}}if(!gp)return;
+ const B=gp.buttons.map(b=>b.pressed||b.value>.45),ax=gp.axes,[lx,ly]=dz(ax[0]||0,ax[1]||0),[rx,ry]=dz(ax[2]||0,ax[3]||0),down=i=>B[i]&&!padPrev[i];
+ const wake=B.some(Boolean)||Math.hypot(lx,ly)>.3||Math.hypot(rx,ry)>.3;if(wake&&!PAD){setPad(true);padPrev=B;padEnsure();return}
+ if(!PAD){padPrev=B;return}
+ const root=padRoot();
+ if(root){if(padMoved){input.sx=input.sy=0;padMoved=false}const had=!!padCur&&root.contains(padCur);padEnsure();if(!had){padPrev=B;return}
+  const dir=B[12]||ly<-.55?'u':B[13]||ly>.55?'d':B[14]||lx<-.55?'l':B[15]||lx>.55?'r':null;
+  if(dir){if(padRep.k!==dir){padRep={k:dir,t:.38};padMove(...{u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]}[dir])}else if((padRep.t-=dt)<=0){padRep.t=.11;padMove(...{u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]}[dir])}}else padRep.k=null;
+  if(Math.abs(ry)>.2){const m=root.closest('.bk-main')||root.querySelector('.bk-main')||$h('bkMain');if(m)m.scrollTop+=ry*dt*700}
+  if(down(0)&&padCur){const el=padCur;padSig=sigOf(el);if(el.tagName==='INPUT')el.focus();else el.click();sfx('loot',.5)}
+  if(down(1))padBack();if(down(4))padTabs(-1);if(down(5))padTabs(1);
+  if(down(9)){if(G.mode==='title'&&!G.panel){const b=document.querySelector('#title [data-t=play]');if(b)b.click()}else if(G.panel&&G.panel!=='dead')closePanel()}
+  if(down(8)&&G.mode==='play'&&G.panel==='map')closePanel();
+  padPrev=B;return}
+ if(padCur){padCur.classList.remove('padfocus');padCur=null}
+ if(G.mode!=='play'||!P){padPrev=B;return}
+ // movement and camera
+ input.sx=lx;input.sy=ly;padMoved=true;if(Math.hypot(lx,ly)<.15)padSprint=false;if(down(10))padSprint=!padSprint;input.sprint=padSprint;
+ if(Math.abs(rx)+Math.abs(ry)>0){const sn=OPT.sens||1;CAM.yaw+=rx*dt*2.8*sn*(OPT.invX?-1:1);CAM.pitchAdj=clamp(CAM.pitchAdj+ry*dt*1.3*sn*(OPT.invY?-1:1),-.3,.5);CAM.lastDrag=G.time;$h('camHint').classList.add('off')}
+ if(P.dead){padPrev=B;return}
+ if(down(0)){if(G.near)interact();else if(!EL.lootwin.hidden){const a=EL.lootwin.querySelector('[data-l=all]');if(a)a.click()}else jump()}
+ if(down(1))dodgeRoll();if(down(2))attackPress();
+ const SKB={4:1,5:2,6:3,7:4,3:5};for(const k in SKB)if(down(+k))useAbility(SKB[k]);
+ if(down(12))usePotion();if(down(13))toggleMount();if(down(15)||down(11))cycleTarget();if(down(14))setMini(OPT.mini===false);
+ if(down(8))openPanel('map');if(down(9))openPanel('bag');
+ padPrev=B}
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop){G.shopTab='buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else usePortal(n.p)}
@@ -2656,7 +2728,7 @@ function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!title
  else h+=`<p>${esc(c.blurb)}</p><label class="tt-name">Hero name<input id="nameIn" maxlength="14" value="${esc(nameDraft[k])}" autocomplete="off" spellcheck="false"></label>`;
  h+=`<div class="tt-abs">${c.ab.map(ab=>`<span class="sk mini" style="--c:${ab.c}" title="${esc(ab.name)}"><span class="ic">${svg(ab.icon)}</span></span>`).join('')}</div><dl class="tt-stats"><div><dt>Main</dt><dd style="font-size:15px">${ATTRN[c.main]}</dd></div><div><dt>Health</dt><dd>${c.hp}</dd></div><div><dt>Armor</dt><dd>${c.arm}</dd></div></dl>`;
  h+=`<div class="tt-bottom">${!isSave&&hasSave&&titleConfirm?'<span class="tt-warn">This replaces your saved hero. Press Create again to confirm.</span>':''}<button class="gbtn" data-t="play">${isSave?'Play':'Create'}</button></div></div>`;
- h+=`<p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
+ h+=`<p class="tt-hint pd"><b>Controller:</b> left stick moves · right stick looks · ${gpg('a')} jump or talk · ${gpg('x')} attack · ${gpg('lb')} ${gpg('rb')} ${gpg('lt')} ${gpg('rt')} ${gpg('y')} skills · ${gpg('b')} dodge · ${gpg('menu')} menu. In menus: D-pad moves, ${gpg('a')} selects, ${gpg('b')} goes back.</p><p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
  const el=$('#title');el.innerHTML=h;el.hidden=false;liftTitle();const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
  requestAnimationFrame(()=>{if(!gl)return;for(const cv2 of el.querySelectorAll('canvas.ttc')){if(sizeCanvas(cv2)){const m=MODELS[cv2.dataset.c];renderPortrait(cv2,m,FR.hum,idleAnim(m.weapon),.35)}}})}
 $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b&&b.dataset.t==='news'){if(e.detail>0)b.blur();openPanel('updates');return}if(!b||!gl)return;
@@ -2692,6 +2764,7 @@ setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays(
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
 function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+ try{pollPad(dt)}catch(err){console.error(err)}
  try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
   renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits()}}catch(err){console.error(err)}
  frameAvg=frameAvg*.95+dt*1000*.05;if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
@@ -2704,7 +2777,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress};
+window.__veyl={pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress};
 })();
 </script>
 
