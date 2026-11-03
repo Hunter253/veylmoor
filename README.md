@@ -5,7 +5,8 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 **Play:** https://veylmoor.netlify.app
 
 - Five classes (Bulwark, Ashcaller, Thornstalker, Lumen, Reaver) with six skills and a talent tree each
-- Five zones linked by waystones: Veylmoor, Sunscar Dunes, Frostfang Reach, Gloamwood and Emberfall Caldera, each with an area boss
+- Five zones linked by waystones: Veylmoor, Sunscar Dunes, Frostfang Reach, Gloamwood and Emberfall Caldera, each with an area boss, winding roads, rivers, outcrops and landmarks
+- Ore, herbs and crystals to gather, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
 ## Play on PC
