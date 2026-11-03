@@ -409,7 +409,7 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
 .npcport{border:2px solid var(--rune);box-shadow:0 0 0 3px #10161a,0 0 0 4px var(--brass)}
 .npcn{color:var(--brass2)}.npct{color:#8fe8f0}
 .qcard2{background:rgba(10,14,17,.5);border-color:var(--slate3)}.qcard2 .qc-t{color:#c8d0ff}
-.optrow{background:rgba(10,14,17,.5);border-color:var(--slate3)}
+.optrow{background:rgba(10,14,17,.5);border-color:var(--slate3)}.optlist{gap:5px}.optrow{padding:4px 12px;gap:10px}.optrow b{font-size:15.5px;line-height:1.2}.optrow span{font-size:12px;line-height:1.25;display:block}.optrow .cbtn{padding-top:5px;padding-bottom:5px}
 .deadbox h2{color:#ff8a70}
 .tcard{background:#161d22;border-color:var(--slate3)}.tcard .tt{color:var(--brass2)}.tcard .td b{color:#8fe8f0}
 .lw-h{color:var(--brass2)}
@@ -668,17 +668,17 @@ Object.assign(EN,{
  hexwisp:{name:'Hexlight',hp:90,dmg:16,spd:62,range:180,cd:1.8,r:10,xp:30,col:'#c080ff',shape:'wisp',aggro:200,ranged:true,proj:'#d0a0ff',h:1.55,glow:'#c080ff'},
  blightghoul:{name:'Blighted Dead',hp:150,dmg:17,spd:64,range:26,cd:1.4,r:13,xp:32,col:'#7a6a8a',shape:'ghoul',aggro:150,h:1.45,tint:[.85,.7,1.15]},
  thornwitch:{name:'Thorn Witch',hp:130,dmg:18,spd:66,range:190,cd:1.9,r:12,xp:34,col:'#8a4aa0',shape:'acolyte',aggro:200,ranged:true,proj:'#b070ff',h:1.5,tint:[1.05,.6,1.35]},
- ashhound:{name:'Ash Hound',hp:130,dmg:18,spd:110,range:26,cd:1.1,r:12,xp:34,col:'#c0603a',shape:'wolf',aggro:180,h:1.05,tint:[1.5,.75,.45]},
- cinderdead:{name:'Cinder Husk',hp:170,dmg:20,spd:64,range:26,cd:1.4,r:13,xp:36,col:'#a0503a',shape:'ghoul',aggro:150,h:1.45,tint:[1.45,.75,.45]},
- flameshade:{name:'Flame Shade',hp:120,dmg:20,spd:58,range:200,cd:1.8,r:12,xp:36,col:'#ff8a3a',shape:'wraith',aggro:210,ranged:true,proj:'#ffb060',h:2.0,tint:[1.8,.9,.5],glow:'#ff8a3a'},
- magmascorp:{name:'Magma Scuttler',hp:160,dmg:21,spd:84,range:30,cd:1.2,r:13,xp:38,col:'#d0502a',shape:'scorp',aggro:160,h:.8,tint:[1.6,.6,.4]},
+ ashhound:{name:'Ash Hound',hp:130,dmg:18,spd:110,range:26,cd:1.1,r:12,xp:34,col:'#c0603a',shape:'wolf',aggro:180,h:1.05,tint:[1.25,.55,.32]},
+ cinderdead:{name:'Cinder Husk',hp:170,dmg:20,spd:64,range:26,cd:1.4,r:13,xp:36,col:'#a0503a',shape:'ghoul',aggro:150,h:1.45,tint:[1.15,.5,.3]},
+ flameshade:{name:'Flame Shade',hp:120,dmg:20,spd:58,range:200,cd:1.8,r:12,xp:36,col:'#ff8a3a',shape:'wraith',aggro:210,ranged:true,proj:'#ffb060',h:2.0,tint:[1.3,.42,.14],glow:'#ff8a3a'},
+ magmascorp:{name:'Magma Scuttler',hp:160,dmg:21,spd:84,range:30,cd:1.2,r:13,xp:38,col:'#d0502a',shape:'scorp',aggro:160,h:.8,tint:[1.35,.45,.28]},
  qassar:{name:'Qassar the Sun-King',hp:1400,dmg:22,spd:82,range:38,cd:1.5,r:26,xp:150,col:'#e0b060',shape:'nomad',aggro:240,boss:true,h:1.9,sc:2,tint:[1.4,1.15,.7],glow:'#ffc060',proj:'#ffd090',area:'dunes',adds:'nomad',moves:['charge','barrage','slam'],
   intro:'<b>Qassar the Sun-King</b> rises from his throne. Watch for his charge, and step out of the red.',summonMsg:'Raiders answer their king\'s horn.',deathMsg:'The Sun-King falls. The raiders of the hollow scatter into the dunes.'},
  hrimfang:{name:'Hrimfang, the Pale Mother',hp:1700,dmg:24,spd:100,range:44,cd:1.4,r:30,xp:170,col:'#e8f0ff',shape:'wolf',aggro:240,boss:true,h:1.7,sc:2.6,tint:[2.1,2.2,2.5],glow:'#bfe8ff',proj:'#bfe8ff',area:'frost',adds:'frostwolf',moves:['charge','nova','rain'],
   intro:'<b>Hrimfang</b> lifts her head from the bones. Her howl freezes the air. Keep moving.',summonMsg:'The pack answers the Pale Mother.',deathMsg:'Hrimfang falls. The pines go quiet for the first time in a hundred winters.'},
  hollowking:{name:'The Hollow King',hp:2000,dmg:26,spd:62,range:40,cd:1.5,r:28,xp:190,col:'#8a60c0',shape:'wraith',aggro:240,boss:true,h:3.6,sc:2.2,tint:[.6,.45,.95],glow:'#a060ff',proj:'#c890ff',area:'gloam',adds:'blightghoul',moves:['barrage','rain','nova'],
   intro:'<b>The Hollow King</b> unfolds from his throne of roots. Dodge the hex-bolts and the shadow pools.',summonMsg:'The dead of the mire claw up to defend their king.',deathMsg:'The Hollow King unravels into ash and moonlight. Gloamwood breathes again.'},
- vorgath:{name:'Vorgath, Heart of Cinders',hp:2400,dmg:28,spd:66,range:40,cd:1.6,r:30,xp:220,col:'#ff7a30',shape:'prior',aggro:250,boss:true,h:2.4,sc:1.3,tint:[1.8,.8,.45],glow:'#ff7a30',proj:'#ffb060',area:'ember',adds:'cinderdead',moves:['rain','slam','barrage','nova'],
+ vorgath:{name:'Vorgath, Heart of Cinders',hp:2400,dmg:28,spd:66,range:40,cd:1.6,r:30,xp:220,col:'#ff7a30',shape:'prior',aggro:250,boss:true,h:2.4,sc:1.3,tint:[1.15,.4,.18],glow:'#ff7a30',proj:'#ffb060',area:'ember',adds:'cinderdead',moves:['rain','slam','barrage','nova'],
   intro:'<b>Vorgath</b> wakes in the magma. Fire falls from the sky. Do not stand still.',summonMsg:'Husks of cinder crawl from the lava.',deathMsg:'Vorgath shatters. The Caldera cools, and the last fire in Veylmoor\'s sky goes out.'}});
 Object.assign(EN.prior,{area:'vale',adds:'acolyte',moves:['slam','nova','slam'],glow:'#6fd8ea',
  intro:'<b>The Drowned Prior</b> turns toward you. Step out of the red when he raises the bell.',summonMsg:'Acolytes rise from the flooded nave.',deathMsg:'The bell falls silent. A way out opens in the nave.'});
@@ -784,7 +784,7 @@ const QUESTS=[
   offer:'Flame shades burn out and leave an ember core behind. One core heats the fort for a week. Six, and I will stock you with tonics.',wait:'Six ember cores, from the flame shades of the Glassfields, north-east.',done:'Six! The barracks will be warm for a month. Tonics, as promised.'},
  {id:'e2',giver:'vael',map:'ember',lv:22,camp:1,title:'Glass and Fire',kind:'gather',node:'ore',nodeName:'Fireglass',nodes:[[32,5],[38,10],[44,4],[50,9],[55,14],[36,15],[47,15]],n:6,obj:'Fireglass mined',item:{slot:'chest',rar:2},req:['e1'],
   offer:'Fireglass grows in the Glassfields to the north-east. Our smiths can forge it into armor that does not melt. Bring six chunks.',wait:'Six chunks of fireglass from the Glassfields.',done:'Six. The smiths are already at the anvil. This is the first piece.'},
- {id:'e7',giver:'rusk',map:'ember',lv:23,title:'Pyreclaw',kind:'hunt',elite:{type:'magmascorp',name:'Pyreclaw',x:52,y:24,sc:1.8,tint:[1.9,.9,.4]},n:1,obj:'Pyreclaw slain',item:{slot:'boots',rar:2},req:['e6'],
+ {id:'e7',giver:'rusk',map:'ember',lv:23,title:'Pyreclaw',kind:'hunt',elite:{type:'magmascorp',name:'Pyreclaw',x:52,y:24,sc:1.8,tint:[1.5,.7,.2]},n:1,obj:'Pyreclaw slain',item:{slot:'boots',rar:2},req:['e6'],
   offer:'Pyreclaw is a scuttler the size of a wagon. She lives in the Magma Rift and eats supply carts. I have lost three. Please.',wait:'Pyreclaw hunts in the east of the Magma Rift.',done:'You killed Pyreclaw? I will drink to that. Take these boots, they do not burn.'},
  {id:'e8',giver:'rusk',map:'ember',lv:23,title:'Captured Scouts',kind:'rescue',node:'captive',nodeName:'Captured scout',nodes:[[6,6],[20,12],[8,24]],n:3,obj:'Scouts freed',ambush:{type:'ashhound',n:2},req:['e6'],
   offer:'The hounds drag scouts back to their dens on the Ashen Slopes. Some of them are still alive. Three, last count.',wait:'Three scouts, held in hound dens on the Ashen Slopes.',done:'Three scouts home. The commander will hear your name tonight.'},
@@ -1000,7 +1000,7 @@ const SFX=(()=>{let ac=null,mg=null,nb=null;const last={};let recent=[];
   eshot:v=>{T({f:640,f2:300,d:.14,v:.04},v)},
   kill:v=>{T({f:230,f2:90,w:'triangle',d:.18,v:.1},v)},
  };
- function play(k,vol=1){if(OPT.sound===false||!ac||ac.state!=='running'||!LIB[k])return;const now=ac.currentTime;if(last[k]&&now-last[k]<.05)return;
+ function play(k,vol=1){const mv=OPT.vol==null?(OPT.sound===false?0:.7):OPT.vol;if(!mv||!ac||ac.state!=='running'||!LIB[k])return;mg.gain.value=.72*mv;const now=ac.currentTime;if(last[k]&&now-last[k]<.05)return;
   recent=recent.filter(t=>now-t<.12);if(recent.length>=7)return;recent.push(now);last[k]=now;try{LIB[k](vol)}catch(_){}}
  function unlock(){if(!init())return;if(ac.state==='suspended')ac.resume().catch(()=>{})}
  return{play,unlock,LIB}})();
@@ -1012,7 +1012,7 @@ function txt(x,y,h,s,c,size=13){if(!OPT.nums&&/^[-+]?\d/.test(String(s)))return;
 function burst(x,y,c,n=6,sp=90,life=0.45,size=2.5,h=0.7){for(let i=0;i<n;i++){const a=R()*TAU,v=rr(sp*.3,sp);G.parts.push({x,y,z:h+rr(-.2,.2),vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:rr(.3,2.2),t:0,max:rr(life*.6,life),c,s:rr(size*.6,size)})}}
 function ring(x,y,r,c,max=0.35,w=3,rune=false){G.fx.push({k:'ring',x,y,r,c,t:0,max,w,rune})}
 function later(t,fn){G.timers.push({t,fn})}
-function shake(a){if(!REDUCE)G.shake=Math.max(G.shake,a)}
+function shake(a){if(!REDUCE&&OPT.shake!==false)G.shake=Math.max(G.shake,a)}
 function toast(html,cls=''){const box=$('#toasts');const d=document.createElement('div');d.className='toast '+cls;d.innerHTML=html;box.appendChild(d);while(box.children.length>2)box.firstChild.remove();setTimeout(()=>d.remove(),3400)}
 let lastMsg=0;function msg(s){if(G.time-lastMsg<1.2)return;lastMsg=G.time;toast(esc(s),'warn')}
 
@@ -1058,7 +1058,7 @@ function hurtPlayer(raw,src){
  const rf=buffSum('reflect');if(rf&&src&&!src.dead){hitEnemy(src,{a:Math.max(1,Math.round(raw*rf)),crit:false},{col:'#ffd27a',quiet:true});spark(src.x,src.y,'#ffd27a',6,src.d.h*.6,80)}
  if(P.shield>0){const ab=Math.min(P.shield,a);P.shield-=ab;a-=ab;if(a<=0){txt(P.x,P.y,1.7,'Absorbed','#ffe6a0',15);sfx('absorb');ring(P.x,P.y,24,'#ffe6a0',.25,3);return}}
  P.hp-=a;P.lastHurt=G.time;P.hurtFlash=0.18;
- txt(P.x,P.y,1.7,'-'+a,'#ff4030',21);sfx('hurt');shake(a>S.maxHp*0.2?7:2);if(P.hp<=0){P.hp=0;die()}}
+ txt(P.x,P.y,1.7,'-'+a,'#ff4030',21);sfx('hurt');if(OPT.vib!==false&&a>S.maxHp*.08&&navigator.vibrate)try{navigator.vibrate(a>S.maxHp*.2?70:30)}catch(_){}shake(a>S.maxHp*0.2?7:2);if(P.hp<=0){P.hp=0;die()}}
 function die(){P.dead=true;P.mounted=false;P.cast=null;P.auto=false;const lost=Math.floor(P.gold*0.1);P.gold-=lost;burst(P.x,P.y,'#c9463c',24,120,0.9,3);for(const e of G.enemies)if(e.state==='chase')e.state='return';later(1.3,()=>openPanel('dead',{lost}))}
 function respawn(){closePanel(true);const rm=G.map&&G.map.id!=='abbey'?G.map.id:'vale';P.dead=false;P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;P.buffs=[];P.cds=[0,0,0,0,0,0];enterMap(rm,G.maps[rm].start)}
 
@@ -1250,7 +1250,7 @@ function updatePlayer(dt){
  else if(len>0.12){const n=Math.max(1,len),sx=ix/n,sy=iy/n;
   const fwx=Math.sin(CAM.yaw),fwy=Math.cos(CAM.yaw),rx=-Math.cos(CAM.yaw),ry=Math.sin(CAM.yaw);
   const mx=rx*sx+fwx*(-sy),my=ry*sx+fwy*(-sy);
-  P.sprint=!P.mounted&&(input.sprint||len>1.15)&&P.st>1;let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;
+  P.sprint=!P.mounted&&(input.sprint||(OPT.stickSprint!==false&&len>1.15))&&P.st>1;let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;
   if(P.sprint){P.st=Math.max(0,P.st-16*dt);P.stLast=G.time;if(R()<dt*14)burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',2,40,.4,2.5,.05)}
   moveEnt(P,mx*sp*dt,my*sp*dt,10);moving=Math.min(1,len);P.walk+=dt*moving*sp/118;
   if(P.faceLock<=0){const l=Math.hypot(mx,my);P.fx=mx/l;P.fy=my/l}
@@ -1754,14 +1754,14 @@ function waystoneBase(g,ge,sh,m){const[x,z]=m.way,y=groundH(x,z),st=m.theme===1?
  sh.blob(x,z,1,1.6,.3)}
 function buildWild3D(m,g,ge,Rn,sh){const th=m.theme;
  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){const v=m.get(x,y),cx=x+.5+(Rn()-.5)*.5,cz=y+.5+(Rn()-.5)*.5,edge=x<2||y<2||x>=m.w-2||y>=m.h-2;
-  if(v===T.TREE){let kind;if(th===1){let nearW=false;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++)if(m.get(x+dx,y+dy)===T.WATER)nearW=true;kind=edge?'spire':nearW?'palm':(Rn()<.6?'cactus':Rn()<.5?'palm':'spire')}else if(th===3)kind=edge||Rn()<.5?'conifer':Rn()<.7?'dead':'broad';else if(th===4)kind=edge?(Rn()<.5?'spire':'dead'):Rn()<.78?'dead':'spire';else kind=edge||Rn()<.8?'snowpine':'dead';tree(g,sh,cx,cz,.85+Rn()*.45,kind,Rn,0)}
+  if(v===T.TREE){let kind;if(th===1){let nearW=false;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++)if(m.get(x+dx,y+dy)===T.WATER)nearW=true;kind=edge?'spire':nearW?'palm':(Rn()<.6?'cactus':Rn()<.5?'palm':'spire')}else if(th===3)kind=edge||Rn()<.5?'conifer':Rn()<.7?'dead':'broad';else if(th===4)kind=edge?'dead':Rn()<.85?'dead':'spire';else kind=edge||Rn()<.8?'snowpine':'dead';tree(g,sh,cx,cz,.85+Rn()*.45,kind,Rn,0)}
   else if(v===T.GRASS&&th===3){for(let k=0;k<2;k++)tuft(g,x+Rn(),y+Rn(),Rn,[30,40,34],[84,100,88],.32,3);if(Rn()<.07){const mx=x+Rn(),mz=y+Rn(),my=groundH(mx,mz);g.cyl(T3(mx,my,mz,1,.13,1),[200,190,210],5,.022,.02,false);ge.ico(T3(mx,my+.14,mz,.08,.045,.08),[190,130,255],.2,Rn)}if(Rn()<.03)rock(g,x+Rn(),y+Rn(),.2+Rn()*.3,Rn,[70,70,82])}
   else if(v===T.GRASS&&th===4){if(Rn()<.07)rock(g,x+Rn(),y+Rn(),.2+Rn()*.45,Rn,vary([56,46,42],.15,Rn));if(Rn()<.05){const cx2=x+Rn(),cz2=y+Rn();ge.box(T3(cx2,groundH(cx2,cz2)+.02,cz2,.5+Rn()*.6,.03,.06,Rn()*3),[255,110,30])}if(Rn()<.1)tuft(g,x+Rn(),y+Rn(),Rn,[46,38,34],[106,92,84],.22,3)}
   else if(v===T.GRASS){if(th===1){if(Rn()<.25)tuft(g,x+Rn(),y+Rn(),Rn,[150,118,62],[226,196,128],.3,4);if(Rn()<.03)rock(g,x+Rn(),y+Rn(),.2+Rn()*.4,Rn,vary([196,150,104],.12,Rn))}
    else{if(Rn()<.05)g.ico(T3(x+Rn(),groundH(x+.5,y+.5)-.05,y+Rn(),.5+Rn()*.4,.18,.5+Rn()*.4,Rn()*3),[240,244,250],.3,Rn,0);if(Rn()<.03)rock(g,x+Rn(),y+Rn(),.2+Rn()*.35,Rn,[120,126,136]);if(Rn()<.1)tuft(g,x+Rn(),y+Rn(),Rn,[90,96,80],[176,180,160],.25,3)}}
   else if(v===T.WATER&&th===1&&Rn()<.2)tuft(g,x+Rn(),y+Rn(),Rn,[50,90,40],[130,170,80],.6,5)}
  for(let y=-MG;y<m.h+MG;y++)for(let x=-MG;x<m.w+MG;x++){if(x>=0&&y>=0&&x<m.w&&y<m.h)continue;const d=Math.max(-x,-y,x-m.w+1,y-m.h+1);if(Rn()>(th===1||th===4?(d<4?.3:.1):(d<5?.55:.28)))continue;
-  tree(g,sh,x+.5+(Rn()-.5)*.7,y+.5+(Rn()-.5)*.7,1+Rn()*.7+d*.04,th===1?(Rn()<.75?'spire':'cactus'):th===3?(Rn()<.75?'conifer':'dead'):th===4?(Rn()<.6?'spire':'dead'):(Rn()<.85?'snowpine':'dead'),Rn,0)}
+  tree(g,sh,x+.5+(Rn()-.5)*.7,y+.5+(Rn()-.5)*.7,1+Rn()*.7+d*.04,th===1?(Rn()<.75?'spire':'cactus'):th===3?(Rn()<.75?'conifer':'dead'):th===4?'dead':(Rn()<.85?'snowpine':'dead'),Rn,0)}
  for(const r of m.houses){if(th===1)adobe(g,ge,sh,r,Rn,m);else house(g,ge,sh,r,Rn,m)}
  if(m.arena){const A=m.arena,col=th===1?[200,170,120]:th===2?[170,180,196]:th===3?[74,68,92]:[62,50,46],gc=th===3?[190,130,255]:th===4?[255,120,40]:th===2?[150,220,255]:[255,200,120];
   for(let k=0;k<14;k++){if(k%5===2)continue;const a=k/14*TAU,x=A.x+Math.cos(a)*(A.r+.5),z=A.y+Math.sin(a)*(A.r+.5),y=groundH(x,z),hh=1.6+Rn()*1.1;g.box(T3(x,y+hh/2-.1,z,.55,hh,.45,-a),vary(col,.08,Rn));ge.box(T3(x,y+hh*.62,z,.57,.12,.47,-a),gc);sh.blob(x,z,hh,.7,.4)}
@@ -2171,7 +2171,7 @@ function renderOverlay(){
 
 /* ================= Options & item art ================= */
 let RSMAX=1;
-const OPT=(()=>{const d={gfx:'high',bloom:true,follow:true,nums:true,tracker:true,sound:true};try{return Object.assign(d,JSON.parse(localStorage.getItem('veylmoor-opts')||'{}'))}catch(_){return d}})();
+const OPT=(()=>{const d={gfx:'high',bloom:true,follow:true,nums:true,tracker:true,sound:true};let o;try{o=Object.assign(d,JSON.parse(localStorage.getItem('veylmoor-opts')||'{}'))}catch(_){o=d}if(o.vol==null&&o.sound===false)o.vol=0;return o})();
 function saveOpt(){try{localStorage.setItem('veylmoor-opts',JSON.stringify(OPT))}catch(_){}}
 function applyGfx(){RSMAX={high:1,balanced:.8,fast:.62}[OPT.gfx]||1;OPT.bloom=OPT.gfx!=='fast';RS=Math.min(RS,RSMAX);resize()}
 const IFILL={weapon:'<path d="M17 2h5v5L10 19l-4-1-1-4z"/><path d="M4 14l6 6-2 2-1-1-3 3-2-2 3-3-1-1z"/>',helm:'<path d="M3 16a9 9 0 0118 0v4h-6v-4h-6v4H3z"/><path d="M11 2h2v6h-2z"/>',
@@ -2330,11 +2330,20 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    h+='</div>'}
   h+='</div>'}
  else if(k==='map'){title=G.map.id==='abbey'?'The Sunken Abbey':(AREAS[G.map.id]?AREAS[G.map.id].name:'Map');h=`<div class="mapwrap"><canvas id="mapCan" aria-label="World map"></canvas></div>`}
- else if(k==='options'){title='Options';const tg=(key,l,d)=>`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><button class="cbtn tog ${OPT[key]?'on':''}" data-act="opt" data-k="${key}" aria-pressed="${!!OPT[key]}">${OPT[key]?'On':'Off'}</button></div>`;
-  h=`<div class="pad optlist"><div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older phones.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
-   ${tg('sound','Sound','Spell, combat and menu sounds.')}${tg('follow','Camera follow','The camera swings in behind you as you run.')}${tg('nums','Combat numbers','Show damage and healing numbers over heads.')}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.')}
+ else if(k==='options'){title='Options';const tab=G.optTab||'ctl';
+  const tg=(key,l,d,def=false)=>{const on=OPT[key]==null?def:!!OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><button class="cbtn tog ${on?'on':''}" data-act="opt" data-k="${key}" data-d="${def?1:0}" aria-pressed="${on}">${on?'On':'Off'}</button></div>`};
+  const sg=(key,l,d,opts,def)=>{const cur=OPT[key]==null?def:OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><div class="seg">${opts.map(([v,t])=>`<button class="cbtn segb ${cur==v?'on':''}" data-act="oseg" data-k="${key}" data-v="${v}">${t}</button>`).join('')}</div></div>`};
+  h=`<div class="tabs"><button class="tab ${tab==='ctl'?'on':''}" data-act="otab" data-t="ctl">${svg('target')}Controls</button><button class="tab ${tab==='av'?'on':''}" data-act="otab" data-t="av">${svg('gear')}Display &amp; sound</button><button class="tab ${tab==='game'?'on':''}" data-act="otab" data-t="game">${svg('person')}Game</button></div><div class="pad optlist">`;
+  if(tab==='ctl')h+=`${tg('invX','Invert horizontal look','Dragging left turns the camera right.')}${tg('invY','Invert vertical look','Dragging up tilts the camera down.')}
+   ${sg('sens','Look sensitivity','How fast the camera turns when you drag.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
+   ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}`;
+  else if(tab==='av')h+=`<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older phones.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
+   ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}
+   ${tg('vib','Vibration','Buzz when you take a heavy hit (Android phones).',true)}${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
+  else h+=`<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
-   <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Tap again to delete':'Delete'}</button></div></div>`}
+   <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Tap again to delete':'Delete'}</button></div>`;
+  h+='</div>'}
  else if(k==='npc'){const n=NPCS[a];title=n.name;const ready=QUESTS.find(q=>qTurn(q)===a&&P.q[q.id]&&P.q[q.id].s==='ready'),active=QUESTS.find(q=>q.giver===a&&P.q[q.id]&&P.q[q.id].s==='active'),av=QUESTS.find(q=>q.giver===a&&qAvail(q));
   const say=ready?ready.done:av?av.offer:active?active.wait:n.idle;
   h=`<div class="npcbox"><div class="npcport"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn">${esc(n.name)}</div><div class="npct">‹${esc(n.title)}›</div><blockquote>${esc(say)}</blockquote></div></div>`;
@@ -2375,7 +2384,10 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='qdrop'){const id=b.dataset.q;if(G.confirm!=='drop'+id)G.confirm='drop'+id;else{delete P.q[id];G.confirm=null;updateTracker();save()}}
  if(act==='tal'){if(talentPoints()>0){P.tal[b.dataset.id]=(P.tal[b.dataset.id]||0)+1;recalc();updateBadges();save()}}
  if(act==='respec'){P.tal={};recalc();updateBadges();save()}
- if(act==='opt'){OPT[b.dataset.k]=!OPT[b.dataset.k];saveOpt();updateTracker()}
+ if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='oseg'){const k=b.dataset.k,v=+b.dataset.v;OPT[k]=v;if(k==='camD')CAM.zoom=v;if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
+ if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
+ if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
  if(act==='gfx'){OPT.gfx=b.dataset.g;applyGfx();saveOpt()}
  if(act==='quit'){save();toTitle();return}
  if(act==='del'){if(G.confirm!=='del'){G.confirm='del'}else{clearSave();toTitle();return}}
@@ -2446,17 +2458,17 @@ const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stick
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
 zoneEl.addEventListener('pointerdown',e=>{if(stickId!==null)return;stickId=e.pointerId;try{zoneEl.setPointerCapture(e.pointerId)}catch(_){}const q=toLocal(e.clientX,e.clientY);so={x:q[0],y:q[1]};base.style.left=(q[0]-zoneEl.offsetLeft)+'px';base.style.top=(q[1]-zoneEl.offsetTop)+'px';base.classList.add('live');e.preventDefault()});
-zoneEl.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const q=toLocal(e.clientX,e.clientY);let dx=q[0]-so.x,dy=q[1]-so.y;const l=Math.hypot(dx,dy),max=42,over=l>max*1.45;if(l>max){dx=dx/l*max;dy=dy/l*max}knob.style.transform=`translate(${dx}px,${dy}px)`;const k2=over?1.25:1;input.sx=dx/max*k2;input.sy=dy/max*k2;base.classList.toggle('sprint',over)});
+zoneEl.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const q=toLocal(e.clientX,e.clientY);let dx=q[0]-so.x,dy=q[1]-so.y;const l=Math.hypot(dx,dy),max=42,over=l>max*1.45;if(l>max){dx=dx/l*max;dy=dy/l*max}knob.style.transform=`translate(${dx}px,${dy}px)`;const k2=over?1.25:1;input.sx=dx/max*k2;input.sy=dy/max*k2;base.classList.toggle('sprint',over&&OPT.stickSprint!==false)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(t=>zoneEl.addEventListener(t,e=>{if(e.pointerId===stickId)resetStick()}));
 addEventListener('resize',restStick);
 const ptrs=new Map();let pinch0=0,zoom0=1,tapStart=null;
 glc.addEventListener('pointerdown',e=>{const q=toLocal(e.clientX,e.clientY);ptrs.set(e.pointerId,{x:q[0],y:q[1]});try{glc.setPointerCapture(e.pointerId)}catch(_){}if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);zoom0=CAM.zoom}tapStart={x:q[0],y:q[1],t:performance.now()}});
 glc.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;const q=toLocal(e.clientX,e.clientY),dx=q[0]-p.x,dy=q[1]-p.y;p.x=q[0];p.y=q[1];
- if(ptrs.size===2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0)CAM.zoom=clamp(zoom0*pinch0/d,.55,1.6);return}
- if(G.mode!=='play')return;CAM.yaw+=dx*0.0075;CAM.pitchAdj=clamp(CAM.pitchAdj+dy*0.004,-.3,.5);CAM.lastDrag=G.time;if(Math.abs(dx)+Math.abs(dy)>2)$h('camHint').classList.add('off')});
+ if(ptrs.size===2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0)CAM.zoom=clamp(zoom0*pinch0/d,.55,1.7);return}
+ if(G.mode!=='play')return;const sn=OPT.sens||1;CAM.yaw+=dx*0.0075*sn*(OPT.invX?-1:1);CAM.pitchAdj=clamp(CAM.pitchAdj+dy*0.004*sn*(OPT.invY?-1:1),-.3,.5);CAM.lastDrag=G.time;if(Math.abs(dx)+Math.abs(dy)>2)$h('camHint').classList.add('off')});
 const endPtr=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch0=0;const q=toLocal(e.clientX,e.clientY);if(tapStart&&G.mode==='play'&&Math.hypot(q[0]-tapStart.x,q[1]-tapStart.y)<8&&performance.now()-tapStart.t<320)tapSelect(q[0],q[1]);tapStart=null};
 ['pointerup','pointercancel'].forEach(t=>glc.addEventListener(t,endPtr));
-glc.addEventListener('wheel',e=>{CAM.zoom=clamp(CAM.zoom*(1+Math.sign(e.deltaY)*.08),.55,1.6);e.preventDefault()},{passive:false});
+glc.addEventListener('wheel',e=>{CAM.zoom=clamp(CAM.zoom*(1+Math.sign(e.deltaY)*.08),.55,1.7);e.preventDefault()},{passive:false});
 function tapSelect(sx,sy){if(G.panel||P.dead)return;let best=null,bd=60;for(const e of live()){const s=project(e.x*U,groundH(e.x*U,e.y*U)+e.d.h*.5,e.y*U);if(!s)continue;const d=Math.hypot(s[0]-sx,s[1]-sy);if(d<bd){bd=d;best=e}}
  if(best){G.tgt=best;P.auto=true;return}
  for(const k of G.map.npcs){const n=NPCS[k],s=project(n.x,groundH(n.x,n.y)+.9,n.y);if(s&&Math.hypot(s[0]-sx,s[1]-sy)<60){if(dist(P.x,P.y,n.x*TS,n.y*TS)<75){G.near={kind:'npc',id:k};interact()}else msg('Walk closer to talk.');return}}
@@ -2505,7 +2517,7 @@ $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if
  if(b.dataset.t==='play'){const sv=readSave();if(titleSel==='save'&&sv)return loadSave(sv);if(sv&&CLASSES[sv.cls]&&!titleConfirm){titleConfirm=true;renderTitle();return}const k=titleModelKey();clearSave();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
 function startNew(cls,name){P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q')}
 function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
-function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').hidden=true;$h('hud').hidden=false;setupButtons();restStick();CAM.zoom=1;CAM.pitchAdj=0;titleConfirm=false;
+function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').hidden=true;$h('hud').hidden=false;setupButtons();restStick();CAM.zoom=OPT.camD||1;CAM.pitchAdj=0;titleConfirm=false;
  if(!G.maps[mid])G.maps[mid]=BUILD[mid]();const mm=G.maps[mid];let p=pos||mm.start;if(mm.solidAt(p.x,p.y))p=mm.start;enterMap(mid,p);save();$h('camHint').classList.remove('off');setTimeout(()=>$h('camHint').classList.add('off'),6000)}
 function toTitle(){closePanel(true);G.mode='title';$h('hud').hidden=true;G.map=G.maps.vale;G.enemies=[];G.projs=[];G.loot=[];G.areas=[];G.tele=[];G.fx=[];G.boss=null;G.tgt=null;titleSel=null;titleConfirm=false;snapCam();renderTitle()}
 
@@ -2525,7 +2537,7 @@ setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays(
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
 function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
- try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2}else G.time+=dt;
+ try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
   renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits()}}catch(err){console.error(err)}
  frameAvg=frameAvg*.95+dt*1000*.05;if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
  if(frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
