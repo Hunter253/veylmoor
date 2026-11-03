@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Veylmoor">
-<meta name="description" content="A third-person fantasy action RPG: three regions, waystones, quests, loot and a dungeon boss.">
+<meta name="description" content="A third-person fantasy action RPG: five classes, five zones, 50 quests, loot and area bosses.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -253,7 +253,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 .deadbox h2{margin:0;font:400 30px var(--f-ui);color:#7a1e0e}
 
 /* Hero select */
-#title{position:fixed;left:50%;top:50%;width:920px;height:440px;transform:translate(-50%,-50%) scale(var(--ui,1));z-index:15;pointer-events:none;display:grid;grid-template-columns:auto minmax(0,1fr) 330px;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;box-sizing:border-box}
+#title{position:fixed;left:50%;top:50%;width:920px;height:440px;transform:translate(-50%,calc(-50% - var(--up,0px))) scale(var(--ui,1));z-index:15;pointer-events:none;display:grid;grid-template-columns:auto minmax(0,1fr) 330px;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;box-sizing:border-box}
 #title>*{pointer-events:auto}
 .tt-top{grid-column:1/-1;display:flex;justify-content:center;pointer-events:none}
 .tt-ribbon{background:linear-gradient(#2c1c0e,#140c05);border:2px solid #8a6420;border-radius:6px;padding:8px 28px;font:400 28px/1 var(--f-display);color:#f6d27a;text-shadow:0 2px 4px #000;box-shadow:0 4px 12px rgba(0,0,0,.6);text-align:center}
@@ -466,11 +466,11 @@ kbd{display:none}#app.kbm kbd{display:block}
 #app:not(.kbm) #micro,#app:not(.kbm) #skTip{display:none}
 #app.kbm #stickZone,#app.kbm #quick,#app.kbm #barTog,#app.kbm #jumpBtn,#app.kbm #rollBtn{display:none}
 #gl.drag{cursor:grabbing}
-#app.kbm #skillbar{zoom:var(--hz,1);--sk:52px;left:50%;right:auto;top:auto;bottom:calc(12px + var(--bR,0px)/var(--hz,1));transform:translateX(-50%);opacity:1;pointer-events:auto;grid-template-columns:repeat(9,var(--sk))}
+#app.kbm #skillbar{zoom:var(--hz,1);--sk:52px;left:50%;right:auto;top:auto;bottom:calc(12px + var(--barB,0px)/var(--hz,1));transform:translateX(-50%);opacity:1;pointer-events:auto;grid-template-columns:repeat(9,var(--sk))}
 #app.kbm #skillbar .sk kbd{left:50%;top:auto;bottom:2px;transform:translateX(-50%);font-size:11px;padding:1px 4px;background:rgba(6,10,12,.78);border-radius:2px}
 #app.kbm #skillbar .sk .cnt{top:8%;bottom:auto;right:24%}
-#app.kbm #castbar{bottom:calc(86px + var(--bR,0px)/var(--hz,1))}
-#app.kbm #btnAct{right:auto;left:50%;transform:translateX(-50%);bottom:calc(124px + var(--bR,0px)/var(--hz,1));animation:none;font-size:17px}
+#app.kbm #castbar{bottom:calc(86px + var(--barB,0px)/var(--hz,1))}
+#app.kbm #btnAct{right:auto;left:50%;transform:translateX(-50%);bottom:calc(124px + var(--barB,0px)/var(--hz,1));animation:none;font-size:17px}
 #app.kbm #btnAct:active{transform:translateX(-50%) translateY(1px)}
 #app.kbm #camHint{right:auto;left:50%;transform:translateX(-50%);top:auto;bottom:172px;max-width:none;white-space:nowrap;text-align:center;font-size:15px}
 #micro{position:absolute;right:calc(max(10px,env(safe-area-inset-right,0px)) + var(--xBR,0px)/var(--hz,1));bottom:calc(12px + var(--bR,0px)/var(--hz,1));display:flex;gap:4px;zoom:var(--hz,1)}
@@ -480,7 +480,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 .mb:hover{border-color:var(--rune);filter:brightness(1.2)}
 #app.kbm .mb kbd{position:absolute;right:2px;bottom:1px;font:800 10px/1 var(--f-num);color:var(--cream);text-shadow:0 1px 2px #000}
 #microDot{position:absolute;right:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--brass2);box-shadow:0 0 6px var(--brass2)}
-#skTip{position:absolute;left:50%;bottom:calc(86px + var(--bR,0px)/var(--hz,1));transform:translateX(-50%);width:350px;box-sizing:border-box;padding:9px 12px;background:rgba(14,20,24,.97);border:1px solid var(--slate3);border-left:3px solid var(--rune);pointer-events:none;zoom:var(--hz,1);font:500 14px/1.35 var(--f-body);color:var(--cream);z-index:3}
+#skTip{position:absolute;left:50%;bottom:calc(86px + var(--barB,0px)/var(--hz,1));transform:translateX(-50%);width:350px;box-sizing:border-box;padding:9px 12px;background:rgba(14,20,24,.97);border:1px solid var(--slate3);border-left:3px solid var(--rune);pointer-events:none;zoom:var(--hz,1);font:500 14px/1.35 var(--f-body);color:var(--cream);z-index:3}
 #skTip b{display:block;font:400 17px/1.2 var(--f-ui);color:var(--brass2)}
 #skTip em{display:block;font-style:normal;font-size:12.5px;color:#8fe8f0;margin:1px 0 4px}
 #app.kbm #lootwin{right:calc(max(10px,env(safe-area-inset-right,0px)) + var(--xTR,0px)/var(--hz,1));top:calc(env(safe-area-inset-top,0px) + 158px + var(--tR,0px)/var(--hz,1))}
@@ -517,6 +517,8 @@ kbd{display:none}#app.kbm kbd{display:block}
 .tt-news .updDot{position:absolute;top:-4px;right:-4px}
 #app:not(.kbm) .tt-news{padding:10px 14px 10px 12px}
 #app.kbm .tt-news:hover{border-color:var(--rune);filter:brightness(1.15)}
+.tt-bottom{position:relative}
+.tt-warn{position:absolute;left:0;right:0;bottom:100%;margin-bottom:6px;background:#1c1610;border:1px solid var(--brass);text-align:center;line-height:1.25}
 </style>
 
 
@@ -2559,7 +2561,7 @@ const KEYMAP={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',Ke
 const camKeys={left:0,right:0};
 const PK={KeyB:'bag',KeyI:'bag',KeyC:'char',KeyL:'quests',KeyK:'spells',KeyT:'spells',KeyM:'map',KeyO:'options',KeyU:'updates'};
 function attackPress(){if(!G.tgt||G.tgt.dead){const t=findTarget(320);if(t)G.tgt=t}P.auto=!!G.tgt;if(G.tgt)useAbility(0);else notReady('No target nearby')}
-function setInput(kbm){if(KBM===kbm)return;KBM=kbm;resize();restStick()}
+function setInput(kbm){if(KBM===kbm)return;KBM=kbm;resize();restStick();scanOverlays()}
 addEventListener('pointerdown',e=>setInput(e.pointerType==='mouse'),{capture:true,passive:true});
 addEventListener('keydown',e=>{if(e.code&&e.code!=='Unidentified'&&!(e.target&&e.target.tagName==='INPUT'))setInput(true)},{capture:true});
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
@@ -2655,7 +2657,7 @@ function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!title
  h+=`<div class="tt-abs">${c.ab.map(ab=>`<span class="sk mini" style="--c:${ab.c}" title="${esc(ab.name)}"><span class="ic">${svg(ab.icon)}</span></span>`).join('')}</div><dl class="tt-stats"><div><dt>Main</dt><dd style="font-size:15px">${ATTRN[c.main]}</dd></div><div><dt>Health</dt><dd>${c.hp}</dd></div><div><dt>Armor</dt><dd>${c.arm}</dd></div></dl>`;
  h+=`<div class="tt-bottom">${!isSave&&hasSave&&titleConfirm?'<span class="tt-warn">This replaces your saved hero. Press Create again to confirm.</span>':''}<button class="gbtn" data-t="play">${isSave?'Play':'Create'}</button></div></div>`;
  h+=`<p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
- const el=$('#title');el.innerHTML=h;el.hidden=false;const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
+ const el=$('#title');el.innerHTML=h;el.hidden=false;liftTitle();const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
  requestAnimationFrame(()=>{if(!gl)return;for(const cv2 of el.querySelectorAll('canvas.ttc')){if(sizeCanvas(cv2)){const m=MODELS[cv2.dataset.c];renderPortrait(cv2,m,FR.hum,idleAnim(m.weapon),.35)}}})}
 $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b&&b.dataset.t==='news'){if(e.detail>0)b.blur();openPanel('updates');return}if(!b||!gl)return;
  if(b.dataset.t==='sel'){titleSel=b.dataset.c;titleConfirm=false;renderTitle()}
@@ -2668,16 +2670,24 @@ function toTitle(){closePanel(true);G.mode='title';$h('hud').hidden=true;G.map=G
 
 
 /* ================= Avoid overlays pinned by the host page ================= */
+let ovRects=[];
 function scanOverlays(){const hud=$h('hud');if(!hud)return;const W=innerWidth,H=innerHeight,app=document.getElementById('app'),seen=new Set(),rects=[];
  const xs=[6,24,48,80,120,160,200],ys=[6,20,36,52];
  for(const cx of[0,1])for(const cy of[0,1])for(const dx of xs)for(const dy of ys){const x=cx?W-dx:dx,y=cy?H-dy:dy;let list;try{list=document.elementsFromPoint(x,y)}catch(_){continue}
   for(const el of list){if(el===document.documentElement||el===document.body||app.contains(el))continue;let top=el;while(top.parentElement&&top.parentElement!==document.body){const r2=top.parentElement.getBoundingClientRect();if(r2.width>W*.6||r2.height>H*.6)break;top=top.parentElement}
    if(seen.has(top))break;seen.add(top);const r=top.getBoundingClientRect();if(r.width>4&&r.height>4&&r.width<W*.6&&r.height<H*.6)rects.push(r);break}}
- const off={bR:0,bL:0,tR:0,tL:0,xBR:0,xBL:0,xTR:0,xTL:0},LW=ROT?H:W,LH=ROT?W:H;
+ const off={bR:0,bL:0,tR:0,tL:0,xBR:0,xBL:0,xTR:0,xTL:0,barB:0},LW=ROT?H:W,LH=ROT?W:H,barW=(SK.length*56+8)*HZ;
  for(const r of rects){let l=r.left,t=r.top,rt=r.right,b=r.bottom;if(ROT){l=r.top;rt=r.bottom;t=W-r.right;b=W-r.left}
   const right=(l+rt)/2>LW/2,bottom=(t+b)/2>LH/2,c=(bottom?'B':'T')+(right?'R':'L'),v=Math.ceil(bottom?LH-t+6:b+6),h=Math.ceil(right?LW-l+6:rt+6);
+  if(bottom&&l<LW/2+barW/2&&rt>LW/2-barW/2)off.barB=Math.max(off.barB,v);
   if(v<=h&&v<LH*.45){const k=c[0].toLowerCase()+c[1];off[k]=Math.max(off[k],v)}else if(h<LW*.4)off['x'+c]=Math.max(off['x'+c],h)}
- for(const k in off)hud.style.setProperty('--'+k,off[k]+'px')}
+ for(const k in off)hud.style.setProperty('--'+k,off[k]+'px');
+ ovRects=rects;liftTitle()}
+/* Slide the hero select up just enough to keep its main button out from under an overlay, without pushing the banner off screen. */
+function liftTitle(){const el=$('#title'),btn=el&&!el.hidden&&el.querySelector('[data-t=play]');if(!btn)return;const W=innerWidth,loc=r=>ROT?{l:r.top,rt:r.bottom,t:W-r.right,b:W-r.left}:{l:r.left,rt:r.right,t:r.top,b:r.bottom};
+ const was=parseFloat(el.style.getPropertyValue('--up'))||0,k=loc(btn.getBoundingClientRect()),room=loc(el.querySelector('.tt-ribbon').getBoundingClientRect()).t+was-2;let up=0;
+ for(const o of ovRects.map(loc))if(o.l<k.rt&&o.rt>k.l&&o.t<k.b+was&&o.b>k.t+was)up=Math.max(up,k.b+was-o.t+4);
+ el.style.setProperty('--up',Math.ceil(Math.min(up,Math.max(0,room)))+'px')}
 setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
