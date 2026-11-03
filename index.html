@@ -2603,6 +2603,10 @@ function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:12,date:'3 Nov 2026',title:'Talking to quest givers',items:[
+  'Fixed: Tamsin, Odette, Fennick and Rusk now offer and accept their quests. Talk to them for quests, then press Trade to open their shop.',
+  'Quests are only taken and handed in face to face. Walk up to the quest giver and talk to them.',
+  'The quest log now tells you who to find, and where, for quests you have not taken yet.']},
  {id:11,date:'3 Nov 2026',title:'A wilder world, and things to gather',items:[
   'Every zone has been redrawn: forests grow in thickets with clearings between them, roads wind, streams and a lava river cut through the land, and rocky outcrops break up the open ground.',
   'New landmarks mark the places quests send you: the Old Watchtower, the Barrow Ring, the Broken Well, the Bone Arch, the Rime Circle, the standing stones of Gloamwood, the Old Forge and the smoking vents of the Magma Rift, plus camps, graveyards and crystal fields.',
@@ -2722,7 +2726,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   else if(done.length&&qpages===1&&rows.length<4)h+=`<p style="margin:6px 4px 0;color:var(--ink2);font-size:13px">Completed: ${done.length} of ${QUESTS.length}</p>`;
   h+=`</div>`;
   if(sel){const st=P.q[sel.id];h+=`<div class="qdet"><h3>${esc(sel.title)}</h3><div class="muted"><span class="qkind">${QKIND[sel.kind]}${sel.camp?' · Campaign':''}</span> ${esc(NPCS[sel.giver].name)}, ${esc(NPCS[sel.giver].town)} · level ${sel.lv}</div>
-   <div><b>Objective:</b> ${esc(sel.obj)}${sel.n>1?` — ${st?st.n:0} / ${sel.n}`:''}${st&&st.s==='ready'?' <b style="color:#7ee07a">Complete</b>':''}</div><div>${esc(st?(st.s==='ready'?(sel.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(sel)].name+' in '+NPCS[qTurn(sel)].town+'.':sel.wait):sel.offer)}</div>${rewards(sel)}
+   <div><b>Objective:</b> ${esc(sel.obj)}${sel.n>1?` — ${st?st.n:0} / ${sel.n}`:''}${st&&st.s==='ready'?' <b style="color:#7ee07a">Complete</b>':''}</div><div>${esc(st?(st.s==='ready'?(sel.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(sel)].name+' in '+NPCS[qTurn(sel)].town+'.':sel.wait):sel.offer)}</div>${st?'':`<div class="obar" style="margin:0">Find ${esc(NPCS[sel.giver].name)} in ${esc(NPCS[sel.giver].town)} and talk to them to take this quest.</div>`}${rewards(sel)}
    ${st&&st.s==='active'?`<div class="row" style="justify-content:flex-end"><button class="cbtn ${G.confirm==='drop'+sel.id?'warn':''}" data-act="qdrop" data-q="${sel.id}">${G.confirm==='drop'+sel.id?'Press again to drop':'Drop'}</button></div>`:''}</div>`}
   h+=`</div>`}
  else if(k==='spells'){title='Spells';const tab=G.spTab||'sk';const pts=talentPoints();h=`<div class="tabs"><button class="tab ${tab==='sk'?'on':''}" data-act="stab" data-t="sk">${svg('book')}Skills</button><button class="tab ${tab==='tal'?'on':''}" data-act="stab" data-t="tal">${svg('target')}Talents${pts?` (${pts})`:''}</button></div><div class="pad">`;
@@ -2753,7 +2757,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   const say=ready?ready.done:av?av.offer:active?active.wait:n.idle;
   h=`<div class="npcbox"><div class="npcport"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn">${esc(n.name)}</div><div class="npct">‹${esc(n.title)}›</div><blockquote>${esc(say)}</blockquote></div></div>`;
   const q=ready||av||active;if(q){const st=P.q[q.id];h+=`<div class="qcard2"><div class="qc-t">[${q.lv}] ${esc(q.title)} <span class="qkind">${QKIND[q.kind]}${q.camp?' · Campaign':''}</span></div><div><b>Objective:</b> ${esc(q.obj)}${q.n>1?` — ${st?st.n:0} / ${q.n}`:''}</div>${rewards(q)}</div>`}
-  h+=`<div class="btnrow">${ready?`<button class="gbtn sm gold" data-act="turnin" data-q="${ready.id}">Complete</button>`:av?`<button class="cbtn" data-act="close">Not now</button><button class="gbtn sm" data-act="accept" data-q="${av.id}">Accept</button>`:`<button class="cbtn" data-act="close">Farewell</button>`}</div>`}
+  h+=`<div class="btnrow">${ready?`<button class="gbtn sm gold" data-act="turnin" data-q="${ready.id}">Complete</button>`:av?`<button class="cbtn" data-act="close">Not now</button><button class="gbtn sm" data-act="accept" data-q="${av.id}">Accept</button>`:`<button class="cbtn" data-act="close">Farewell</button>`}${n.shop?'<button class="cbtn" data-act="trade">Trade</button>':''}</div>`}
  else if(k==='shop'){const sn=NPCS[a]||NPCS.pell;title=`${sn.name.split(' ').pop()}'s Stall`;const tab=G.shopTab||'buy';h=`<div class="tabs"><button class="tab ${tab==='buy'?'on':''}" data-act="shtab" data-t="buy">Buy</button><button class="tab ${tab==='sell'?'on':''}" data-act="shtab" data-t="sell">Sell</button><button class="tab ${tab==='craft'?'on':''}" data-act="shtab" data-t="craft">Craft</button></div>`;
   if(tab==='buy')h+=`<div class="npcbox" style="padding:12px 16px 0;grid-template-columns:72px minmax(0,1fr);align-items:center"><div class="npcport" style="width:72px;height:72px;border-width:3px"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn" style="font-size:21px">${esc(sn.name)} <span class="npct" style="font-size:14px">‹${esc(sn.title)}›</span></div><blockquote style="margin-top:4px;font-size:15px">${esc(sn.idle)}</blockquote></div></div>`;h+=`<div class="pad">${tab==='buy'?'<div class="sgrid">':''}`;
   if(tab==='buy')for(const s of SHOPLIST()){const ok=P.gold>=s.price&&(!s.gear||P.bag.length<bagCap());h+=`<div class="scard"><div class="sc-t">${esc(s.n)}</div><div class="sc-i"><div class="sk" style="--c:${s.col}"><span class="ic">${svg(s.icon)}</span></div></div><div class="sc-d">${esc(s.d)}</div>${ok?'':`<span class="obar">${P.gold<s.price?"Can't afford":'Bag is full'}</span>`}<button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>Buy</span><b>${s.price}<i class="coin"></i></b></button></div>`}
@@ -2799,6 +2803,8 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='gfx'){OPT.gfx=b.dataset.g;applyGfx();saveOpt()}
  if(act==='quit'){save();toTitle();return}
  if(act==='del'){if(G.confirm!=='del'){G.confirm='del'}else{clearSave();toTitle();return}}
+ if(act==='accept'||act==='turnin'){const q=QUESTS.find(x=>x.id===b.dataset.q),who=q&&(act==='accept'?q.giver:qTurn(q)),np=who&&NPCS[who];if(!q||G.panel!=='npc'||G.panelArg!==who||!G.map.npcs.includes(who)||dist(P.x,P.y,np.x*TS,np.y*TS)>110||(act==='accept'&&!qAvail(q))||(act==='turnin'&&!(P.q[q.id]&&P.q[q.id].s==='ready')))return closePanel()}
+ if(act==='trade'){G.shopTab='buy';openPanel('shop',G.panelArg);return}
  if(act==='accept'){const q=QUESTS.find(x=>x.id===b.dataset.q);P.q[q.id]={s:q.kind==='deliver'?'ready':'active',n:0,got:[]};refreshQuestWorld();toast(`Quest accepted: <b>${esc(q.title)}</b>`,'q');if(q.id==='q5')toast('The gate-key is heavy and smells of the river.');updateTracker();save();return closePanel()}
  if(act==='turnin'){const q=QUESTS.find(x=>x.id===b.dataset.q);P.q[q.id].s='done';P.gold+=q.gold;if(q.potions)P.potions+=q.potions;
   if(q.item){const it=rollItem(Math.max(P.lvl,q.lv),0,q.item.slot,q.item.rar);if(!addToBag(it))dropItem(P.x,P.y+20,it);toast(`Reward: <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`)}
@@ -2927,7 +2933,8 @@ function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGam
  padPrev=B}
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
-function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop){G.shopTab='buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else usePortal(n.p)}
+function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
+function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab='buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
