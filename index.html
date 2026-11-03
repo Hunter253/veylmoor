@@ -46,7 +46,7 @@ body{margin:0;background:var(--bg);color:var(--cream);font-family:var(--f-body);
 #gl{touch-action:none;background:#0b0f10}#cv{pointer-events:none}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:focus-visible,input:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
-kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
+kbd{display:none}#app.kbm kbd{display:block}
 .parch{background:radial-gradient(ellipse at 25% 15%,rgba(255,252,238,.6),transparent 55%),radial-gradient(ellipse at 85% 95%,rgba(160,105,40,.28),transparent 55%),var(--noise),var(--parch);color:var(--ink);box-shadow:inset 0 0 50px rgba(130,80,25,.45)}
 .cbtn{background:linear-gradient(#fdf8ea,#e6d6b2);border:2px solid #b49a66;border-radius:8px;color:var(--ink);font:400 15px/1.1 var(--f-ui);padding:9px 14px;box-shadow:inset 0 2px 0 #fff,inset 0 -3px 0 rgba(120,90,40,.22),0 2px 4px rgba(0,0,0,.35)}
 .cbtn:active,.gbtn:active,.gbar:active{transform:translateY(1px)}
@@ -135,7 +135,7 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}}
 .act{position:absolute;right:calc(max(6px,env(safe-area-inset-right,0px)) + 160px);bottom:calc(env(safe-area-inset-bottom,0px) + 92px);white-space:nowrap;animation:tin .2s}
 .act kbd{display:inline;opacity:.55;margin-left:6px;font:800 11px var(--f-num)}
-@media not ((hover:hover) and (pointer:fine)){.act kbd{display:none}}
+#app:not(.kbm) .act kbd{display:none}#app.kbm .act kbd{display:inline}
 #camHint{position:absolute;right:calc(max(6px,env(safe-area-inset-right,0px)) + 140px);top:44%;font:600 12px/1.3 var(--f-body);text-align:right;text-shadow:0 1px 3px #000;transition:opacity 1s;pointer-events:none;max-width:calc(30*var(--vw))}
 #camHint.off{opacity:0}
 #lootwin{position:absolute;right:calc(max(6px,env(safe-area-inset-right,0px)) + 136px);top:calc(env(safe-area-inset-top,0px) + 70px);width:min(270px,calc(40*var(--vw)));max-height:calc(62*var(--vh));display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;padding:10px;border-radius:8px;border:2px solid #8a5a24;box-shadow:0 6px 18px rgba(0,0,0,.6)}
@@ -460,6 +460,39 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
 #stickBase.sprint{border-color:#c8ff9a;box-shadow:0 0 0 4px rgba(12,18,22,.3),0 0 18px rgba(160,255,120,.55)}
 .attrs dt.main,.attrs dd.main{color:var(--brass2)}
 .tt-left{grid-template-columns:repeat(2,auto);column-gap:10px}
+
+/* Desktop play: applies while the last input was a mouse or keyboard */
+#app.kbm .tch,#app:not(.kbm) .kb{display:none!important}
+#app:not(.kbm) #micro,#app:not(.kbm) #skTip{display:none}
+#app.kbm #stickZone,#app.kbm #quick,#app.kbm #barTog,#app.kbm #jumpBtn,#app.kbm #rollBtn{display:none}
+#gl.drag{cursor:grabbing}
+#app.kbm #skillbar{zoom:var(--hz,1);--sk:52px;left:50%;right:auto;top:auto;bottom:calc(12px + var(--bR,0px)/var(--hz,1));transform:translateX(-50%);opacity:1;pointer-events:auto;grid-template-columns:repeat(9,var(--sk))}
+#app.kbm #skillbar .sk kbd{left:50%;top:auto;bottom:2px;transform:translateX(-50%);font-size:11px;padding:1px 4px;background:rgba(6,10,12,.78);border-radius:2px}
+#app.kbm #skillbar .sk .cnt{top:8%;bottom:auto;right:24%}
+#app.kbm #castbar{bottom:calc(86px + var(--bR,0px)/var(--hz,1))}
+#app.kbm #btnAct{right:auto;left:50%;transform:translateX(-50%);bottom:calc(124px + var(--bR,0px)/var(--hz,1));animation:none;font-size:17px}
+#app.kbm #btnAct:active{transform:translateX(-50%) translateY(1px)}
+#app.kbm #camHint{right:auto;left:50%;transform:translateX(-50%);top:auto;bottom:172px;max-width:none;white-space:nowrap;text-align:center;font-size:15px}
+#micro{position:absolute;right:calc(max(10px,env(safe-area-inset-right,0px)) + var(--xBR,0px)/var(--hz,1));bottom:calc(12px + var(--bR,0px)/var(--hz,1));display:flex;gap:4px;zoom:var(--hz,1)}
+#app.w720 #micro{bottom:calc(78px + var(--bR,0px)/var(--hz,1))}
+.mb{position:relative;width:40px;height:40px;padding:0;display:grid;place-items:center;background:linear-gradient(#2e3a42,#171d22);border:1px solid var(--slate3);border-radius:3px;color:var(--runeL);box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.mb svg{width:22px;height:22px}
+.mb:hover{border-color:var(--rune);filter:brightness(1.2)}
+#app.kbm .mb kbd{position:absolute;right:2px;bottom:1px;font:800 10px/1 var(--f-num);color:var(--cream);text-shadow:0 1px 2px #000}
+#microDot{position:absolute;right:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--brass2);box-shadow:0 0 6px var(--brass2)}
+#skTip{position:absolute;left:50%;bottom:calc(86px + var(--bR,0px)/var(--hz,1));transform:translateX(-50%);width:350px;box-sizing:border-box;padding:9px 12px;background:rgba(14,20,24,.97);border:1px solid var(--slate3);border-left:3px solid var(--rune);pointer-events:none;zoom:var(--hz,1);font:500 14px/1.35 var(--f-body);color:var(--cream);z-index:3}
+#skTip b{display:block;font:400 17px/1.2 var(--f-ui);color:var(--brass2)}
+#skTip em{display:block;font-style:normal;font-size:12.5px;color:#8fe8f0;margin:1px 0 4px}
+#app.kbm #lootwin{right:calc(max(10px,env(safe-area-inset-right,0px)) + var(--xTR,0px)/var(--hz,1));top:calc(env(safe-area-inset-top,0px) + 158px + var(--tR,0px)/var(--hz,1))}
+#app.kbm #book.left{justify-content:center;background:rgba(8,5,2,.62)}
+#app.kbm #book.left .bk{transform-origin:center;margin-left:0}
+#app.kbm .bk-main{scrollbar-width:thin;scrollbar-color:var(--slate3) transparent}
+#app.kbm .cbtn:not(:disabled):hover,#app.kbm .gbtn:hover,#app.kbm .gbar:not(:disabled):hover,#app.kbm .navb:hover,#app.kbm .tab:hover,#app.kbm #skillbar .sk:not(.nomp):hover,#app.kbm .rx:hover{filter:brightness(1.2)}
+#app.kbm .tt-hint{background:rgba(10,14,17,.76);border:1px solid var(--slate3);padding:8px 12px;max-width:46ch;text-shadow:none}
+@media (min-height:800px){#app.kbm .tt-hint{position:absolute;left:50%;top:100%;transform:translate(-50%,8px);width:max-content;max-width:100%;box-sizing:border-box;margin:0;align-self:auto}}
+.keys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 22px;padding:8px 12px;border:1px solid var(--slate3);border-radius:8px;background:rgba(10,14,17,.5);font-size:13.5px}
+.keys div{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#app.kbm .keys kbd{display:inline-block;font:800 12px/1 var(--f-num);color:var(--runeL);padding:3px 6px;border:1px solid var(--slate3);border-radius:3px;background:#10161a;white-space:nowrap}
 </style>
 
 
@@ -475,11 +508,11 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
   <div id="tf" hidden><div class="hexp sm"><canvas id="tfCan" class="por"></canvas><span class="lvb" id="tfLv">1</span></div><div class="pbars"><div id="tname" hidden></div><div class="hbar hp"><i id="tfHp"></i></div></div></div>
   <div id="buffs"></div>
   <div id="tracker"></div>
-  <div id="compass" aria-label="Minimap. Tap to open the world map." role="button"><canvas id="mmap" width="252" height="252"></canvas><span class="n">N</span><span class="w">W</span><span class="e">E</span><span class="s">S</span><i id="carrow"></i></div>
-  <button id="menuBtn" aria-label="Show or hide the minimap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg></button>
+  <div id="compass" aria-label="Minimap. Opens the world map." title="World map (M)" role="button"><canvas id="mmap" width="252" height="252"></canvas><span class="n">N</span><span class="w">W</span><span class="e">E</span><span class="s">S</span><i id="carrow"></i></div>
+  <button id="menuBtn" aria-label="Show or hide the minimap" title="Minimap (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg></button>
   <div id="zone"><div class="z1" id="zone1"></div><div class="z2" id="zone2"></div></div>
   <div id="toasts" aria-live="polite"></div>
-  <div id="camHint">Drag here to turn the camera</div>
+  <div id="camHint"><span class="tch">Drag here to turn the camera</span><span class="kb">Move with WASD. Hold a mouse button and drag to look around.</span></div>
   <div id="stickZone"><div id="stickBase"><div id="stickKnob"></div></div></div>
   <div id="castbar" hidden><i id="castI"></i><span id="castT"></span></div>
   <div id="skillbar"></div>
@@ -490,6 +523,8 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
   <button id="btnAct" class="cbtn act" hidden>Talk</button>
   <div id="lootwin" class="parch" hidden></div>
   <div id="xpbar"><i id="xpI"></i></div>
+  <div id="micro"></div>
+  <div id="skTip" hidden></div>
 </div>
 
 <div id="book" hidden><div class="bk" id="bk">
@@ -1250,7 +1285,7 @@ function updatePlayer(dt){
  else if(len>0.12){const n=Math.max(1,len),sx=ix/n,sy=iy/n;
   const fwx=Math.sin(CAM.yaw),fwy=Math.cos(CAM.yaw),rx=-Math.cos(CAM.yaw),ry=Math.sin(CAM.yaw);
   const mx=rx*sx+fwx*(-sy),my=ry*sx+fwy*(-sy);
-  P.sprint=!P.mounted&&(input.sprint||(OPT.stickSprint!==false&&len>1.15))&&P.st>1;let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;
+  P.sprint=!P.mounted&&(input.sprint||(OPT.stickSprint!==false&&Math.hypot(input.sx,input.sy)>1.15))&&P.st>1;let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;
   if(P.sprint){P.st=Math.max(0,P.st-16*dt);P.stLast=G.time;if(R()<dt*14)burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',2,40,.4,2.5,.05)}
   moveEnt(P,mx*sp*dt,my*sp*dt,10);moving=Math.min(1,len);P.walk+=dt*moving*sp/118;
   if(P.faceLock<=0){const l=Math.hypot(mx,my);P.fx=mx/l;P.fy=my/l}
@@ -1386,10 +1421,10 @@ function updateLoot(dt){for(const l of G.loot)l.t+=dt;G.loot=G.loot.filter(l=>!l
 const glc=$('#gl'),cv=$('#cv'),ctx=cv.getContext('2d');
 const gl=glc.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance',stencil:true})||glc.getContext('experimental-webgl');
 let VW=innerWidth,VH=innerHeight,DPR=1,RS=1,frameAvg=16;var FBR=null;
-const APP=document.getElementById('app'),COARSE=matchMedia('(pointer:coarse)');let ROT=false;
+const APP=document.getElementById('app'),COARSE=matchMedia('(pointer:coarse)');let ROT=false,HZ=1,KBM=matchMedia('(hover:hover) and (pointer:fine)').matches;
 function layout(){const W=innerWidth,H=innerHeight;ROT=COARSE.matches&&H>W;const lw=ROT?H:W,lh=ROT?W:H;
- APP.classList.toggle('rot',ROT);APP.style.setProperty('--aw',lw+'px');APP.style.setProperty('--ah',lh+'px');APP.style.setProperty('--tx',W+'px');
- const ui=Math.max(.45,Math.min(lw/980,lh/490,1.35));APP.style.setProperty('--ui',ui);APP.style.setProperty('--hz',Math.max(.66,Math.min(1,lh/540,lw/1100)).toFixed(3));APP.classList.toggle('tiny',ui<.74);
+ APP.classList.toggle('rot',ROT);APP.classList.toggle('kbm',KBM);APP.style.setProperty('--aw',lw+'px');APP.style.setProperty('--ah',lh+'px');APP.style.setProperty('--tx',W+'px');
+ const ui=Math.max(.45,Math.min(lw/980,lh/490,Math.max(1.35,lh/800)));APP.style.setProperty('--ui',ui);HZ=KBM?Math.max(.7,Math.min(2.5,lh/864,lw/1400)):Math.max(.66,Math.min(1,lh/540,lw/1100));APP.style.setProperty('--hz',HZ.toFixed(3));APP.classList.toggle('tiny',ui<.74);
  for(const c of ["h430", "h460", "w560", "w700", "w720"])APP.classList.toggle(c,(c[0]==='w'?lw:lh)<=+c.slice(1));VW=lw;VH=lh}
 function toLocal(cx,cy){return ROT?[cy,innerWidth-cx]:[cx,cy]}
 function resize(){layout();DPR=Math.min(2,window.devicePixelRatio||1);const s=Math.min(DPR,1.75)*RS;glc.width=Math.max(1,Math.round(VW*s));glc.height=Math.max(1,Math.round(VH*s));cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);if(FBR)FBR()}
@@ -2152,21 +2187,23 @@ function renderWorld(dt){
 function handPos(x,z,rot,up=0){const y=groundH(x,z);const rx=-Math.cos(rot),rz=Math.sin(rot);return[x+rx*.23+Math.sin(rot)*.15,y+1.62+up,z+rz*.23+Math.cos(rot)*.15]}
 function renderOverlay(){
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,VW,VH);const m=G.map;if(!m||!VPm)return;
+ const lk=KBM?Math.max(1,HZ/1.25):1,proj=(x,y,z)=>{const q=project(x,y,z);if(q){q[0]/=lk;q[1]/=lk}return q};ctx.setTransform(DPR*lk,0,0,DPR*lk,0,0);
  ctx.textAlign='center';ctx.lineJoin='round';
- if(G.mode==='play')for(const k of m.npcs){const n=NPCS[k],d=Math.hypot(n.x-CAM.tx,n.y-CAM.tz);if(d>22)continue;const s=project(n.x,groundH(n.x,n.y)+1.62,n.y);if(!s)continue;
+ if(G.mode==='play')for(const k of m.npcs){const n=NPCS[k],d=Math.hypot(n.x-CAM.tx,n.y-CAM.tz);if(d>22)continue;const s=proj(n.x,groundH(n.x,n.y)+1.62,n.y);if(!s)continue;
   ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.font='600 11.5px Alegreya,serif';const tl='‹'+n.title+'›';ctx.strokeText(tl,s[0],s[1]-15);ctx.fillStyle='#8fe8f0';ctx.fillText(tl,s[0],s[1]-15);
   ctx.font='15px Marcellus,serif';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#f6e8c4';ctx.fillText(n.name,s[0],s[1]);
   const mk=npcMark(k)||(n.shop?'$':null);if(mk){const b=Math.sin(G.time*4)*3,cy=s[1]-44+b;ctx.beginPath();ctx.arc(s[0],cy,14,0,TAU);ctx.fillStyle=mk==='$'?'#123a44':'#2a1a08';ctx.fill();ctx.lineWidth=2.5;const cc=mk==='?'?'#ffe060':mk==='$'?'#8fe8f0':'#f2c24a';ctx.strokeStyle=cc;ctx.stroke();ctx.font='800 19px "Alegreya Sans",sans-serif';ctx.fillStyle=cc;ctx.textBaseline='middle';ctx.fillText(mk==='$'?'⚖':mk,s[0],cy+1);ctx.textBaseline='alphabetic'}}
  if(G.mode!=='play')return;
- for(const n of[...(G.nodes||[]),...(G.beacons||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=project(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
- if(!P.dead){const s=project(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(P.name,s[0],s[1]);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],s[1])}}
- for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=project(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
+ for(const n of[...(G.nodes||[]),...(G.beacons||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=proj(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
+ if(!P.dead){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(P.name,s[0],s[1]);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],s[1])}}
+ for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=proj(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
   const w=46,x=s[0]-w/2,y=s[1];ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(x-1,y-1,w+2,7);ctx.fillStyle=e.state==='chase'?'#d24a3e':'#b89a5a';ctx.fillRect(x,y,w*Math.max(0,e.hp/e.max),5);
   ctx.font='800 11px "Alegreya Sans",sans-serif';ctx.textAlign='right';const hard=e.lvl>=P.lvl+3;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(e.lvl,x-4,y+6);ctx.fillStyle=hard?'#ff7a6b':'#f3ead6';ctx.fillText(e.lvl,x-4,y+6);ctx.textAlign='center';
   if(e===G.tgt||e.state==='chase'||e.d.elite){ctx.font='13px Marcellus,serif';ctx.strokeText(e.d.name,s[0],y-5);ctx.fillStyle=e.d.elite?'#ffd060':e===G.tgt?'#ffb090':'#ff6a4a';ctx.fillText(e.d.name,s[0],y-5)}}
- for(const t of G.texts){const s=project(t.x*U,groundH(t.x*U,t.y*U)+t.h,t.y*U);if(!s)continue;const f=t.t/t.max;ctx.globalAlpha=f<.7?1:1-(f-.7)/.3;const sc=f<.12?1+(.12-f)*4:1;
+ for(const t of G.texts){const s=proj(t.x*U,groundH(t.x*U,t.y*U)+t.h,t.y*U);if(!s)continue;const f=t.t/t.max;ctx.globalAlpha=f<.7?1:1-(f-.7)/.3;const sc=f<.12?1+(.12-f)*4:1;
   ctx.font=`800 ${Math.round(t.size*sc)}px "Alegreya Sans",sans-serif`;ctx.lineWidth=4.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(t.s,s[0],s[1]);ctx.fillStyle=t.c;ctx.fillText(t.s,s[0],s[1])}
  ctx.globalAlpha=1;
+ ctx.setTransform(DPR,0,0,DPR,0,0);
  if(P.hurtFlash>0||P.hp<S.maxHp*.25){const a=Math.max(P.hurtFlash*2,P.hp<S.maxHp*.25?.25+Math.sin(G.time*5)*.1:0);const g=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.75);g.addColorStop(0,'rgba(160,20,10,0)');g.addColorStop(1,`rgba(160,20,10,${a})`);ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}}
 
 /* ================= Options & item art ================= */
@@ -2217,9 +2254,9 @@ const EL={};
 function cacheEls(){for(const id of['pfHp','pfMp','pfLv','pfNum','pfCan','tf','tfHp','tfLv','tfCan','tname','buffs','tracker','carrow','castbar','castI','castT','skillbar','quick','jumpBtn','mmap','compass','pfSt','pfSh','rollBtn','btnAct','lootwin','xpI','menuDot'])EL[id]=$h(id)}
 const SK=[0,1,2,3,4,5,'pot','tgt','mnt'],QK=[0,1,2];
 function setupButtons(){
- const skHTML=(s,cls)=>{let ic,c,lbl,key;if(s==='pot'){ic='potion';c='#c0402a';lbl='Marsh Tonic';key='Q'}else if(s==='tgt'){ic='target';c='#8a6a3a';lbl='Next target';key='Tab'}else if(s==='mnt'){ic='horse';c='#9a7a4a';lbl='Summon or dismiss your mount';key='R'}else{const ab=CLS.ab[s];ic=ab.icon;c=ab.c;lbl=ab.name;key=s===0?'Space':String(s)}
+ const skHTML=(s,cls)=>{let ic,c,lbl,key;if(s==='pot'){ic='potion';c='#c0402a';lbl='Marsh Tonic';key='Q'}else if(s==='tgt'){ic='target';c='#8a6a3a';lbl='Next target';key='Tab'}else if(s==='mnt'){ic='horse';c='#9a7a4a';lbl='Summon or dismiss your mount';key='R'}else{const ab=CLS.ab[s];ic=ab.icon;c=ab.c;lbl=ab.name;key=s===0?'F':String(s)}
   return`<button class="sk ${cls}" data-s="${s}" style="--c:${c}" aria-label="${esc(lbl)}"><span class="ic">${svg(ic)}</span><span class="cdn"></span><span class="lk" hidden></span>${s==='pot'?'<span class="cnt"></span>':''}<kbd>${key}</kbd></button>`};
- EL.skillbar.innerHTML=SK.map(x=>skHTML(x,'')).join('');EL.quick.innerHTML=QK.map(x=>skHTML(x,'qk')).join('');
+ const MK={bag:'B',char:'C',quests:'L',spells:'K',map:'M',options:'O'};$h('micro').innerHTML=NAV.map(([k,l,ic])=>`<button class="mb" data-p="${k}" title="${l} (${MK[k]})" aria-label="${l}">${svg(ic)}<kbd>${MK[k]}</kbd>${k==='spells'?'<span id="microDot" hidden></span>':''}</button>`).join('');EL.skillbar.innerHTML=SK.map(x=>skHTML(x,'')).join('');EL.quick.innerHTML=QK.map(x=>skHTML(x,'qk')).join('');
  EL.jumpBtn.innerHTML=svg('boot');EL.rollBtn.innerHTML=svg('roll');$h('pfName').textContent=P.name||CLS.name;setMini(OPT.mini!==false);$h('hud').classList.toggle('baropen',!!OPT.barOpen);updateBadges();updateTracker();lastTgt=null;lastNear=undefined;lastLootKey='~'}
 let hudF=0,lastTgt=null,lastNear,lastLootKey='~',lootHide='';
 const arc=(el,f)=>{el.style.width=(clamp(f,0,1)*100).toFixed(1)+'%'};
@@ -2256,7 +2293,7 @@ function drawMini(){const c=EL.mmap,m=G.map;if(!c||!m||!m.mini)return;const x=c.
  const fx=Math.sin(CAM.yaw),fz=Math.cos(CAM.yaw);x.fillStyle='rgba(255,240,200,.14)';x.beginPath();x.moveTo(W/2,H/2);x.arc(W/2,H/2,W*.5,Math.atan2(fz,fx)-.55,Math.atan2(fz,fx)+.55);x.closePath();x.fill();
  const g=x.createRadialGradient(W/2,H/2,W*.32,W/2,H/2,W*.5);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=g;x.fillRect(0,0,W,H);x.restore()}
 function setMini(on){OPT.mini=on;saveOpt();EL.compass.classList.toggle('mm',on);$h('menuBtn').classList.toggle('on',on);$h('menuBtn').setAttribute('aria-label',on?'Hide the minimap':'Show the minimap')}
-function updateBadges(){if(EL.menuDot)EL.menuDot.hidden=!P||talentPoints()<=0}
+function updateBadges(){const none=!P||talentPoints()<=0;if(EL.menuDot)EL.menuDot.hidden=none;const d=$h('microDot');if(d)d.hidden=none}
 function qLine(q,st){if(st.s==='ready')return(q.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(q)].name;
  if(q.kind==='defend')return G.event&&G.event.q===q?`Hold the ${q.beaconName}: ${Math.max(0,Math.ceil(q.dur-G.event.t))}s`:`Light the ${q.beaconName}`;
  const where=G.map&&qArea(q)!==(G.map.id==='abbey'?'vale':G.map.id)?' · '+AREAS[qArea(q)].name:q.map==='abbey'&&G.map&&G.map.id!=='abbey'?' · Sunken Abbey':'';
@@ -2275,8 +2312,9 @@ function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b
 /* ================= Book (menus) ================= */
 const NAV=[['bag','Bag','bag'],['char','Character','person'],['quests','Quests','scroll'],['spells','Spells','book'],['map','World Map','map'],['options','Options','gear']];
 const NAVK=NAV.map(n=>n[0]);
+const KEYS=[['Move','W A S D'],['Look','Hold mouse + drag'],['Sprint','Shift'],['Jump','Space'],['Dodge roll','V'],['Attack','F or click a foe'],['Skills','1 to 5'],['Next target','Tab'],['Talk or use','E'],['Tonic','Q'],['Mount','R'],['Zoom','Mouse wheel'],['Bag','B'],['Character','C'],['Quests','L'],['Spells','K'],['World map','M'],['Minimap','N'],['Options','O'],['Menu','Esc']];
 let TORN=null;function tornClip(){if(TORN)return TORN;const r=rng(7),pts=[],N=34,j=()=>(r()*5).toFixed(1);for(let i=0;i<=N;i++)pts.push(`${(i/N*100).toFixed(2)}% ${j()}px`);for(let i=1;i<N;i++)pts.push(`calc(100% - ${j()}px) ${(i/N*100).toFixed(2)}%`);for(let i=N;i>=0;i--)pts.push(`${(i/N*100).toFixed(2)}% calc(100% - ${j()}px)`);for(let i=N-1;i>0;i--)pts.push(`${j()}px ${(i/N*100).toFixed(2)}%`);return TORN=`polygon(${pts.join(',')})`}
-function openPanel(kind,arg){G.panel=kind;G.panelArg=arg;G.tip=null;G.confirm=null;input.sx=input.sy=0;resetStick();const solo=!NAVK.includes(kind);$h('bk').classList.toggle('solo',solo);$h('book').classList.toggle('left',!solo);$h('bk').style.clipPath='';
+function openPanel(kind,arg){releaseLook();$h('skTip').hidden=true;G.panel=kind;G.panelArg=arg;G.tip=null;G.confirm=null;input.sx=input.sy=0;resetStick();const solo=!NAVK.includes(kind);$h('bk').classList.toggle('solo',solo);$h('book').classList.toggle('left',!solo);$h('bk').style.clipPath='';
  $h('bkNav').innerHTML=solo?'':NAV.map(([k,l,ic])=>`<button class="navb ${k===kind?'on':''}" data-nav="${k}">${svg(ic)}<span>${l}</span></button>`).join('');
  $h('book').hidden=false;EL.lootwin.hidden=true;lastLootKey='~';renderPanel();$h('bkMain').scrollTop=0}
 function closePanel(force){if(G.panel==='dead'&&!force)return;G.panel=null;$h('book').hidden=true;G.tip=null;G.confirm=null}
@@ -2292,7 +2330,7 @@ function cmpCard(it){const cur=P.eq[it.slot];if(!cur)return`<div class="icard"><
  let h='';for(const k of['wd','arm',...ATTR,...SPEC]){const d=(it.st[k]||0)-(cur.st[k]||0);if(Math.abs(d)<.05)continue;const v=PCT.has(k)?Math.abs(d).toFixed(1).replace(/\.0$/,'')+'%':RATE.has(k)?Math.abs(d).toFixed(1)+'/s':Math.abs(Math.round(d));h+=`<div class="st ${d>0?'g':'r'}">${d>0?'+':'-'}${v} ${STATN[k]}</div>`}
  return`<div class="icard"><div class="ic-h"><b>Equipment Comparison</b></div><div style="color:${RAR[cur.rar].c2};font:400 17px var(--f-ui)">${esc(cur.name)}</div>${h||'<div>No difference in stats.</div>'}${cur.uq&&!it.uq?'<div class="st r">Loses its legendary effect</div>':''}</div>`}
 function tipHTML(){const tp=G.tip;if(!tp)return'';const it=tp.src==='eq'?P.eq[tp.slot]:P.bag[tp.idx];if(!it){G.tip=null;return''}
- let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip">Equip</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Tap again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
+ let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip">Equip</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
  return`<div class="tipwrap">${itemCard(it,btns)}${tp.src==='bag'?cmpCard(it):''}</div>`}
 const ANG={helm:-90,charm:-30,boots:30,weapon:150,chest:180,cloak:-150};
 function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold').textContent=P.gold;let h='',title='';
@@ -2319,7 +2357,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   h+=`</div>`;
   if(sel){const st=P.q[sel.id];h+=`<div class="qdet"><h3>${esc(sel.title)}</h3><div class="muted"><span class="qkind">${QKIND[sel.kind]}${sel.camp?' · Campaign':''}</span> ${esc(NPCS[sel.giver].name)}, ${esc(NPCS[sel.giver].town)} · level ${sel.lv}</div>
    <div><b>Objective:</b> ${esc(sel.obj)}${sel.n>1?` — ${st?st.n:0} / ${sel.n}`:''}${st&&st.s==='ready'?' <b style="color:#7ee07a">Complete</b>':''}</div><div>${esc(st?(st.s==='ready'?(sel.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(sel)].name+' in '+NPCS[qTurn(sel)].town+'.':sel.wait):sel.offer)}</div>${rewards(sel)}
-   ${st&&st.s==='active'?`<div class="row" style="justify-content:flex-end"><button class="cbtn ${G.confirm==='drop'+sel.id?'warn':''}" data-act="qdrop" data-q="${sel.id}">${G.confirm==='drop'+sel.id?'Tap again to drop':'Drop'}</button></div>`:''}</div>`}
+   ${st&&st.s==='active'?`<div class="row" style="justify-content:flex-end"><button class="cbtn ${G.confirm==='drop'+sel.id?'warn':''}" data-act="qdrop" data-q="${sel.id}">${G.confirm==='drop'+sel.id?'Press again to drop':'Drop'}</button></div>`:''}</div>`}
   h+=`</div>`}
  else if(k==='spells'){title='Spells';const tab=G.spTab||'sk';const pts=talentPoints();h=`<div class="tabs"><button class="tab ${tab==='sk'?'on':''}" data-act="stab" data-t="sk">${svg('book')}Skills</button><button class="tab ${tab==='tal'?'on':''}" data-act="stab" data-t="tal">${svg('target')}Talents${pts?` (${pts})`:''}</button></div><div class="pad">`;
   if(tab==='sk'){const si=clamp(G.spSel||0,0,CLS.ab.length-1),sa=CLS.ab[si],sl=P.lvl<(sa.lvl||1);h+=`<div class="spwrap"><div class="splist">${CLS.ab.map((ab,i)=>{const lock=P.lvl<(ab.lvl||1);return`<button class="spbtn ${i===si?'sel':''} ${lock?'locked':''}" data-act="spsel" data-i="${i}"><span class="sk" style="--c:${ab.c}"><span class="ic">${svg(ab.icon)}</span></span><span><b>${esc(ab.name)}</b><small>${lock?'Level '+ab.lvl:i===0?'Basic attack':ab.mp+' mana'}</small></span></button>`}).join('')}</div>
@@ -2334,15 +2372,15 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   const tg=(key,l,d,def=false)=>{const on=OPT[key]==null?def:!!OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><button class="cbtn tog ${on?'on':''}" data-act="opt" data-k="${key}" data-d="${def?1:0}" aria-pressed="${on}">${on?'On':'Off'}</button></div>`};
   const sg=(key,l,d,opts,def)=>{const cur=OPT[key]==null?def:OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><div class="seg">${opts.map(([v,t])=>`<button class="cbtn segb ${cur==v?'on':''}" data-act="oseg" data-k="${key}" data-v="${v}">${t}</button>`).join('')}</div></div>`};
   h=`<div class="tabs"><button class="tab ${tab==='ctl'?'on':''}" data-act="otab" data-t="ctl">${svg('target')}Controls</button><button class="tab ${tab==='av'?'on':''}" data-act="otab" data-t="av">${svg('gear')}Display &amp; sound</button><button class="tab ${tab==='game'?'on':''}" data-act="otab" data-t="game">${svg('person')}Game</button></div><div class="pad optlist">`;
-  if(tab==='ctl')h+=`${tg('invX','Invert horizontal look','Dragging left turns the camera right.')}${tg('invY','Invert vertical look','Dragging up tilts the camera down.')}
-   ${sg('sens','Look sensitivity','How fast the camera turns when you drag.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
-   ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}`;
-  else if(tab==='av')h+=`<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older phones.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
+  if(tab==='ctl')h+=`<div class="keys kb">${KEYS.map(([a,k])=>`<div><span>${a}</span><kbd>${k}</kbd></div>`).join('')}</div>${tg('invX','Invert horizontal look','Dragging left turns the camera right.')}${tg('invY','Invert vertical look','Dragging up tilts the camera down.')}
+   ${sg('sens','Look sensitivity','How fast the camera turns.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
+   ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
+  else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
    ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}
-   ${tg('vib','Vibration','Buzz when you take a heavy hit (Android phones).',true)}${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
-  else h+=`<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
+   <div class="tch">${tg('vib','Vibration','Buzz when you take a heavy hit (Android phones).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
+  else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
-   <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Tap again to delete':'Delete'}</button></div>`;
+   <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
   h+='</div>'}
  else if(k==='npc'){const n=NPCS[a];title=n.name;const ready=QUESTS.find(q=>qTurn(q)===a&&P.q[q.id]&&P.q[q.id].s==='ready'),active=QUESTS.find(q=>q.giver===a&&P.q[q.id]&&P.q[q.id].s==='active'),av=QUESTS.find(q=>q.giver===a&&qAvail(q));
   const say=ready?ready.done:av?av.offer:active?active.wait:n.idle;
@@ -2353,7 +2391,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   if(tab==='buy')h+=`<div class="npcbox" style="padding:12px 16px 0;grid-template-columns:72px minmax(0,1fr);align-items:center"><div class="npcport" style="width:72px;height:72px;border-width:3px"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn" style="font-size:21px">${esc(sn.name)} <span class="npct" style="font-size:14px">‹${esc(sn.title)}›</span></div><blockquote style="margin-top:4px;font-size:15px">${esc(sn.idle)}</blockquote></div></div>`;h+=`<div class="pad">${tab==='buy'?'<div class="sgrid">':''}`;
   if(tab==='buy')for(const s of SHOPLIST()){const ok=P.gold>=s.price&&(!s.gear||P.bag.length<bagCap());h+=`<div class="scard"><div class="sc-t">${esc(s.n)}</div><div class="sc-i"><div class="sk" style="--c:${s.col}"><span class="ic">${svg(s.icon)}</span></div></div><div class="sc-d">${esc(s.d)}</div>${ok?'':`<span class="obar">${P.gold<s.price?"Can't afford":'Bag is full'}</span>`}<button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>Buy</span><b>${s.price}<i class="coin"></i></b></button></div>`}
   else{if(!P.bag.length)h+='<p>Your bag is empty.</p>';else{const si=P.bag[G.sellSel]?G.sellSel:0,it=P.bag[si];h+=`<div class="igrid">${P.bag.map((x,i)=>`<button class="islot has" style="--rc:${RAR[x.rar].c};${i===si?'outline:3px solid #f2a83a;':''}" data-act="sellsel" data-idx="${i}" aria-label="${esc(x.name)}">${itemIcon(x)}</button>`).join('')}</div>
-   <div class="row" style="justify-content:space-between;align-items:center;margin-top:14px;max-width:620px;margin-inline:auto"><span><b style="font:400 18px var(--f-ui);color:${RAR[it.rar].c2}">${esc(it.name)}</b><br><span style="color:var(--ink2)">${RAR[it.rar].n} ${SLOTNAME[it.slot].toLowerCase()}</span></span><button class="gbar" style="border-radius:8px;min-width:170px" data-act="sell" data-idx="${si}"><span>${G.confirm===it.id?'Tap again':'Sell'}</span><b>${itemValue(it)}<i class="coin"></i></b></button></div>`}}
+   <div class="row" style="justify-content:space-between;align-items:center;margin-top:14px;max-width:620px;margin-inline:auto"><span><b style="font:400 18px var(--f-ui);color:${RAR[it.rar].c2}">${esc(it.name)}</b><br><span style="color:var(--ink2)">${RAR[it.rar].n} ${SLOTNAME[it.slot].toLowerCase()}</span></span><button class="gbar" style="border-radius:8px;min-width:170px" data-act="sell" data-idx="${si}"><span>${G.confirm===it.id?'Press again':'Sell'}</span><b>${itemValue(it)}<i class="coin"></i></b></button></div>`}}
   h+=tab==='buy'?'</div></div>':'</div>'}
  else if(k==='travel'){title='Waystone';h=`<div class="travel">${AREA_ORDER.map((id,i)=>{const a=AREAS[id],here=G.map.id===id||(G.map.id==='abbey'&&id==='vale'),open=areaOpen(id)||here,beat=P.bosses&&P.bosses[id],low=P.lvl<a.min-1;
    return`<div class="tcard ${open?'':'locked'}" style="--tc:${a.col}"><div class="tart"><canvas class="tvc" data-id="${id}"></canvas>${here?'<span class="here">HERE</span>':''}${beat?'<span class="beat">☠ Cleared</span>':''}</div><div class="tt">${esc(a.name)}</div><div class="td"><b>${esc(a.town)} · ${a.lv}</b>${esc(a.blurb)}</div>
@@ -2388,6 +2426,8 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='oseg'){const k=b.dataset.k,v=+b.dataset.v;OPT[k]=v;if(k==='camD')CAM.zoom=v;if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
+ if(act==='fs'){toggleFS();return}
+ if(act==='install'){if(installEv){installEv.prompt();installEv=null}}
  if(act==='gfx'){OPT.gfx=b.dataset.g;applyGfx();saveOpt()}
  if(act==='quit'){save();toTitle();return}
  if(act==='del'){if(G.confirm!=='del'){G.confirm='del'}else{clearSave();toTitle();return}}
@@ -2441,17 +2481,23 @@ const KEYMAP={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',Ke
 const camKeys={left:0,right:0};
 const PK={KeyB:'bag',KeyI:'bag',KeyC:'char',KeyL:'quests',KeyK:'spells',KeyT:'spells',KeyM:'map',KeyO:'options'};
 function attackPress(){if(!G.tgt||G.tgt.dead){const t=findTarget(320);if(t)G.tgt=t}P.auto=!!G.tgt;if(G.tgt)useAbility(0);else notReady('No target nearby')}
-addEventListener('keydown',e=>{if(G.mode!=='play')return;if(e.target&&e.target.tagName==='INPUT')return;
- if(G.panel){if(e.code==='Escape')closePanel();else if(PK[e.code]&&G.panel!=='dead'){if(G.panel===PK[e.code])closePanel();else openPanel(PK[e.code])}return}
+function setInput(kbm){if(KBM===kbm)return;KBM=kbm;resize();restStick()}
+addEventListener('pointerdown',e=>setInput(e.pointerType==='mouse'),{capture:true,passive:true});
+addEventListener('keydown',e=>{if(e.code&&e.code!=='Unidentified'&&!(e.target&&e.target.tagName==='INPUT'))setInput(true)},{capture:true});
+addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(G.mode==='title'&&e.code==='Enter'&&!e.repeat&&!(e.target&&e.target.tagName==='BUTTON')){const b=document.querySelector('#title [data-t=play]');if(b){e.preventDefault();b.click()}return}
+ if(G.mode!=='play')return;if(e.target&&e.target.tagName==='INPUT')return;
+ if(G.panel){if(e.repeat)return;if(e.code==='Escape')closePanel();else if(PK[e.code]&&G.panel!=='dead'){if(G.panel===PK[e.code])closePanel();else openPanel(PK[e.code])}return}
+ if(e.code==='Escape'){if(!e.repeat&&!P.dead)openPanel('options');return}
  if(KEYMAP[e.code]){input[KEYMAP[e.code]]=1;e.preventDefault()}
  if(e.code==='ArrowLeft'){camKeys.left=1;e.preventDefault()}if(e.code==='ArrowRight'){camKeys.right=1;e.preventDefault()}
  if(e.code==='Tab'){e.preventDefault();cycleTarget()}if(e.code==='Space')e.preventDefault();
  if(e.repeat)return;
- if(e.code==='Space'||e.code==='KeyJ')attackPress();
+ if(e.code==='Space')jump();if(e.code==='KeyF'||e.code==='KeyJ')attackPress();
  for(let i=1;i<=5;i++)if(e.code==='Digit'+i)useAbility(i);
- if(e.code==='KeyQ')usePotion();if(e.code==='KeyR')toggleMount();if(e.code==='KeyF')jump();if(e.code==='KeyV')dodgeRoll();if(e.code==='ShiftLeft'||e.code==='ShiftRight')input.sprint=true;if(e.code==='KeyN')setMini(OPT.mini===false);if(e.code==='KeyX'){OPT.barOpen=!OPT.barOpen;saveOpt();$h('hud').classList.toggle('baropen',OPT.barOpen)}if(e.code==='KeyE'||e.code==='Enter')interact();if(PK[e.code])openPanel(PK[e.code])});
+ if(e.code==='KeyQ')usePotion();if(e.code==='KeyR')toggleMount();if(e.code==='KeyV')dodgeRoll();if(e.code==='ShiftLeft'||e.code==='ShiftRight')input.sprint=true;if(e.code==='KeyN')setMini(OPT.mini===false);if(e.code==='KeyX'){OPT.barOpen=!OPT.barOpen;saveOpt();$h('hud').classList.toggle('baropen',OPT.barOpen)}if(e.code==='KeyE'||e.code==='Enter')interact();if(PK[e.code])openPanel(PK[e.code])});
 addEventListener('keyup',e=>{if(KEYMAP[e.code])input[KEYMAP[e.code]]=0;if(e.code==='ShiftLeft'||e.code==='ShiftRight')input.sprint=false;if(e.code==='ArrowLeft')camKeys.left=0;if(e.code==='ArrowRight')camKeys.right=0});
-addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0});
+addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop){G.shopTab='buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
@@ -2461,24 +2507,44 @@ zoneEl.addEventListener('pointerdown',e=>{if(stickId!==null)return;stickId=e.poi
 zoneEl.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const q=toLocal(e.clientX,e.clientY);let dx=q[0]-so.x,dy=q[1]-so.y;const l=Math.hypot(dx,dy),max=42,over=l>max*1.45;if(l>max){dx=dx/l*max;dy=dy/l*max}knob.style.transform=`translate(${dx}px,${dy}px)`;const k2=over?1.25:1;input.sx=dx/max*k2;input.sy=dy/max*k2;base.classList.toggle('sprint',over&&OPT.stickSprint!==false)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(t=>zoneEl.addEventListener(t,e=>{if(e.pointerId===stickId)resetStick()}));
 addEventListener('resize',restStick);
-const ptrs=new Map();let pinch0=0,zoom0=1,tapStart=null;
-glc.addEventListener('pointerdown',e=>{const q=toLocal(e.clientX,e.clientY);ptrs.set(e.pointerId,{x:q[0],y:q[1]});try{glc.setPointerCapture(e.pointerId)}catch(_){}if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);zoom0=CAM.zoom}tapStart={x:q[0],y:q[1],t:performance.now()}});
-glc.addEventListener('pointermove',e=>{const p=ptrs.get(e.pointerId);if(!p)return;const q=toLocal(e.clientX,e.clientY),dx=q[0]-p.x,dy=q[1]-p.y;p.x=q[0];p.y=q[1];
+const ptrs=new Map();let pinch0=0,zoom0=1,tapStart=null,hoverT=0;
+function releaseLook(){if(document.pointerLockElement===glc)document.exitPointerLock();glc.classList.remove('drag')}
+function grabLook(){if(ROT||!glc.requestPointerLock)return;try{const r=glc.requestPointerLock();if(r&&r.catch)r.catch(()=>{})}catch(_){}}
+document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement===glc&&(!ptrs.size||G.panel||G.mode!=='play'))document.exitPointerLock()});
+function hoverAt(x,y){const n=performance.now();if(n-hoverT<60)return;hoverT=n;let c='';if(G.mode==='play'&&!G.panel&&P&&!P.dead){const h=pickAt(x,y);if(h)c=h.k==='foe'?'crosshair':'pointer'}if(glc.style.cursor!==c)glc.style.cursor=c}
+glc.addEventListener('pointerdown',e=>{const q=toLocal(e.clientX,e.clientY);ptrs.set(e.pointerId,{x:q[0],y:q[1]});if(e.pointerType==='mouse'){glc.style.cursor='';glc.classList.add('drag')}try{glc.setPointerCapture(e.pointerId)}catch(_){}if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);zoom0=CAM.zoom}tapStart={x:q[0],y:q[1],t:performance.now(),m:0}});
+glc.addEventListener('pointermove',e=>{const mouse=e.pointerType==='mouse',q=toLocal(e.clientX,e.clientY);let p=ptrs.get(e.pointerId);if(p&&mouse&&!e.buttons){ptrs.delete(e.pointerId);tapStart=null;releaseLook();p=null}if(!p){if(mouse)hoverAt(q[0],q[1]);return}
+ const lk=document.pointerLockElement===glc,dx=lk?e.movementX:q[0]-p.x,dy=lk?e.movementY:q[1]-p.y;if(lk&&Math.abs(dx)+Math.abs(dy)>400)return;if(!lk){p.x=q[0];p.y=q[1]}if(tapStart)tapStart.m+=Math.abs(dx)+Math.abs(dy);
  if(ptrs.size===2){const[a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch0)CAM.zoom=clamp(zoom0*pinch0/d,.55,1.7);return}
- if(G.mode!=='play')return;const sn=OPT.sens||1;CAM.yaw+=dx*0.0075*sn*(OPT.invX?-1:1);CAM.pitchAdj=clamp(CAM.pitchAdj+dy*0.004*sn*(OPT.invY?-1:1),-.3,.5);CAM.lastDrag=G.time;if(Math.abs(dx)+Math.abs(dy)>2)$h('camHint').classList.add('off')});
-const endPtr=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch0=0;const q=toLocal(e.clientX,e.clientY);if(tapStart&&G.mode==='play'&&Math.hypot(q[0]-tapStart.x,q[1]-tapStart.y)<8&&performance.now()-tapStart.t<320)tapSelect(q[0],q[1]);tapStart=null};
+ if(G.mode!=='play')return;if(mouse&&!p.lk&&!G.panel&&tapStart&&tapStart.m>4){p.lk=1;grabLook()}const sn=OPT.sens||1;CAM.yaw+=dx*(mouse?.0042:.0075)*sn*(OPT.invX?-1:1);CAM.pitchAdj=clamp(CAM.pitchAdj+dy*(mouse?.0026:.004)*sn*(OPT.invY?-1:1),-.3,.5);CAM.lastDrag=G.time;if(Math.abs(dx)+Math.abs(dy)>2)$h('camHint').classList.add('off')});
+const endPtr=e=>{ptrs.delete(e.pointerId);if(e.pointerType==='mouse')releaseLook();if(ptrs.size<2)pinch0=0;const q=toLocal(e.clientX,e.clientY);if(tapStart&&G.mode==='play'&&tapStart.m<14&&Math.hypot(q[0]-tapStart.x,q[1]-tapStart.y)<8&&performance.now()-tapStart.t<320)tapSelect(q[0],q[1]);tapStart=null};
 ['pointerup','pointercancel'].forEach(t=>glc.addEventListener(t,endPtr));
 glc.addEventListener('wheel',e=>{CAM.zoom=clamp(CAM.zoom*(1+Math.sign(e.deltaY)*.08),.55,1.7);e.preventDefault()},{passive:false});
-function tapSelect(sx,sy){if(G.panel||P.dead)return;let best=null,bd=60;for(const e of live()){const s=project(e.x*U,groundH(e.x*U,e.y*U)+e.d.h*.5,e.y*U);if(!s)continue;const d=Math.hypot(s[0]-sx,s[1]-sy);if(d<bd){bd=d;best=e}}
- if(best){G.tgt=best;P.auto=true;return}
- for(const k of G.map.npcs){const n=NPCS[k],s=project(n.x,groundH(n.x,n.y)+.9,n.y);if(s&&Math.hypot(s[0]-sx,s[1]-sy)<60){if(dist(P.x,P.y,n.x*TS,n.y*TS)<75){G.near={kind:'npc',id:k};interact()}else msg('Walk closer to talk.');return}}
- for(const p of G.map.portals){const s=project(p.x*U,groundH(p.x*U,p.y*U)+1.4,p.y*U);if(s&&Math.hypot(s[0]-sx,s[1]-sy)<70){if(dist(P.x,P.y,p.x,p.y)<80)usePortal(p);else msg('Walk closer to the gate.');return}}}
-const onSk=e=>{const b=e.target.closest('.sk');if(!b||G.mode!=='play')return;e.preventDefault();b.classList.add('press');setTimeout(()=>b.classList.remove('press'),120);const s=b.dataset.s;
+function pickAt(sx,sy){let best=null,bd=60;for(const e of live()){const s=project(e.x*U,groundH(e.x*U,e.y*U)+e.d.h*.5,e.y*U);if(!s)continue;const d=Math.hypot(s[0]-sx,s[1]-sy);if(d<bd){bd=d;best=e}}
+ if(best)return{k:'foe',o:best};
+ for(const k of G.map.npcs){const n=NPCS[k],s=project(n.x,groundH(n.x,n.y)+.9,n.y);if(s&&Math.hypot(s[0]-sx,s[1]-sy)<60)return{k:'npc',id:k,n}}
+ for(const p of G.map.portals){const s=project(p.x*U,groundH(p.x*U,p.y*U)+1.4,p.y*U);if(s&&Math.hypot(s[0]-sx,s[1]-sy)<70)return{k:'gate',p}}
+ return null}
+function tapSelect(sx,sy){if(G.panel||P.dead)return;const h=pickAt(sx,sy);if(!h)return;
+ if(h.k==='foe'){G.tgt=h.o;P.auto=true}
+ else if(h.k==='npc'){if(dist(P.x,P.y,h.n.x*TS,h.n.y*TS)<75){G.near={kind:'npc',id:h.id};interact()}else msg('Walk closer to talk.')}
+ else if(dist(P.x,P.y,h.p.x,h.p.y)<80)usePortal(h.p);else msg('Walk closer to the gate.')}
+const onSk=e=>{const b=e.target.closest('.sk');if(!b||G.mode!=='play'||e.button>0)return;e.preventDefault();b.classList.add('press');setTimeout(()=>b.classList.remove('press'),120);const s=b.dataset.s;
  if(s==='pot')usePotion();else if(s==='tgt')cycleTarget();else if(s==='mnt')toggleMount();else if(s==='0')attackPress();else useAbility(+s)};
 $h('skillbar').addEventListener('pointerdown',onSk);$h('quick').addEventListener('pointerdown',onSk);
 $h('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();if(G.mode==='play')jump()});
 $h('rollBtn').addEventListener('pointerdown',e=>{e.preventDefault();if(G.mode==='play')dodgeRoll()});
 $h('barTog').addEventListener('pointerdown',e=>{e.preventDefault();OPT.barOpen=!OPT.barOpen;saveOpt();$h('hud').classList.toggle('baropen',OPT.barOpen);$h('barTog').setAttribute('aria-label',OPT.barOpen?'Hide the skill bar':'Show all skills')});
+function skTipHTML(s){if(s==='pot')return['Marsh Tonic','Q · 10s cooldown','Restores 45% of your health and mana.'];if(s==='tgt')return['Next target','Tab','Switch to the next foe nearby.'];if(s==='mnt')return['Ridgehorn','R','Summon or dismiss your mount. You cannot summon it during combat or indoors.'];
+ const ab=CLS.ab[+s],cost=Math.round(ab.mp*(1-S.m.cost)),lock=P.lvl<(ab.lvl||1);return[ab.name,[+s===0?'F':s,cost?cost+' mana':'',ab.cd+'s cooldown',lock?'Unlocks at level '+ab.lvl:''].filter(Boolean).join(' · '),ab.desc]}
+$h('skillbar').addEventListener('mouseover',e=>{const b=e.target.closest('.sk'),t=$h('skTip');if(!b||!KBM){t.hidden=true;return}const[n,m,d]=skTipHTML(b.dataset.s);t.innerHTML=`<b>${esc(n)}</b><em>${esc(m)}</em>${esc(d)}`;t.hidden=false});
+$h('skillbar').addEventListener('mouseleave',()=>{$h('skTip').hidden=true});
+$h('micro').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b&&G.mode==='play'&&P&&!P.dead)openPanel(b.dataset.p)});
+$h('hud').addEventListener('click',()=>{const a=document.activeElement;if(a&&a.blur)a.blur()});
+for(const t of['mousedown','mouseup'])addEventListener(t,e=>{if(e.button===3||e.button===4)e.preventDefault()});
+function toggleFS(){if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});return}document.documentElement.requestFullscreen().then(()=>{if(navigator.keyboard&&navigator.keyboard.lock)return navigator.keyboard.lock(['Escape','Tab'])}).catch(()=>{})}
+document.addEventListener('fullscreenchange',()=>{if(G.panel==='options')renderPanel()});
+let installEv=null;addEventListener('beforeinstallprompt',e=>{installEv=e;if(G.panel==='options')renderPanel()});addEventListener('appinstalled',()=>{installEv=null;if(G.panel==='options')renderPanel()});
 $h('menuBtn').addEventListener('click',()=>{if(G.mode==='play')setMini(OPT.mini===false)});
 $h('compass').addEventListener('click',()=>{if(G.mode==='play'&&!P.dead&&OPT.mini!==false)openPanel('map')});
 const openBag=()=>{if(G.mode==='play'&&P&&!P.dead)openPanel('bag')};
@@ -2487,7 +2553,7 @@ $h('pf').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preve
 $h('btnAct').addEventListener('click',interact);
 $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;const v=b.dataset.l;if(v==='x'){lootHide=lastLootKey;EL.lootwin.hidden=true;return}
  const L=nearLoot();if(v==='all')L.forEach(takeLoot);else{const l=L.find(l=>String(l.it.id)===v);if(l)takeLoot(l)}G.loot=G.loot.filter(l=>!l.gone);lastLootKey='~';updLoot();save()});
-document.addEventListener('contextmenu',e=>{if(e.target.closest('.hud')||e.target===glc)e.preventDefault()});
+document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
 function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:3,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,potions:P.potions,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
@@ -2509,7 +2575,7 @@ function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!title
  else h+=`<p>${esc(c.blurb)}</p><label class="tt-name">Hero name<input id="nameIn" maxlength="14" value="${esc(nameDraft[k])}" autocomplete="off" spellcheck="false"></label>`;
  h+=`<div class="tt-abs">${c.ab.map(ab=>`<span class="sk mini" style="--c:${ab.c}" title="${esc(ab.name)}"><span class="ic">${svg(ab.icon)}</span></span>`).join('')}</div><dl class="tt-stats"><div><dt>Main</dt><dd style="font-size:15px">${ATTRN[c.main]}</dd></div><div><dt>Health</dt><dd>${c.hp}</dd></div><div><dt>Armor</dt><dd>${c.arm}</dd></div></dl>`;
  h+=`<div class="tt-bottom">${!isSave&&hasSave&&titleConfirm?'<span class="tt-warn">This replaces your saved hero. Press Create again to confirm.</span>':''}<button class="gbtn" data-t="play">${isSave?'Play':'Create'}</button></div></div>`;
- h+=`<p class="tt-hint"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.<br>Keyboard: WASD · Shift sprint · V dodge roll · Space attack · F jump · 1–5 skills · X skill bar · N minimap · Q tonic · R mount · Tab target · E talk · B bag · C character · L quests · K spells · M map</p>`;
+ h+=`<p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
  const el=$('#title');el.innerHTML=h;el.hidden=false;const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
  requestAnimationFrame(()=>{if(!gl)return;for(const cv2 of el.querySelectorAll('canvas.ttc')){if(sizeCanvas(cv2)){const m=MODELS[cv2.dataset.c];renderPortrait(cv2,m,FR.hum,idleAnim(m.weapon),.35)}}})}
 $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b||!gl)return;
