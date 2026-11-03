@@ -493,6 +493,30 @@ kbd{display:none}#app.kbm kbd{display:block}
 .keys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 22px;padding:8px 12px;border:1px solid var(--slate3);border-radius:8px;background:rgba(10,14,17,.5);font-size:13.5px}
 .keys div{display:flex;justify-content:space-between;align-items:center;gap:10px}
 #app.kbm .keys kbd{display:inline-block;font:800 12px/1 var(--f-num);color:var(--runeL);padding:3px 6px;border:1px solid var(--slate3);border-radius:3px;background:#10161a;white-space:nowrap}
+
+/* Update log */
+.upd{display:grid;gap:10px}
+.upd-e{padding:10px 14px 12px;border:1px solid var(--slate3);border-radius:8px;background:rgba(10,14,17,.5)}
+.upd-e.new{border-color:var(--rune);box-shadow:inset 3px 0 0 var(--rune)}
+.upd-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.upd-h h3{margin:0;font:400 19px/1.2 var(--f-ui);color:var(--brass2)}
+.upd-d{margin-left:auto;font-size:13px;color:var(--ink2);white-space:nowrap}
+.upd-tag{font:800 11px/1 var(--f-num);letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:3px;background:var(--rune);color:#06222a}
+.upd-tag.now{background:transparent;box-shadow:inset 0 0 0 1px var(--slate3);color:var(--ink2)}
+.upd-e ul{margin:6px 0 0;padding:0 0 0 18px;font-size:14.5px;line-height:1.4;color:var(--ink)}
+.upd-e li{margin-top:3px}
+.upd-e li::marker{color:var(--rune)}
+.updDot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--brass2);box-shadow:0 0 8px var(--brass2)}
+.navb .updDot{margin-left:auto;margin-right:12px}
+.mb .updDot{position:absolute;right:2px;top:2px;width:9px;height:9px}
+.tt-news{position:absolute;top:0;right:0;display:flex;align-items:center;gap:8px;max-width:260px;padding:6px 12px 6px 10px;text-align:left;background:linear-gradient(#1f2830,#10161a);border:1px solid var(--slate3);border-radius:4px;color:var(--cream);box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.tt-news svg{width:22px;height:22px;flex:none;color:var(--rune)}
+.tt-news span{min-width:0}
+.tt-news b{display:block;font:400 15px/1.15 var(--f-ui);color:var(--brass2)}
+.tt-news small{display:block;font:500 12px/1.2 var(--f-body);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-news .updDot{position:absolute;top:-4px;right:-4px}
+#app:not(.kbm) .tt-news{padding:10px 14px 10px 12px}
+#app.kbm .tt-news:hover{border-color:var(--rune);filter:brightness(1.15)}
 </style>
 
 
@@ -2256,7 +2280,7 @@ const SK=[0,1,2,3,4,5,'pot','tgt','mnt'],QK=[0,1,2];
 function setupButtons(){
  const skHTML=(s,cls)=>{let ic,c,lbl,key;if(s==='pot'){ic='potion';c='#c0402a';lbl='Marsh Tonic';key='Q'}else if(s==='tgt'){ic='target';c='#8a6a3a';lbl='Next target';key='Tab'}else if(s==='mnt'){ic='horse';c='#9a7a4a';lbl='Summon or dismiss your mount';key='R'}else{const ab=CLS.ab[s];ic=ab.icon;c=ab.c;lbl=ab.name;key=s===0?'F':String(s)}
   return`<button class="sk ${cls}" data-s="${s}" style="--c:${c}" aria-label="${esc(lbl)}"><span class="ic">${svg(ic)}</span><span class="cdn"></span><span class="lk" hidden></span>${s==='pot'?'<span class="cnt"></span>':''}<kbd>${key}</kbd></button>`};
- const MK={bag:'B',char:'C',quests:'L',spells:'K',map:'M',options:'O'};$h('micro').innerHTML=NAV.map(([k,l,ic])=>`<button class="mb" data-p="${k}" title="${l} (${MK[k]})" aria-label="${l}">${svg(ic)}<kbd>${MK[k]}</kbd>${k==='spells'?'<span id="microDot" hidden></span>':''}</button>`).join('');EL.skillbar.innerHTML=SK.map(x=>skHTML(x,'')).join('');EL.quick.innerHTML=QK.map(x=>skHTML(x,'qk')).join('');
+ const MK={bag:'B',char:'C',quests:'L',spells:'K',map:'M',options:'O',updates:'U'};$h('micro').innerHTML=NAV.map(([k,l,ic])=>`<button class="mb" data-p="${k}" title="${l} (${MK[k]})" aria-label="${l}">${svg(ic)}<kbd>${MK[k]}</kbd>${k==='spells'?'<span id="microDot" hidden></span>':''}${k==='updates'?updDotHTML():''}</button>`).join('');EL.skillbar.innerHTML=SK.map(x=>skHTML(x,'')).join('');EL.quick.innerHTML=QK.map(x=>skHTML(x,'qk')).join('');
  EL.jumpBtn.innerHTML=svg('boot');EL.rollBtn.innerHTML=svg('roll');$h('pfName').textContent=P.name||CLS.name;setMini(OPT.mini!==false);$h('hud').classList.toggle('baropen',!!OPT.barOpen);updateBadges();updateTracker();lastTgt=null;lastNear=undefined;lastLootKey='~'}
 let hudF=0,lastTgt=null,lastNear,lastLootKey='~',lootHide='';
 const arc=(el,f)=>{el.style.width=(clamp(f,0,1)*100).toFixed(1)+'%'};
@@ -2293,7 +2317,7 @@ function drawMini(){const c=EL.mmap,m=G.map;if(!c||!m||!m.mini)return;const x=c.
  const fx=Math.sin(CAM.yaw),fz=Math.cos(CAM.yaw);x.fillStyle='rgba(255,240,200,.14)';x.beginPath();x.moveTo(W/2,H/2);x.arc(W/2,H/2,W*.5,Math.atan2(fz,fx)-.55,Math.atan2(fz,fx)+.55);x.closePath();x.fill();
  const g=x.createRadialGradient(W/2,H/2,W*.32,W/2,H/2,W*.5);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=g;x.fillRect(0,0,W,H);x.restore()}
 function setMini(on){OPT.mini=on;saveOpt();EL.compass.classList.toggle('mm',on);$h('menuBtn').classList.toggle('on',on);$h('menuBtn').setAttribute('aria-label',on?'Hide the minimap':'Show the minimap')}
-function updateBadges(){const none=!P||talentPoints()<=0;if(EL.menuDot)EL.menuDot.hidden=none;const d=$h('microDot');if(d)d.hidden=none}
+function updateBadges(){const none=!P||talentPoints()<=0,fresh=hasNewUpdate();if(EL.menuDot)EL.menuDot.hidden=none&&!fresh;const d=$h('microDot');if(d)d.hidden=none;for(const e of document.querySelectorAll('.updDot'))e.hidden=!fresh}
 function qLine(q,st){if(st.s==='ready')return(q.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(q)].name;
  if(q.kind==='defend')return G.event&&G.event.q===q?`Hold the ${q.beaconName}: ${Math.max(0,Math.ceil(q.dur-G.event.t))}s`:`Light the ${q.beaconName}`;
  const where=G.map&&qArea(q)!==(G.map.id==='abbey'?'vale':G.map.id)?' · '+AREAS[qArea(q)].name:q.map==='abbey'&&G.map&&G.map.id!=='abbey'?' · Sunken Abbey':'';
@@ -2310,12 +2334,65 @@ function updLoot(){const L=P.dead||G.panel?[]:nearLoot();const key=L.map(l=>l.it
 function takeLoot(l){if(addToBag(l.it)){l.gone=true;sfx('loot');toast(`Looted <b style="color:${RAR[l.it.rar].c}">${esc(l.it.name)}</b>`);if(l.it.rar>=3)burst(P.x,P.y,RAR[l.it.rar].c,24,120,.8,3)}else toast('Your bag is full. Sell something to make room.','warn')}
 
 /* ================= Book (menus) ================= */
-const NAV=[['bag','Bag','bag'],['char','Character','person'],['quests','Quests','scroll'],['spells','Spells','book'],['map','World Map','map'],['options','Options','gear']];
+/* Update log: what players read under Updates, newest first.
+   When a release changes something players will notice, add an entry at the top with the next id.
+   The id is how returning players get told there is something new. Write for players, not developers. */
+const UPDATES=[
+ {id:7,date:'3 Nov 2026',title:'Play on PC',items:[
+  'Full keyboard and mouse controls. Every key is listed under Options > Controls.',
+  'All your skills now sit on one action bar, with tooltips when you hover over them.',
+  'Hold a mouse button and drag to look around. Click a monster to attack it, or someone close by to talk.',
+  'Changed on keyboard: Space now jumps and F attacks.',
+  'The interface scales up to suit large monitors, and Options has a fullscreen switch.',
+  'Fixed: holding two movement keys no longer counts as a sprint, so it stops draining your stamina.',
+  'New: this update log. A dot appears when there is an update you have not read yet.']},
+ {id:6,date:'2 Nov 2026',title:'Controls and display settings',items:[
+  'Options now has tabs for Controls, Display & sound, and Game.',
+  'New controls settings: invert look, look sensitivity, camera distance, and sprinting with the stick.',
+  'New display and sound settings: sound volume, screen shake and vibration.',
+  'One button now resets every setting to its default.',
+  'Emberfall Caldera has calmer colors and less clutter.']},
+ {id:5,date:'2 Nov 2026',title:'The campaign',items:[
+  'The story now runs across five zones. Gloamwood and Emberfall Caldera join Veylmoor, Sunscar Dunes and Frostfang Reach.',
+  'Each zone has an area boss. Defeat it to awaken the waystone to the next zone.',
+  '50 quests to complete, with new types: gather, explore, hunt, rescue, defend, destroy and deliver.']},
+ {id:4,date:'2 Nov 2026',title:'Every spell reworked',items:[
+  'Every class has new spell effects, sounds and damage.',
+  'Bulwark: Warblade Strike adds a shield, Oathcry pulls foes to you, and the new Bastion ward sends damage back.',
+  'Ashcaller: burns stack on your foes, the new Cinder Chains roots groups, and Meteor leaves a burning crater.',
+  'Thornstalker: every 4th Quick Shot fires two arrows, Volley slows a wide fan of foes, and the new Deadeye always crits.',
+  'Lumen: Light Mote heals you as it hits, Halo weakens foes, and the new Dawnbreak stuns an area and heals you.',
+  'Reaver: Hew opens bleeding wounds, your bleeds heal you, and Execute resets its cooldown when it kills.']},
+ {id:3,date:'2 Nov 2026',title:'New class, gear and stamina',items:[
+  'New class: the Reaver, a two-handed warrior.',
+  'Gear now comes in five tiers, from Worn up to Exalted.',
+  'Gear now grants Strength, Agility, Intelligence and Vitality. Each class has a main attribute to look for.',
+  'Rare, Epic and Legendary gear rolls special effects such as critical chance, movement speed and faster cooldowns.',
+  'A new stamina bar powers sprinting and a new dodge roll.']},
+ {id:2,date:'2 Nov 2026',title:'A new look',items:[
+  'The HUD and menus have a new slate-and-rune look.']},
+ {id:1,date:'2 Nov 2026',title:'Wardens of Veylmoor opens',items:[
+  'Four classes to play: Bulwark, Ashcaller, Thornstalker and Lumen, each with six skills and a talent tree.',
+  'Three regions linked by waystones, with quests, loot, mounts and a minimap.',
+  'The Sunken Abbey dungeon and its boss.',
+  'Plays in your browser and installs on your phone like an app.']}];
+const UPDKEY='veylmoor-seen-update',UPDNOW=UPDATES[0].id;
+let updSeen=null,updShown=UPDNOW;
+function storeSeen(v){try{localStorage.setItem(UPDKEY,v)}catch(_){}}
+/* A brand new player has nothing to catch up on. A returning player with no record gets just the latest entry flagged. */
+function seenUpdate(){if(updSeen!==null)return updSeen;let v=null;try{v=localStorage.getItem(UPDKEY)}catch(_){}
+ if(v===null){updSeen=readSave()?UPDNOW-1:UPDNOW;storeSeen(updSeen)}else updSeen=+v||0;return updSeen}
+const hasNewUpdate=()=>seenUpdate()<UPDNOW;
+function markUpdatesSeen(){updShown=seenUpdate();updSeen=UPDNOW;storeSeen(UPDNOW);updateBadges()}
+const updDotHTML=()=>`<i class="updDot" role="img" aria-label="New update" ${hasNewUpdate()?'':'hidden'}></i>`;
+function updatesHTML(){return`<div class="pad upd">${UPDATES.map((u,i)=>{const fresh=u.id>updShown;return`<article class="upd-e${fresh?' new':''}"><div class="upd-h"><h3>${esc(u.title)}</h3>${fresh?'<span class="upd-tag">New</span>':i===0?'<span class="upd-tag now">Latest</span>':''}<span class="upd-d">${esc(u.date)}</span></div><ul>${u.items.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></article>`}).join('')}</div>`}
+ICON.news='<path d="M12 4l1.9 5.6 5.6 1.9-5.6 1.9L12 19l-1.9-5.6-5.6-1.9 5.6-1.9z"/><path d="M19 3v4M17 5h4"/><path d="M5 17v4M3 19h4"/>';
+const NAV=[['bag','Bag','bag'],['char','Character','person'],['quests','Quests','scroll'],['spells','Spells','book'],['map','World Map','map'],['options','Options','gear'],['updates','Updates','news']];
 const NAVK=NAV.map(n=>n[0]);
-const KEYS=[['Move','W A S D'],['Look','Hold mouse + drag'],['Sprint','Shift'],['Jump','Space'],['Dodge roll','V'],['Attack','F or click a foe'],['Skills','1 to 5'],['Next target','Tab'],['Talk or use','E'],['Tonic','Q'],['Mount','R'],['Zoom','Mouse wheel'],['Bag','B'],['Character','C'],['Quests','L'],['Spells','K'],['World map','M'],['Minimap','N'],['Options','O'],['Menu','Esc']];
+const KEYS=[['Move','W A S D'],['Look','Hold mouse + drag'],['Sprint','Shift'],['Jump','Space'],['Dodge roll','V'],['Attack','F or click a foe'],['Skills','1 to 5'],['Next target','Tab'],['Talk or use','E'],['Tonic','Q'],['Mount','R'],['Zoom','Mouse wheel'],['Bag','B'],['Character','C'],['Quests','L'],['Spells','K'],['World map','M'],['Minimap','N'],['Options','O'],['Updates','U'],['Menu','Esc']];
 let TORN=null;function tornClip(){if(TORN)return TORN;const r=rng(7),pts=[],N=34,j=()=>(r()*5).toFixed(1);for(let i=0;i<=N;i++)pts.push(`${(i/N*100).toFixed(2)}% ${j()}px`);for(let i=1;i<N;i++)pts.push(`calc(100% - ${j()}px) ${(i/N*100).toFixed(2)}%`);for(let i=N;i>=0;i--)pts.push(`${(i/N*100).toFixed(2)}% calc(100% - ${j()}px)`);for(let i=N-1;i>0;i--)pts.push(`${j()}px ${(i/N*100).toFixed(2)}%`);return TORN=`polygon(${pts.join(',')})`}
-function openPanel(kind,arg){releaseLook();$h('skTip').hidden=true;G.panel=kind;G.panelArg=arg;G.tip=null;G.confirm=null;input.sx=input.sy=0;resetStick();const solo=!NAVK.includes(kind);$h('bk').classList.toggle('solo',solo);$h('book').classList.toggle('left',!solo);$h('bk').style.clipPath='';
- $h('bkNav').innerHTML=solo?'':NAV.map(([k,l,ic])=>`<button class="navb ${k===kind?'on':''}" data-nav="${k}">${svg(ic)}<span>${l}</span></button>`).join('');
+function openPanel(kind,arg){releaseLook();$h('skTip').hidden=true;if(kind==='updates')markUpdatesSeen();G.panel=kind;G.panelArg=arg;G.tip=null;G.confirm=null;input.sx=input.sy=0;resetStick();const solo=!NAVK.includes(kind)||G.mode!=='play';$h('bk').classList.toggle('solo',solo);$h('book').classList.toggle('left',!solo);$h('bk').style.clipPath='';
+ $h('bkNav').innerHTML=solo?'':NAV.map(([k,l,ic])=>`<button class="navb ${k===kind?'on':''}" data-nav="${k}">${svg(ic)}<span>${l}</span>${k==='updates'?updDotHTML():''}</button>`).join('');
  $h('book').hidden=false;EL.lootwin.hidden=true;lastLootKey='~';renderPanel();$h('bkMain').scrollTop=0}
 function closePanel(force){if(G.panel==='dead'&&!force)return;G.panel=null;$h('book').hidden=true;G.tip=null;G.confirm=null}
 function rewards(q){let s=`<b>${q.xp}</b> XP · <b>${q.gold}</b><i class="coin"></i>`;if(q.item)s+=` · ${q.item.rar===3?'an Epic':q.item.rar===2?'a Rare':'an Uncommon'} ${q.item.slot?SLOTNAME[q.item.slot].toLowerCase()+' item':'item'}`;if(q.potions)s+=` · ${q.potions} tonics`;return`<div class="rew">Rewards: ${s}</div>`}
@@ -2333,7 +2410,7 @@ function tipHTML(){const tp=G.tip;if(!tp)return'';const it=tp.src==='eq'?P.eq[tp
  let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip">Equip</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
  return`<div class="tipwrap">${itemCard(it,btns)}${tp.src==='bag'?cmpCard(it):''}</div>`}
 const ANG={helm:-90,charm:-30,boots:30,weapon:150,chest:180,cloak:-150};
-function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold').textContent=P.gold;let h='',title='';
+function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold').textContent=P?P.gold:0;$h('bkGold').parentElement.style.visibility=G.mode==='play'?'':'hidden';let h='',title='';
  if(k==='bag'){title='Bag';const cap=bagCap(),cells=cap+(cap<36?1:0),pages=Math.max(1,Math.ceil(cells/9));G.bagPage=clamp(G.bagPage||0,0,pages-1);const pg=G.bagPage;
   h=`<div class="tabs"><button class="tab on">${svg('bag')}Item</button><button class="tab" data-act="tipnone" disabled style="opacity:.55">${svg('gem')}Gem</button></div><div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">`;
   for(let c=pg*9;c<pg*9+9;c++){if(c<cap){const it=P.bag[c];h+=it?`<button class="islot has" style="--rc:${RAR[it.rar].c}" data-act="selbag" data-idx="${c}" aria-label="${esc(it.name)}">${itemIcon(it)}${better(it)?'<i class="upm">▲</i>':''}</button>`:'<div class="islot"></div>'}
@@ -2368,6 +2445,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    h+='</div>'}
   h+='</div>'}
  else if(k==='map'){title=G.map.id==='abbey'?'The Sunken Abbey':(AREAS[G.map.id]?AREAS[G.map.id].name:'Map');h=`<div class="mapwrap"><canvas id="mapCan" aria-label="World map"></canvas></div>`}
+ else if(k==='updates'){title='Updates';h=updatesHTML()}
  else if(k==='options'){title='Options';const tab=G.optTab||'ctl';
   const tg=(key,l,d,def=false)=>{const on=OPT[key]==null?def:!!OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><button class="cbtn tog ${on?'on':''}" data-act="opt" data-k="${key}" data-d="${def?1:0}" aria-pressed="${on}">${on?'On':'Off'}</button></div>`};
   const sg=(key,l,d,opts,def)=>{const cur=OPT[key]==null?def:OPT[key];return`<div class="optrow"><div><b>${l}</b><span>${d}</span></div><div class="seg">${opts.map(([v,t])=>`<button class="cbtn segb ${cur==v?'on':''}" data-act="oseg" data-k="${key}" data-v="${v}">${t}</button>`).join('')}</div></div>`};
@@ -2479,12 +2557,13 @@ function dismount(){if(!P||!P.mounted)return;P.mounted=false;burst(P.x,P.y,'#c9b
 /* ================= Input ================= */
 const KEYMAP={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',KeyD:'right'};
 const camKeys={left:0,right:0};
-const PK={KeyB:'bag',KeyI:'bag',KeyC:'char',KeyL:'quests',KeyK:'spells',KeyT:'spells',KeyM:'map',KeyO:'options'};
+const PK={KeyB:'bag',KeyI:'bag',KeyC:'char',KeyL:'quests',KeyK:'spells',KeyT:'spells',KeyM:'map',KeyO:'options',KeyU:'updates'};
 function attackPress(){if(!G.tgt||G.tgt.dead){const t=findTarget(320);if(t)G.tgt=t}P.auto=!!G.tgt;if(G.tgt)useAbility(0);else notReady('No target nearby')}
 function setInput(kbm){if(KBM===kbm)return;KBM=kbm;resize();restStick()}
 addEventListener('pointerdown',e=>setInput(e.pointerType==='mouse'),{capture:true,passive:true});
 addEventListener('keydown',e=>{if(e.code&&e.code!=='Unidentified'&&!(e.target&&e.target.tagName==='INPUT'))setInput(true)},{capture:true});
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(G.mode==='title'&&G.panel){if(e.code==='Escape'&&!e.repeat)closePanel();return}
  if(G.mode==='title'&&e.code==='Enter'&&!e.repeat&&!(e.target&&e.target.tagName==='BUTTON')){const b=document.querySelector('#title [data-t=play]');if(b){e.preventDefault();b.click()}return}
  if(G.mode!=='play')return;if(e.target&&e.target.tagName==='INPUT')return;
  if(G.panel){if(e.repeat)return;if(e.code==='Escape')closePanel();else if(PK[e.code]&&G.panel!=='dead'){if(G.panel===PK[e.code])closePanel();else openPanel(PK[e.code])}return}
@@ -2566,7 +2645,7 @@ let titleSel=null,titleConfirm=false;const nameDraft={};
 function titleModelKey(){const sv=readSave();if(titleSel==='save'&&sv&&CLASSES[sv.cls])return sv.cls;return CLASSES[titleSel]?titleSel:'bulwark'}
 function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!titleSel||(titleSel==='save'&&!hasSave))titleSel=hasSave?'save':'bulwark';
  const k=titleModelKey(),c=CLASSES[k],isSave=titleSel==='save';if(!nameDraft[k])nameDraft[k]=pick(NAMES[k]);
- let h=`<div class="tt-top"><div class="tt-ribbon"><span>The</span> Wardens of Veylmoor</div></div>`;
+ let h=`<div class="tt-top"><div class="tt-ribbon"><span>The</span> Wardens of Veylmoor</div></div><button class="tt-news" data-t="news">${svg('news')}<span><b>Updates</b><small>Latest: ${esc(UPDATES[0].title)}</small></span>${updDotHTML()}</button>`;
  if(!gl)h+=`<div class="nogl">This browser can't draw 3D graphics (WebGL is turned off or unsupported). Try a recent version of Chrome, Safari or Firefox.</div>`;
  h+=`<div class="tt-left">${hasSave?`<button class="tt-port ${isSave?'on':''}" data-t="sel" data-c="save" aria-pressed="${isSave}"><canvas class="ttc" data-c="${sv.cls}"></canvas><span class="lvb">${sv.lvl}</span><span class="tt-pn">${esc(sv.name||CLASSES[sv.cls].name)}</span></button>`:''}
   ${Object.keys(CLASSES).map(ck=>`<button class="tt-port ${titleSel===ck?'on':''}" data-t="sel" data-c="${ck}" aria-pressed="${titleSel===ck}"><canvas class="ttc" data-c="${ck}"></canvas><span class="plus">+</span><span class="tt-pn">${CLASSES[ck].name}</span></button>`).join('')}</div>`;
@@ -2578,7 +2657,7 @@ function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!title
  h+=`<p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
  const el=$('#title');el.innerHTML=h;el.hidden=false;const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
  requestAnimationFrame(()=>{if(!gl)return;for(const cv2 of el.querySelectorAll('canvas.ttc')){if(sizeCanvas(cv2)){const m=MODELS[cv2.dataset.c];renderPortrait(cv2,m,FR.hum,idleAnim(m.weapon),.35)}}})}
-$('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b||!gl)return;
+$('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b&&b.dataset.t==='news'){if(e.detail>0)b.blur();openPanel('updates');return}if(!b||!gl)return;
  if(b.dataset.t==='sel'){titleSel=b.dataset.c;titleConfirm=false;renderTitle()}
  if(b.dataset.t==='play'){const sv=readSave();if(titleSel==='save'&&sv)return loadSave(sv);if(sv&&CLASSES[sv.cls]&&!titleConfirm){titleConfirm=true;renderTitle();return}const k=titleModelKey();clearSave();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
 function startNew(cls,name){P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q')}

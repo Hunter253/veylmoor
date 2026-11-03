@@ -22,7 +22,7 @@ Open the play link in Chrome, Edge or Firefox. Your save stays in that browser, 
 | Talk or use | E |
 | Tonic / mount | Q / R |
 | Zoom | Mouse wheel |
-| Bag / character / quests / spells / map | B / C / L / K / M |
+| Bag / character / quests / spells / map / updates | B / C / L / K / M / U |
 | Menu | Esc |
 
 To get a desktop icon and its own window, use the install button in the Chrome or Edge address bar, or Options > Game > Install as an app.
