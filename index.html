@@ -422,11 +422,38 @@ kbd{display:none}@media (hover:hover) and (pointer:fine){kbd{display:block}}
 .tt-stats div{background:rgba(95,224,240,.06)}
 .tt-bar{background:#10161a;border-color:var(--edge)}.tt-bar i{background:linear-gradient(var(--runeL),var(--rune2))}
 
+
+/* keep controls clear of anything the host page pins over the game (e.g. a hosting badge) */
+#quick{bottom:calc(env(safe-area-inset-bottom,0px) + 14px + var(--bR,0px)/var(--hz,1))}
+#jumpBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 10px + var(--bR,0px)/var(--hz,1))}
+#btnAct{bottom:calc(env(safe-area-inset-bottom,0px) + 92px + var(--bR,0px)/var(--hz,1))}
+#stickZone{bottom:var(--bL,0px)}
+#pf{top:calc(env(safe-area-inset-top,0px) + 8px + var(--tL,0px)/var(--hz,1))}
+#buffs{top:calc(env(safe-area-inset-top,0px) + 80px + var(--tL,0px)/var(--hz,1))}
+#tracker{top:calc(env(safe-area-inset-top,0px) + 118px + var(--tL,0px)/var(--hz,1))}
+#menuBtn{top:calc(env(safe-area-inset-top,0px) + 8px + var(--tR,0px)/var(--hz,1))}
+#compass{top:calc(env(safe-area-inset-top,0px) + 6px + var(--tR,0px)/var(--hz,1))}
+#compass.mm{top:calc(env(safe-area-inset-top,0px) + 4px + var(--tR,0px)/var(--hz,1))}
+#skillbar,#barTog{--sk:clamp(30px,calc((100*var(--vh) - 140px - var(--bR,0px) - var(--tR,0px))/6.4),40px)}
+#skillbar{top:calc(env(safe-area-inset-top,0px) + 56px + var(--tR,0px))}
+#barTog{top:calc(env(safe-area-inset-top,0px) + 56px + var(--tR,0px) + (5*var(--sk) + 30px)/2)}
+#menuBtn{right:calc(max(10px,env(safe-area-inset-right,0px)) + var(--xTR,0px)/var(--hz,1))}
+#compass{right:calc(max(10px,env(safe-area-inset-right,0px)) + 66px + var(--xTR,0px)/var(--hz,1))}
+#compass.mm{right:calc(max(10px,env(safe-area-inset-right,0px)) + 60px + var(--xTR,0px)/var(--hz,1))}
+#skillbar{right:calc(max(6px,env(safe-area-inset-right,0px)) + var(--xTR,0px))}
+#barTog{right:calc(max(0px,env(safe-area-inset-right,0px)) + var(--xTR,0px))}
+#hud.baropen #barTog{right:calc(max(6px,env(safe-area-inset-right,0px)) + 2*var(--sk) + 20px + var(--xTR,0px))}
+#quick{right:calc(max(8px,env(safe-area-inset-right,0px)) + var(--xBR,0px)/var(--hz,1))}
+#jumpBtn{right:calc(max(6px,env(safe-area-inset-right,0px)) + var(--xBR,0px)/var(--hz,1))}
+#btnAct{right:calc(max(6px,env(safe-area-inset-right,0px)) + 160px + var(--xBR,0px)/var(--hz,1))}
+#stickZone{left:var(--xBL,0px)}
+#pf{left:calc(max(10px,env(safe-area-inset-left,0px)) + var(--xTL,0px)/var(--hz,1))}
+#buffs,#tracker{left:calc(max(10px,env(safe-area-inset-left,0px)) + var(--xTL,0px)/var(--hz,1))}
 </style>
+
+
 </head>
 <body>
-
-
 <div id="app">
 <canvas id="gl" aria-label="Game world"></canvas>
 <canvas id="cv" aria-hidden="true"></canvas>
@@ -1992,6 +2019,19 @@ function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').
  if(!G.maps[mid])G.maps[mid]=BUILD[mid]();const mm=G.maps[mid];let p=pos||mm.start;if(mm.solidAt(p.x,p.y))p=mm.start;enterMap(mid,p);save();$h('camHint').classList.remove('off');setTimeout(()=>$h('camHint').classList.add('off'),6000)}
 function toTitle(){closePanel(true);G.mode='title';$h('hud').hidden=true;G.map=G.maps.vale;G.enemies=[];G.projs=[];G.loot=[];G.areas=[];G.tele=[];G.fx=[];G.boss=null;G.tgt=null;titleSel=null;titleConfirm=false;snapCam();renderTitle()}
 
+
+/* ================= Avoid overlays pinned by the host page ================= */
+function scanOverlays(){const hud=$h('hud');if(!hud)return;const W=innerWidth,H=innerHeight,app=document.getElementById('app'),seen=new Set(),rects=[];
+ const xs=[6,24,48,80,120,160,200],ys=[6,20,36,52];
+ for(const cx of[0,1])for(const cy of[0,1])for(const dx of xs)for(const dy of ys){const x=cx?W-dx:dx,y=cy?H-dy:dy;let list;try{list=document.elementsFromPoint(x,y)}catch(_){continue}
+  for(const el of list){if(el===document.documentElement||el===document.body||app.contains(el))continue;let top=el;while(top.parentElement&&top.parentElement!==document.body){const r2=top.parentElement.getBoundingClientRect();if(r2.width>W*.6||r2.height>H*.6)break;top=top.parentElement}
+   if(seen.has(top))break;seen.add(top);const r=top.getBoundingClientRect();if(r.width>4&&r.height>4&&r.width<W*.6&&r.height<H*.6)rects.push(r);break}}
+ const off={bR:0,bL:0,tR:0,tL:0,xBR:0,xBL:0,xTR:0,xTL:0},LW=ROT?H:W,LH=ROT?W:H;
+ for(const r of rects){let l=r.left,t=r.top,rt=r.right,b=r.bottom;if(ROT){l=r.top;rt=r.bottom;t=W-r.right;b=W-r.left}
+  const right=(l+rt)/2>LW/2,bottom=(t+b)/2>LH/2,c=(bottom?'B':'T')+(right?'R':'L'),v=Math.ceil(bottom?LH-t+6:b+6),h=Math.ceil(right?LW-l+6:rt+6);
+  if(v<=h&&v<LH*.45){const k=c[0].toLowerCase()+c[1];off[k]=Math.max(off[k],v)}else if(h<LW*.4)off['x'+c]=Math.max(off['x'+c],h)}
+ for(const k in off)hud.style.setProperty('--'+k,off[k]+'px')}
+setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
 function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
