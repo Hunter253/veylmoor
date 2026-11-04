@@ -129,6 +129,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #zone .z1{font:600 12px/1 var(--f-body);letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px #000}
 #zone .z2{font:400 clamp(24px,calc(6*var(--vw)),38px)/1.1 var(--f-ui);color:#8be06a;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);margin-top:6px}
 #zone .z2::before{content:"- "}#zone .z2::after{content:" -"}
+.sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
 .toast{background:rgba(20,12,6,.88);border:1px solid #8a6420;border-radius:6px;padding:7px 12px;font:500 14px/1.3 var(--f-body);text-align:center;animation:tin .25s ease-out}
 .toast.lvl{color:#ffd870;border-color:#ffd870}.toast.q{border-color:#5a8a3a}.toast.warn{border-color:#a0381e}
@@ -637,6 +638,21 @@ function vnoise(x,y){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=x
 const fbm2=(x,y)=>vnoise(x,y)*.5+vnoise(x*2.1+5,y*2.1+3)*.3+vnoise(x*4.3+9,y*4.3+1)*.2;
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ================= Error log and recovery notices =================
+   Errors stay on the player's device (no server yet). Copy report lets a player send them to us. */
+const ERRKEY='veylmoor-errors',ERRMAX=20;let errLastM='',errLastT=0,errNoted=false;
+function readErrors(){try{return JSON.parse(localStorage.getItem(ERRKEY)||'[]')}catch(_){return[]}}
+function logError(err,where,quiet){const m=String((err&&err.message)||err||'Unknown error').slice(0,300);if(/^Script error|ResizeObserver loop/.test(m))return;
+ const now=Date.now();if(m===errLastM&&now-errLastT<5000)return;errLastM=m;errLastT=now;
+ const log=readErrors(),l=log[log.length-1];if(l&&l.m===m&&l.w===where){l.n=(l.n||1)+1;l.t=now}else{let v=0;try{v=UPDATES[0].id}catch(_){}log.push({t:now,v,w:where,m,s:String((err&&err.stack)||'').slice(0,800),n:1})}
+ try{localStorage.setItem(ERRKEY,JSON.stringify(log.slice(-ERRMAX)))}catch(_){}
+ if(!quiet&&!errNoted){errNoted=true;showNotice("Something went wrong. Reload the game to carry on from your last save. If it keeps happening, copy this report and send it to us.",[['Reload',()=>location.reload()],['Copy report',()=>copyText(JSON.stringify(readErrors(),null,1))],['Dismiss',null]])}}
+function copyText(t){const old=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(old);else old()}
+function showNotice(text,btns){const b=document.body;if(!b)return null;const d=document.createElement('div');d.className='sysnote';d.setAttribute('role','alert');const p=document.createElement('p');p.textContent=text;d.appendChild(p);const r=document.createElement('div');r.className='sysbtns';
+ for(const[label,fn]of btns||[]){const x=document.createElement('button');x.type='button';x.textContent=label;x.addEventListener('click',()=>{if(fn)fn();if(!fn)d.remove()});r.appendChild(x)}d.appendChild(r);b.appendChild(d);return d}
+addEventListener('error',e=>{if(e.error||e.message)logError(e.error||e.message,'page')});
+addEventListener('unhandledrejection',e=>logError(e.reason,'promise',true));
 /* ================= Game data ================= */
 const ICON={
  sword:'<path d="M5 19l3-3M8.5 15.5L19 5v3L10.5 17.5zM6 14l4 4"/>',shield:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>',
@@ -667,7 +683,7 @@ Object.assign(ICON,{"s_cleave":"<path stroke-opacity=\".55\" d=\"M3 12.5A10 10 0
 Object.assign(ICON,{food:'<path d="M4 15c0-5.5 3.6-9 8-9s8 3.5 8 9v1.5c0 1-.8 1.8-1.8 1.8H5.8c-1 0-1.8-.8-1.8-1.8z"/><path d="M8.5 10.5l1.2 2M12 9.5l1 2.2M15.5 10.5l.8 2"/><path d="M3 21h18"/>'});
 Object.assign(ICON,{wave:'<path d="M2 9c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/><path d="M2 15c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/><path d="M12 3v3"/>'});
 const svg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
-const tal=(id,tier,name,d,apply)=>({id,tier,name,d,apply,max:3});
+
 const CLASSES={
  bulwark:{main:'vit',base:{str:10,agi:6,int:5,vit:16},grow:{str:1.4,agi:.6,int:.5,vit:3},name:'Bulwark',glyph:'B',role:'Shield-bearer · melee',col:'#c47a4a',hp:150,hpL:26,mp:80,mpL:6,mpRegen:4.5,pow:6,arm:14,spd:118,
   blurb:'Plate, an oath and a heavy blade. Stands at the front and takes the hits.',weapons:['Warblade','Broadaxe','Flanged Mace'],
@@ -676,10 +692,7 @@ const CLASSES={
       {key:'oath',c:'#c9902a',name:'Oathcry',icon:'s_oath',cd:16,mp:20,range:0,tags:['Taunt','Pull','Shield'],desc:'Pull every foe within reach toward you and force them to fight you for 4 seconds. Gain a shield worth 22% of your health and take 25% less damage for 6 seconds.'},
       {key:'split',c:'#8a5a2a',name:'Earthsplitter',icon:'s_split',cd:10,mp:28,base:40,range:240,tags:['Line','Stun','Slow'],desc:'Drive your blade into the ground. A rift tears forward, hurling foes up (0.6 second stun) and slowing them by 40% for 3 seconds.'},
       {key:'charge',c:'#a83a28',needT:true,name:'Charge',icon:'s_charge',cd:12,mp:15,base:22,range:240,lvl:5,tags:['Gap closer','Stun','Knockback'],desc:'Rush to your target, battering aside everything in your path. Your target is stunned for 1.2 seconds.'},
-      {key:'bastion',c:'#d8b060',name:'Bastion',icon:'s_bastion',cd:24,mp:40,base:12,range:110,lvl:11,per:'per second',tags:['Aura','Reflect','Taunt'],desc:'Raise a ward of light around you for 6 seconds. You take 30% less damage and send 40% of it back at your attacker. Foes inside are taunted, slowed by 50% and burned every second.'}],
-  tal:[tal('b1',1,'Iron Hide','+6% maximum health per rank.',(m,r)=>m.hpPct+=0.06*r),tal('b2',1,'Heavy Hand','+10% Warblade Strike damage per rank.',(m,r)=>m.dmgB+=0.10*r),
-       tal('b3',2,'Ringing Blow','+15% Shield Bash damage per rank.',(m,r)=>m.dmg1+=0.15*r),tal('b4',2,'Unbroken','Take 3% less damage per rank.',(m,r)=>m.dr+=0.03*r),
-       tal('b5',3,'Bulwark of Faith','Your shields are 15% stronger per rank.',(m,r)=>m.shield+=0.15*r),tal('b6',3,'Bloodied Oath','Heal for 2% of damage you deal per rank.',(m,r)=>m.ls+=0.02*r)]},
+      {key:'bastion',c:'#d8b060',name:'Bastion',icon:'s_bastion',cd:24,mp:40,base:12,range:110,lvl:11,per:'per second',tags:['Aura','Reflect','Taunt'],desc:'Raise a ward of light around you for 6 seconds. You take 30% less damage and send 40% of it back at your attacker. Foes inside are taunted, slowed by 50% and burned every second.'}]},
  ashcaller:{main:'int',base:{str:4,agi:7,int:16,vit:7},grow:{str:.4,agi:.8,int:3,vit:.8},name:'Ashcaller',glyph:'A',role:'Fire-caster · ranged',col:'#d9653b',hp:100,hpL:18,mp:150,mpL:12,mpRegen:7,pow:9,arm:5,spd:112,
   blurb:'Keeps the old kiln-fires of the fen. Fragile, but burns everything that comes close.',weapons:['Cinder Staff','Ash Rod','Kiln Staff'],
   ab:[{key:'ember',c:'#e0602a',name:'Ember Bolt',icon:'s_ember',cd:0.75,mp:0,base:14,range:230,tags:['Ranged','Burn'],desc:'Hurl a bolt of ember. Each hit sets the foe burning, stacking up to 3 times.'},
@@ -687,10 +700,7 @@ const CLASSES={
       {key:'snare',c:'#b0402a',needT:true,name:'Cinder Chains',icon:'s_snare',cd:12,mp:22,base:18,range:220,tags:['Chain','Root','Scorch'],desc:'Burning chains leap from your target to up to 3 more foes, rooting them for 2.5 seconds. Chained foes are Scorched and take 20% more damage for 5 seconds.'},
       {key:'meteor',c:'#d8402a',name:'Meteor',icon:'s_meteor',cd:14,cast:1,mp:40,base:72,range:260,tags:['Area','Stun','Burning ground'],desc:'Call down a burning stone. It stuns everything it lands on and leaves a crater that burns for 3 seconds.'},
       {key:'blink',c:'#5a7ad8',name:'Blink',icon:'s_blink',cd:10,mp:15,base:20,range:0,lvl:5,tags:['Teleport','Area','Haste'],desc:'Vanish in a burst of cinders that burns foes where you stood, and reappear ahead. Your casts are 50% faster for 3 seconds.'},
-      {key:'storm',c:'#d0501e',name:'Firestorm',icon:'s_storm',cd:18,mp:45,base:15,range:240,cast:1,lvl:11,per:'per strike',tags:['Area','Slow','Burn'],desc:'Rain fire on an area for 3 seconds. Foes caught in it are slowed by 35% and keep burning.'}],
-  tal:[tal('a1',1,'Kindling','+10% Ember Bolt damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('a2',1,'Deep Reserves','+20% mana regeneration per rank.',(m,r)=>m.mpReg+=0.20*r),
-       tal('a3',2,'Wildfire','Your burns deal 20% more damage per rank.',(m,r)=>m.burn+=0.20*r),tal('a4',2,'Searing Focus','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
-       tal('a5',3,'Starfall','+20% Meteor damage per rank.',(m,r)=>m.dmg3+=0.20*r),tal('a6',3,'Quickened Ash','Ability cooldowns 5% shorter per rank.',(m,r)=>m.cdr+=0.05*r)]},
+      {key:'storm',c:'#d0501e',name:'Firestorm',icon:'s_storm',cd:18,mp:45,base:15,range:240,cast:1,lvl:11,per:'per strike',tags:['Area','Slow','Burn'],desc:'Rain fire on an area for 3 seconds. Foes caught in it are slowed by 35% and keep burning.'}]},
  thornstalker:{main:'agi',base:{str:7,agi:16,int:6,vit:8},grow:{str:.8,agi:3,int:.6,vit:.9},name:'Thornstalker',glyph:'T',role:'Archer · ranged',col:'#7fa04a',hp:115,hpL:21,mp:110,mpL:8,mpRegen:5,pow:8,arm:8,spd:126,
   blurb:'A ridge hunter with a yew bow. Fast on its feet and hard to pin down.',weapons:['Yew Longbow','Recurve','Hornbow'],
   ab:[{key:'arrow',c:'#4f8f3a',name:'Quick Shot',icon:'s_arrow',cd:0.62,mp:0,base:13,range:250,tags:['Ranged','Twin shot'],desc:'Loose an arrow at the nearest foe. Every 4th shot looses two arrows at once.'},
@@ -698,10 +708,7 @@ const CLASSES={
       {key:'vault',c:'#3f7a5a',name:'Vault',icon:'s_vault',cd:9,mp:12,range:0,tags:['Escape','Haste','Sure crit'],desc:'Flip away from danger, scattering caltrops that slow foes by 50%. Move 40% faster for 3 seconds, and your next attack or skill is a certain critical hit.'},
       {key:'thorns',c:'#5a8a2a',name:'Thornsnare',icon:'s_thorns',cd:12,mp:22,base:14,range:230,per:'per second',tags:['Trap','Root','Bleed'],desc:'Seed a briar patch on your target. It roots foes for 2 seconds and cuts them open, making them bleed.'},
       {key:'mark',c:'#c0402a',needT:true,name:"Hunter's Mark",icon:'s_mark',cd:10,mp:15,base:18,range:300,lvl:5,tags:['Mark','Vulnerable','Reset'],desc:'Fire a marking arrow. The foe takes 25% more damage for 10 seconds. If it dies while marked, Vault is ready again.'},
-      {key:'pierce',c:'#2f8a4a',name:'Deadeye',icon:'s_pierce',cd:14,mp:40,base:70,range:300,cast:.9,lvl:11,tags:['Line','Pierce','Certain crit'],desc:'Draw back and fire a great arrow that always critically hits, passes through every foe in a line and knocks them back. Deals 50% more to marked foes.'}],
-  tal:[tal('t1',1,'Fletcher','+10% Quick Shot damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('t2',1,'Light Step','+4% movement speed per rank.',(m,r)=>m.spd+=0.04*r),
-       tal('t3',2,'Split Shaft','+15% Volley damage per rank.',(m,r)=>m.dmg1+=0.15*r),tal('t4',2,'Keen Eye','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
-       tal('t5',3,'Steady Aim','+20% Deadeye damage per rank.',(m,r)=>m.dmg5+=0.20*r),tal('t6',3,'Predator','+5% damage with everything per rank.',(m,r)=>m.dmg+=0.05*r)]},
+      {key:'pierce',c:'#2f8a4a',name:'Deadeye',icon:'s_pierce',cd:14,mp:40,base:70,range:300,cast:.9,lvl:11,tags:['Line','Pierce','Certain crit'],desc:'Draw back and fire a great arrow that always critically hits, passes through every foe in a line and knocks them back. Deals 50% more to marked foes.'}]},
  lumen:{main:'int',base:{str:6,agi:6,int:15,vit:9},grow:{str:.6,agi:.6,int:2.8,vit:1.1},name:'Lumen',glyph:'L',role:'Lantern-priest · support',col:'#d8c06a',hp:120,hpL:22,mp:140,mpL:11,mpRegen:6,pow:7,arm:10,spd:115,
   blurb:'Carries the village lantern into the dark. Heals itself and smites what the light finds.',weapons:['Lantern Scepter','Censer Mace','Prayer Rod'],
   ab:[{key:'mote',c:'#d8b850',name:'Light Mote',icon:'s_mote',cd:0.7,mp:0,base:13,range:200,tags:['Ranged','Lifesteal'],desc:'Cast a mote of light at the nearest foe. Each hit heals you for 15% of the damage dealt.'},
@@ -709,10 +716,7 @@ const CLASSES={
       {key:'halo',c:'#e8c060',name:'Halo',icon:'s_halo',cd:8,mp:22,base:22,range:115,tags:['Area','Dazzle','Heal'],desc:'Flash a halo of light. Foes struck are Dazzled and deal 30% less damage for 4 seconds. You heal for each foe struck.'},
       {key:'judge',c:'#e0a030',needT:true,name:'Judgement',icon:'s_judge',cd:11,cast:.5,mp:32,base:58,range:220,tags:['Stun','Smite'],desc:'Strike your target with a column of light and stun it for 1.2 seconds. Deals 60% more to Dazzled foes.'},
       {key:'sanct',c:'#d0a840',name:'Sanctuary',icon:'s_sanct',cd:22,mp:30,base:8,range:95,lvl:5,per:'per second',tags:['Zone','Heal','Damage reduction'],desc:'Consecrate the ground for 7 seconds. While you stand in it you take 35% less damage and heal 3.5% of your health each second. Foes inside are slowed and burned.'},
-      {key:'dawn',c:'#f0c860',name:'Dawnbreak',icon:'s_dawn',cd:20,mp:45,base:64,range:240,cast:.7,lvl:11,tags:['Area','Stun','Heal','Shield'],desc:'Call the dawn down on an area. Foes are struck and stunned for 1.5 seconds. You heal 8% for each foe struck (up to 40%) and gain a shield worth 15% of your health.'}],
-  tal:[tal('l1',1,'Bright Hand','+10% Light Mote damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('l2',1,'Devotion','+12% healing per rank.',(m,r)=>m.heal+=0.12*r),
-       tal('l3',2,'Radiance','+15% Halo damage per rank.',(m,r)=>m.dmg2+=0.15*r),tal('l4',2,'Wellspring','+20% mana regeneration per rank.',(m,r)=>m.mpReg+=0.20*r),
-       tal('l5',3,'Verdict','+20% Judgement damage per rank.',(m,r)=>m.dmg3+=0.20*r),tal('l6',3,'Grace','Take 3% less damage per rank.',(m,r)=>m.dr+=0.03*r)]},
+      {key:'dawn',c:'#f0c860',name:'Dawnbreak',icon:'s_dawn',cd:20,mp:45,base:64,range:240,cast:.7,lvl:11,tags:['Area','Stun','Heal','Shield'],desc:'Call the dawn down on an area. Foes are struck and stunned for 1.5 seconds. You heal 8% for each foe struck (up to 40%) and gain a shield worth 15% of your health.'}]},
  reaver:{main:'str',base:{str:16,agi:8,int:4,vit:10},grow:{str:3,agi:1,int:.4,vit:1.3},name:'Reaver',glyph:'R',role:'Warrior · two-handed',col:'#b0452e',hp:140,hpL:24,mp:70,mpL:5,mpRegen:4.5,pow:7,arm:12,spd:120,
   blurb:'A greataxe, a war-cry and no patience. Hits harder than anyone and heals by drawing blood.',weapons:['Greataxe','Cleaver','War Axe'],
   ab:[{key:'hew',c:'#a8402a',name:'Hew',icon:'s_hew',cd:0.9,mp:0,base:17,range:58,tags:['Melee','Arc','Bleed'],desc:'Hack through every foe in front of you. Each hit opens a wound that bleeds, stacking up to 3 times.'},
@@ -720,12 +724,9 @@ const CLASSES={
       {key:'roar',c:'#d0802a',name:'Battle Roar',icon:'s_roar',cd:18,mp:20,range:0,tags:['Buff','Haste','Weaken'],desc:'Roar for 8 seconds of fury: +25% damage, +15% movement speed and 8% lifesteal. Nearby foes are Shaken and deal 25% less damage for 5 seconds.'},
       {key:'leap',c:'#8a5a2a',name:'Leap Slam',icon:'s_leap',cd:10,mp:28,base:42,range:220,tags:['Gap closer','Stun','Knockback'],desc:'Leap onto your target and slam the ground. Everything nearby is stunned, thrown back and slowed by 40% for 3 seconds.'},
       {key:'exec',c:'#7a1e1e',needT:true,name:'Execute',icon:'s_exec',cd:9,mp:20,base:32,range:70,lvl:5,tags:['Finisher','Reset'],desc:'A brutal finisher that deals two and a half times damage to foes under 35% health. If it kills, its cooldown resets and you heal 10%.'},
-      {key:'bstorm',c:'#c06a2a',name:'Bladestorm',icon:'s_bstorm',cd:18,mp:40,base:15,range:90,lvl:11,per:'per hit',tags:['Area','Pull','Damage reduction'],desc:'Spin for 2.4 seconds, striking everything around you eight times and dragging foes inward. You take 30% less damage and can move while spinning.'}],
-  tal:[tal('r1',1,'Heavy Swings','+10% Hew damage per rank.',(m,r)=>m.dmgB+=0.10*r),tal('r2',1,'Thick Blood','+6% maximum health per rank.',(m,r)=>m.hpPct+=0.06*r),
-       tal('r3',2,'Deep Wounds','Your bleeds deal 20% more damage per rank.',(m,r)=>m.bleed+=0.20*r),tal('r4',2,'Fury','+3% critical strike chance per rank.',(m,r)=>m.crit+=3*r),
-       tal('r5',3,'Executioner','+20% Execute damage per rank.',(m,r)=>m.dmg4+=0.20*r),tal('r6',3,'Unstoppable','Cooldowns 5% shorter per rank.',(m,r)=>m.cdr+=0.05*r)]},
+      {key:'bstorm',c:'#c06a2a',name:'Bladestorm',icon:'s_bstorm',cd:18,mp:40,base:15,range:90,lvl:11,per:'per hit',tags:['Area','Pull','Damage reduction'],desc:'Spin for 2.4 seconds, striking everything around you eight times and dragging foes inward. You take 30% less damage and can move while spinning.'}]},
 };
-const TIER_REQ={1:0,2:3,3:6};
+
 /* ================= Talent web =================
    Each class has a web: a core in the middle, six paths running outward (rings 1-5),
    and bridge strands on rings 2 and 4 that tie each path to the next.
@@ -1519,8 +1520,8 @@ function buildEmber(){const[m,Rn]=wildBase('ember',60,46,4,97);
  for(const[x,y]of[[35,20],[46,26],[55,20],[33,24],[41,28],[49,22],[55,27],[32,5],[38,10],[44,4],[50,9],[55,14],[36,15],[47,15],[6,6],[20,12],[8,24],[52,24],[24,37]])ensureWalk(m,x+.5,y+.5,.8);
  m.npcs=['vael','rusk'];m.wild='The Burning Waste';
  m.spawns=[{type:'ashhound',x0:3,y0:3,x1:28,y1:30,n:12,l0:41,l1:43},{type:'cinderdead',x0:3,y0:14,x1:28,y1:30,n:6,l0:43,l1:45},{type:'flameshade',x0:29,y0:3,x1:57,y1:17,n:9,l0:43,l1:45},{type:'magmascorp',x0:29,y0:18,x1:57,y1:31,n:9,l0:45,l1:47},{type:'cinderdead',x0:20,y0:32,x1:42,y1:43,n:5,l0:47,l1:49},{type:'flameshade',x0:36,y0:31,x1:57,y1:43,n:3,l0:49,l1:49}];
- m.fixed=[['vorgath',51,49,37]];
- m.zones=[{n:'Cinderwatch',s:'Town',x0:4,y0:31,x1:19,y1:43},{n:'The Molten Throne',s:'Area boss · Level 51',x0:42,y0:31,x1:57,y1:44},{n:'Ashen Slopes',s:'Levels 41–45',x0:2,y0:2,x1:28,y1:30},{n:'The Glassfields',s:'Levels 43–45',x0:29,y0:2,x1:58,y1:17},{n:'Magma Rift',s:'Levels 45–47',x0:29,y0:18,x1:58,y1:30},{n:'The Cinder Road',s:'Levels 47–49',x0:19,y0:31,x1:42,y1:44}];
+ m.fixed=[['vorgath',50,49,37]];
+ m.zones=[{n:'Cinderwatch',s:'Town',x0:4,y0:31,x1:19,y1:43},{n:'The Molten Throne',s:'Area boss · Level 50',x0:42,y0:31,x1:57,y1:44},{n:'Ashen Slopes',s:'Levels 41–45',x0:2,y0:2,x1:28,y1:30},{n:'The Glassfields',s:'Levels 43–45',x0:29,y0:2,x1:58,y1:17},{n:'Magma Rift',s:'Levels 45–47',x0:29,y0:18,x1:58,y1:30},{n:'The Cinder Road',s:'Levels 47–49',x0:19,y0:31,x1:42,y1:44}];
  m.labels=[[11.5,30.4,'Cinderwatch',17],[15,11,'Ashen Slopes'],[46,4.6,'The Glassfields'],[44,30,'Magma Rift'],[49.5,30.6,'The Molten Throne',13],[26.5,16.4,'Old Forge',11]];m.badges=[[11.5,36,'⌂'],[11.5,39.5,'✦','#bff0ff'],[49.5,37.5,'☠','#e8d4c0']];
  return m}
 const AREAS={vale:{name:'Veylmoor',town:'Hollowmere',lv:'Levels 1–19',min:1,col:'#6aa84a',boss:'prior',blurb:'Green moor, wolf ridge and the drowned fen.'},
@@ -2214,6 +2215,8 @@ function updateLoot(dt){for(const l of G.loot)l.t+=dt;G.loot=G.loot.filter(l=>!l
 /* ================= WebGL engine ================= */
 const glc=$('#gl'),cv=$('#cv'),ctx=cv.getContext('2d');
 const gl=glc.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance',stencil:true})||glc.getContext('experimental-webgl');
+let glLost=false;glc.addEventListener('webglcontextlost',e=>{e.preventDefault();if(glLost)return;save();glLost=true;showNotice("The game's graphics were interrupted, so the game is paused and your hero is saved. It will reload by itself when they return.",[['Reload now',()=>location.reload()]])});
+glc.addEventListener('webglcontextrestored',()=>location.reload());
 let VW=innerWidth,VH=innerHeight,DPR=1,RS=1,frameAvg=16;var FBR=null;
 const APP=document.getElementById('app'),COARSE=matchMedia('(pointer:coarse)');let ROT=false,HZ=1,KBM=matchMedia('(hover:hover) and (pointer:fine)').matches;
 function layout(){const W=innerWidth,H=innerHeight;ROT=COARSE.matches&&H>W;const lw=ROT?H:W,lh=ROT?W:H;
@@ -3119,6 +3122,13 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:18,date:'4 Nov 2026',title:'Safer saves and fewer dead ends',items:[
+  'If your browser can\'t save your progress, the game now tells you instead of failing silently.',
+  'If a saved hero can\'t be read, a copy is kept. Starting a new hero won\'t erase it.',
+  'If the graphics are interrupted, the game pauses, saves your hero and reloads when they return.',
+  'If something goes wrong, you now see a message with a Reload button and a report you can copy and send to us.',
+  'Fixed: the final quest, Heart of Cinders, now says it rewards a Legendary item. It always did, but it was labelled Uncommon.',
+  'Vorgath and the Molten Throne are now level 50, matching the level cap, so he is very slightly less tough.']},
  {id:17,date:'3 Nov 2026',title:'A bigger bag, tonics and food',items:[
   'Each bag page now holds 18 slots instead of 9, and you can grow your bag up to 54 slots.',
   'Marsh Tonics are now items in your bag. They stack up to 20, and your tonic quick slot drinks from them. Any tonics you had are already in your bag.',
@@ -3231,7 +3241,7 @@ function openPanel(kind,arg){releaseLook();$h('skTip').hidden=true;if(kind==='up
  $h('bkNav').innerHTML=solo?'':NAV.map(([k,l,ic])=>`<button class="navb ${k===kind?'on':''}" data-nav="${k}">${svg(ic)}<span>${l}</span>${k==='updates'?updDotHTML():''}</button>`).join('');
  $h('book').hidden=false;EL.lootwin.hidden=true;lastLootKey='~';renderPanel();$h('bkMain').scrollTop=0}
 function closePanel(force){if(G.panel==='dead'&&!force)return;G.panel=null;$h('book').hidden=true;G.tip=null;G.confirm=null}
-function rewards(q){let s=`<b>${q.xp}</b> XP · <b>${q.gold}</b><i class="coin"></i>`;if(q.item)s+=` · ${q.item.rar===3?'an Epic':q.item.rar===2?'a Rare':'an Uncommon'} ${q.item.slot?SLOTNAME[q.item.slot].toLowerCase()+' item':'item'}`;if(q.potions)s+=` · ${q.potions} tonics`;return`<div class="rew">Rewards: ${s}</div>`}
+function rewards(q){let s=`<b>${q.xp}</b> XP · <b>${q.gold}</b><i class="coin"></i>`;if(q.item)s+=` · ${q.item.rar===4?'a Legendary':q.item.rar===3?'an Epic':q.item.rar===2?'a Rare':'an Uncommon'} ${q.item.slot?SLOTNAME[q.item.slot].toLowerCase()+' item':'item'}`;if(q.potions)s+=` · ${q.potions} tonics`;return`<div class="rew">Rewards: ${s}</div>`}
 function statLines(it){let h='';const st=it.st;
  if(st.wd)h+=`<div style="font-weight:700">${st.wd} Weapon Damage</div>`;if(st.arm)h+=`<div style="font-weight:700">${st.arm} Armor</div>`;
  for(const k of ATTR)if(st[k])h+=`<div>${fmtStat(k,st[k])} ${STATN[k]}${k===CLS.main?' <span style="color:var(--brass2)">◆</span>':''}</div>`;
@@ -3537,8 +3547,11 @@ document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.prev
 
 /* ================= Save & hero select ================= */
 function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:4,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
-function save(){if(G.mode!=='play')return;try{localStorage.setItem(SAVEKEY,JSON.stringify(serialize()))}catch(_){}}
-function readSave(){try{const s=localStorage.getItem(SAVEKEY);return s?migrateSave(JSON.parse(s)):null}catch(_){return null}}
+let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
+function save(){if(G.mode!=='play')return;try{localStorage.setItem(SAVEKEY,JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
+function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
+function noteBadSave(){showNotice("We couldn't read your saved hero. A copy has been kept, and starting a new hero won't erase it. Copy it and send it to us if you'd like us to try to repair it.",[['Copy saved hero',()=>{let s='';try{s=localStorage.getItem(BADKEY)||''}catch(_){}copyText(s)}],['Dismiss',null]])}
+function readSave(){let s=null;try{s=localStorage.getItem(SAVEKEY);if(!s)return null;const d=migrateSave(JSON.parse(s));if(!d||!CLASSES[d.cls]){keepBadSave(s);return null}return d}catch(err){keepBadSave(s);logError(err,'load save',true);return null}}
 /* Saves before v4 used levels 1-25. Map each level to its new place on the 1-50 scale and keep progress through it. */
 function migrateSave(d){if(!d||(d.v||0)>=4)return d;const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);
  d.xp=L>=25?0:Math.round((d.xp||0)/old(L)*XPN(nl));d.lvl=nl;const up=it=>{if(it&&it.ilvl)it.ilvl=2*it.ilvl-1};(d.bag||[]).forEach(up);for(const k in d.eq||{})up(d.eq[k]);d.v=4;return d}
@@ -3593,21 +3606,22 @@ function liftTitle(){const el=$('#title'),btn=el&&!el.hidden&&el.querySelector('
 setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
-function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
- try{pollPad(dt)}catch(err){console.error(err)}
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;if(glLost){requestAnimationFrame(frame);return}
+ try{pollPad(dt)}catch(err){console.error(err);logError(err,'controller')}
  try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
-  renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits()}}catch(err){console.error(err)}
+  renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits()}}catch(err){console.error(err);logError(err,'game loop')}
  frameAvg=frameAvg*.95+dt*1000*.05;if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
  if(frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
  requestAnimationFrame(frame)}
 function boot(data){cacheEls();
- if(gl){try{initGL();loadModels();G.maps.vale=buildVale();G.map=G.maps.vale;buildWorld(G.maps.vale);snapCam();applyGfx()}catch(err){console.error(err)}}
+ if(gl){try{initGL();loadModels();G.maps.vale=buildVale();G.map=G.maps.vale;buildWorld(G.maps.vale);snapCam();applyGfx()}catch(err){console.error(err);logError(err,'startup')}}
  if(gl&&data&&data.save&&CLASSES[data.save.cls])loadSave(data.save);else renderTitle();
+ if(saveBad)noteBadSave();
  requestAnimationFrame(frame)}
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={rewards,readErrors,get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
