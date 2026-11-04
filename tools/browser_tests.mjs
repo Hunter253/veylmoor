@@ -342,6 +342,28 @@ await test('Rank shows on the Craft tab and survives saves and hero files', () =
   dispatchEvent(new Event('pagehide'));const d=V.readSlot(0);if(d.profXp!==R.xp[2])bad.push('save lost rank');const f=V.heroFileText(d),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else if(V.readSlot(r.slot).profXp!==R.xp[2])bad.push('hero file lost rank');
   const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});if(!V.parseHeroFile(signed({...g,profXp:-1})).err||!V.parseHeroFile(signed({...g,profXp:'lots'})).err)bad.push('accepted bad rank XP');const old={...d};delete old.profXp;V.loadSave(old);if(V.P.profXp!==0||V.profRank()!==0)bad.push('an older hero did not start at Novice');return bad}`));
 
+await reset();
+await test('A tap dodges, a hold blocks, and other classes dodge at once', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G;G.enemies=[];const step=n=>{for(let i=0;i<n;i++)V.update(1/30)};P.st=100;
+  V.dodgeDown();if(P.dash)bad.push('Bulwark dodged on press');step(2);V.dodgeUp();if(!P.dash)bad.push('a tap did not dodge');if(P.blocking)bad.push('a tap started a block');step(20);
+  P.st=100;V.dodgeDown();step(9);if(!P.blocking)bad.push('a hold did not block');const s0=P.st;V.dodgeUp();if(P.blocking)bad.push('release did not end the block');if(P.dash)bad.push('ending a block rolled');if(P.st!==s0)bad.push('ending a block cost stamina');
+  V.startNew('reaver','Other');V.G.enemies=[];V.P.st=100;V.dodgeDown();if(!V.P.dash)bad.push('another class lost its instant dodge');V.dodgeUp();for(let i=0;i<20;i++)V.update(1/30);V.P.st=100;V.dodgeDown();for(let i=0;i<9;i++)V.update(1/30);if(V.P.blocking)bad.push('another class could block');V.dodgeUp();return bad}`));
+
+await reset();
+await test('Blocking stops most damage from the front only', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G;G.enemies=[];P.fx=0;P.fy=1;const front={x:P.x,y:P.y+50,weakT:0},back={x:P.x,y:P.y-50,weakT:0},side={x:P.x+50,y:P.y,weakT:0},hit=(src,on)=>{let sum=0;for(let i=0;i<60;i++){P.blocking=on;P.fx=0;P.fy=1;P.st=100;P.iframes=0;P.shield=0;P.hp=1e7;V.hurtPlayer(1000,src);sum+=1e7-P.hp}P.blocking=false;return sum/60};
+  const open=hit(front,false),f=hit(front,true),b=hit(back,true),sd=hit(side,true);if(!(f/open>.22&&f/open<.38))bad.push('front block let through '+(f/open).toFixed(2));if(!(b/open>.85))bad.push('a hit from behind was blocked: '+(b/open).toFixed(2));if(!(sd/open>.85))bad.push('a side hit was blocked: '+(sd/open).toFixed(2));
+  if(V.blockFacing(null))bad.push('a hit with no source counted as blocked');P.blocking=true;P.st=100;P.iframes=0;P.hp=1e7;V.hurtPlayer(1000,front);if(P.st!==100-V.BLOCK.stPerHit)bad.push('a blocked hit cost '+(100-P.st)+' stamina');P.blocking=false;return bad}`));
+
+await reset();
+await test('Blocking drains stamina, slows you, stops attacks, and ends when it should', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G,step=n=>{for(let i=0;i<n;i++)V.update(1/30)};G.enemies=[];P.st=100;V.dodgeDown();step(8);if(!P.blocking){bad.push('no block');return bad}const a=P.st;step(30);const lost=a-P.st;if(lost<V.BLOCK.stPerSec*.8||lost>V.BLOCK.stPerSec*1.2)bad.push('a second of blocking cost '+lost);
+  if(V.useAbility(0)!==false)bad.push('attacked while blocking');P.st=0;step(2);if(P.blocking)bad.push('block lasted with no stamina');V.dodgeUp();
+  const walk=(on)=>{P.st=100;if(on){V.dodgeDown();step(8)}const x=P.x,y=P.y;V.input.right=1;for(let i=0;i<10;i++){V.update(1/30);P.st=100}V.input.right=0;const d=Math.hypot(P.x-x,P.y-y);if(on)V.dodgeUp();step(1);return d};const w0=walk(false),w1=walk(true);if(!(w1/w0>.4&&w1/w0<.6))bad.push('blocking speed ratio '+(w1/w0).toFixed(2));
+  P.st=100;V.dodgeDown();step(8);P.hp=1;V.die();if(P.blocking||P.blkDown!=null)bad.push('death left the block on');P.dead=false;P.hp=100;P.st=2;V.dodgeDown();step(8);if(P.blocking)bad.push('blocked with almost no stamina');V.dodgeUp();return bad}`));
+
+await reset();
+await test('The dodge key and the phone button both tap and hold', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G,step=n=>{for(let i=0;i<n;i++)V.update(1/30)};G.enemies=[];const key=(t)=>dispatchEvent(new KeyboardEvent(t,{code:'KeyV',bubbles:true}));P.st=100;key('keydown');step(8);if(!P.blocking)bad.push('holding V did not block');key('keyup');if(P.blocking)bad.push('releasing V did not end it');P.st=100;key('keydown');step(1);key('keyup');if(!P.dash)bad.push('tapping V did not dodge');step(20);
+  const b=document.getElementById('rollBtn'),pt=(el,t)=>el.dispatchEvent(new PointerEvent(t,{pointerId:7,bubbles:true,cancelable:true}));P.st=100;pt(b,'pointerdown');step(8);if(!P.blocking)bad.push('holding the phone button did not block');dispatchEvent(new PointerEvent('pointerup',{pointerId:99}));if(!P.blocking)bad.push('another finger ended the block');dispatchEvent(new PointerEvent('pointerup',{pointerId:7}));if(P.blocking)bad.push('lifting the finger did not end it');P.st=100;pt(b,'pointerdown');step(1);dispatchEvent(new PointerEvent('pointerup',{pointerId:7}));if(!P.dash)bad.push('tapping the phone button did not dodge');step(20);
+  P.st=100;key('keydown');step(8);dispatchEvent(new Event('blur'));if(P.blocking||P.blkDown!=null)bad.push('losing window focus left the block on');key('keyup');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

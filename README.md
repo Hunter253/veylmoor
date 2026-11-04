@@ -17,7 +17,7 @@ Open the play link in Chrome, Edge or Firefox. You can keep up to five heroes. T
 | --- | --- |
 | Move | W A S D |
 | Look | Hold a mouse button and drag |
-| Sprint / jump / dodge | Shift / Space / V |
+| Sprint / jump / dodge | Shift / Space / V (Bulwark: hold V to block) |
 | Attack | Click a monster, or F |
 | Skills | 1 to 5 |
 | Next target | Tab |
@@ -37,7 +37,7 @@ Plug in or pair an Xbox controller (PlayStation controllers work too) and press 
 | Move / look | Left stick / right stick |
 | Sprint | Click the left stick |
 | Jump, or talk and use when next to something | A |
-| Dodge roll | B |
+| Dodge roll | B (Bulwark: hold B to block) |
 | Attack | X |
 | Skills 1 to 5 | LB, RB, LT, RT, Y |
 | Tonic / mount | D-pad up / D-pad down |
