@@ -698,6 +698,28 @@ await test('Story records survive saving, and an old hero gets the letters it ha
   const old=JSON.parse(JSON.stringify(d));delete old.story;V.loadSave(old);if(typeof V.storyS().letters!=='object')bad.push('an old save has no story record');G.enemies=[];V.closePanel(true);tick();if(!V.storyS().letters.k1)bad.push('an old hero did not get its letter');
   const junk=JSON.parse(JSON.stringify(d));junk.story={letters:'x',f:[1]};V.loadSave(junk);const J=V.storyS();if(typeof J.letters!=='object'||Array.isArray(J.f))bad.push('a damaged story record was kept');V.closePanel(true);return bad}`));
 
+// Story part 2: Act II, The Buried Crown.
+await reset();
+await test('Act II data is sound: the camp choice, the refugee quest, the second envoy', () => ev(`()=>{const V=window.__veyl,bad=[],Q=id=>V.QUESTS.find(q=>q.id===id);V.startNew('bulwark','Tester');
+  const c=Q('d11');if(!c||!c.choice)bad.push('no camp choice');else{for(const[k,o]of Object.entries(c.choice.opts)){if(!V.NPCS[o.turn])bad.push(k+' hands in to nobody');if(!o.label||!o.result||!o.done)bad.push(k+' is missing text')}if(JSON.stringify(c.req)!=='["d2"]')bad.push('the choice does not follow d2')}
+  if(JSON.stringify(Q('d6').req)!=='["d11"]')bad.push('d6 does not follow the choice');if(!Q('d12')||Q('d12').need.camp!=='spare')bad.push('the refugee quest does not need the camp spared');
+  V.enterMap('dunes');const m=V.G.map,n=V.NPCS.envoy2,v=m.get(Math.floor(n.x),Math.floor(n.y)),town=m.zones.find(z=>z.s==='Town');if(v<0||V.SOLID[v])bad.push('the second envoy stands on blocked ground');if(town&&!(n.x>=town.x0&&n.x<=town.x1&&n.y>=town.y0&&n.y<=town.y1))bad.push('the second envoy is outside town');
+  for(const o of Object.values(V.NPCS))if(o!==n&&o.town===n.town&&Math.hypot(o.x-n.x,o.y-n.y)<1.5)bad.push('the envoy stands on '+o.name);const[x,y]=V.walkSpot(m,40.5,31.5),w=m.get(Math.floor(x),Math.floor(y));if(w<0||V.SOLID[w]||Math.hypot(x-40.5,y-31.5)>3)bad.push('the raider camp is not on open ground');
+  if(!/second door/.test(V.EN.qassar.deathMsg))bad.push('Qassar has no last words');V.enterMap('vale',V.G.maps.vale.start);return bad}`));
+
+await test('The raider camp choice: sparing and burning lead different ways, and cannot be undone', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];const run=k=>{V.startNew('reaver','T'+k);const P=V.P;P.lvl=23;for(const id of ['v6','d1','d3','d2'])P.q[id]={s:'done',n:1};V.enterMap('dunes');V.closePanel(true);G.enemies=[];
+   const d11=V.QUESTS.find(q=>q.id==='d11');if(!V.qAvail(d11))bad.push(k+': the choice quest is not offered');P.q.d11={s:'active',n:0,got:[]};V.refreshQuestWorld();const node=G.nodes.find(o=>o.q.id==='d11');if(!node){bad.push(k+': no camp to walk to');return}
+   V.useNode(node);if(G.panel!=='choice')bad.push(k+': no choice panel');const btn=document.querySelector('#book [data-act="choose"][data-k="'+k+'"]');if(!btn){bad.push(k+': no '+k+' button');return}btn.click();
+   if(V.storyS().f.camp!==k)bad.push(k+': the choice was not kept');if(P.q.d11.s!=='ready')bad.push(k+': the quest is '+P.q.d11.s);if(G.panel)bad.push(k+': the panel stayed open');if(V.storyChoose('d11',k==='burn'?'spare':'burn'))bad.push(k+': the choice could be changed');if(V.storyS().f.camp!==k)bad.push(k+': the choice changed');
+   const d12=V.QUESTS.find(q=>q.id==='d12');P.q.d11.s='done';return{turn:V.qTurn(d11),text:V.qDoneText(d11),d12:V.qAvail(d12),d6:V.qAvail(V.QUESTS.find(q=>q.id==='d6'))}};
+  const sp=run('spare'),bu=run('burn');if(!sp||!bu)return bad;if(sp.turn!=='tamsin')bad.push('sparing hands in to '+sp.turn);if(bu.turn!=='hassa')bad.push('burning hands in to '+bu.turn);if(!/You listened/.test(sp.text)||!/friend at this well/.test(bu.text))bad.push('the two endings say the same thing');
+  if(!sp.d12)bad.push('sparing the camp does not open the refugee quest');if(bu.d12)bad.push('burning the camp still opens the refugee quest');if(!sp.d6||!bu.d6)bad.push('the main path does not go on after the choice');V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+await test('After the Sun-King, a second envoy takes the crown, and the Keeper writes again', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[],tick=()=>{G.storyT=0;V.storyTick(1)};V.startNew('lumen','Tester');const P=V.P;P.lvl=25;V.enterMap('dunes');G.enemies=[];V.closePanel(true);tick();
+  if(G.map.npcs.includes('envoy2'))bad.push('the envoy is there before the Sun-King');P.q.d7={s:'done',n:1};tick();if(!G.map.npcs.includes('envoy2'))bad.push('no envoy after the Sun-King');
+  V.openPanel('npc','envoy2');const a=document.querySelector('#book [data-act="accept"][data-q="d14"]');if(!a)bad.push('the envoy offers nothing');else a.click();V.closePanel(true);tick();if(G.map.npcs.includes('envoy2'))bad.push('the envoy stayed');if(V.qTurn(V.QUESTS.find(q=>q.id==='d14'))!=='hassa')bad.push('the crown is reported to the wrong person');
+  P.q.d14={s:'done',n:1};tick();if(G.panelArg!=='k3')bad.push('no letter after the crown: '+G.panel+' '+G.panelArg);V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
