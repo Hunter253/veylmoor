@@ -12,6 +12,7 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - 32 achievements, some giving a title to show under your name
 - Ore, herbs, crystals and wood to gather and beasts to skin for hides, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - Fishing in every zone, with a common, an uncommon and a rare fish in each
+- Storage for each hero at every town shop
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
 ## Play on PC

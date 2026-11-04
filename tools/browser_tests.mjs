@@ -815,6 +815,22 @@ await test('Reeling in at the right moment catches a fish; a miss, a fight or a 
   const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));P.bag=P.bag.filter(x=>!(x.kind==='food'&&/^fish_/.test(x.fid)));while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));V.fishStart(s);const F3=G.fishing;if(V.fishReel(F3.a+F3.w/2)!==false)bad.push('a full bag still took a fish');
   const f=P.bag.length;P.bag.pop();V.addCons('food','fish_frost_trout',1);const it=P.bag.find(x=>x.fid==='fish_frost_trout');if(!it)bad.push('a fish could not be added');else if(!/svg/.test(V.itemIcon(it)))bad.push('fish have no icon');return bad}`));
 
+// Storage (18.d).
+await reset();
+await test('Storage keeps gear, stacks materials and food, and gives them back', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('reaver','Tester');const P=V.P,S=()=>V.stashS();P.bag=[];
+  const sw=V.rollItem(5,2,'weapon',2);P.bag.push(sw);if(!V.stashPut(0)||S().length!==1||P.bag.length)bad.push('gear did not go into storage');
+  V.addMat('ore',1,30);V.stashPut(0);V.addMat('ore',1,30);V.stashPut(0);const ore=S().filter(x=>x.slot==='mat'&&x.fam==='ore');if(ore.reduce((a,x)=>a+x.qty,0)!==60||ore.length!==2)bad.push('ore did not stack in storage: '+ore.map(x=>x.qty));
+  V.addCons('food','fish_vale_perch',3);V.stashPut(0);V.addCons('food','fish_vale_perch',2);V.stashPut(0);const f=S().filter(x=>x.fid==='fish_vale_perch');if(f.length!==1||f[0].qty!==5)bad.push('fish did not stack: '+f.map(x=>x.qty));
+  const n=S().length;V.stashTake(S().indexOf(f[0]));if(S().length!==n-1||!P.bag.some(x=>x.fid==='fish_vale_perch'&&x.qty===5))bad.push('food did not come back');V.stashTake(S().findIndex(x=>x===sw));if(!P.bag.includes(sw))bad.push('gear did not come back');
+  P.bag=[];const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));const s0=S().length;if(V.stashTake(0))bad.push('took from storage into a full bag');if(S().length!==s0)bad.push('a full bag lost the stored item');
+  P.bag=[];while(S().length<V.stashCap())S().push(V.rollItem(1,0,'charm',0));P.bag.push(V.rollItem(1,0,'boots',0));if(V.stashPut(0))bad.push('stored into full storage');if(P.bag.length!==1)bad.push('a full storage lost the bag item');
+  V.openPanel('shop','pell');G.shopTab='stash';V.openPanel('shop','pell');if(!/Storage \\d+ \\/ \\d+/.test(document.querySelector('#book').innerText))bad.push('no Storage tab');V.closePanel(true);return bad}`));
+
+await test('Storage grows for gold, belongs to one hero, and survives saving', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','First');const P=V.P;const c0=V.stashCap();P.gold=0;if(V.stashGrow())bad.push('grew with no gold');P.gold=1e6;let g=0;while(V.stashGrow())g++;if(V.stashCap()!==V.STASH.max)bad.push('storage stops at '+V.stashCap());if(g!==(V.STASH.max-c0)/V.STASH.step)bad.push('grew '+g+' times');if(P.gold>=1e6)bad.push('growing was free');
+  V.stashS().push(V.rollItem(3,1,'helm',1));V.addMat('herb',2,7);V.stashPut(P.bag.findIndex(x=>x.slot==='mat'));const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);if(V.stashS().length!==2||V.stashCap()!==V.STASH.max)bad.push('storage was not saved: '+V.stashS().length+' '+V.stashCap());
+  const old=JSON.parse(JSON.stringify(d));delete old.stash;delete old.stashMax;V.loadSave(old);if(V.stashS().length!==0||V.stashCap()!==V.STASH.start)bad.push('an old save has the wrong storage');const junk=JSON.parse(JSON.stringify(d));junk.stash='x';junk.stashMax=9999;V.loadSave(junk);if(!Array.isArray(V.P.stash)||V.stashCap()>V.STASH.max)bad.push('damaged storage was kept');
+  V.loadSave(d);V.startNew('bulwark','Second');if(V.stashS().length)bad.push('a new hero sees another hero\\'s storage');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
