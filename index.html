@@ -1236,10 +1236,11 @@ let eid=0;
 function mkEnemy(type,lvl,x,y){const d=EN[type];const hp=Math.round(d.hp*1.12*(1+0.35*(PL(lvl)-1)));
  return{type,d,lvl,x,y,hx:x,hy:y,hp,max:hp,dmg:d.dmg*1.1*(1+0.22*(PL(lvl)-1)),state:'idle',cd:rr(0,1),wander:rr(1,4),tx:x,ty:y,stun:0,root:0,wind:0,dead:false,respawn:0,hitFlash:0,rot:R()*TAU,anim:R()*10,id:++eid,slam:5,fade:0,px:x,py:y,mv:0,ph:R()*6}}
 const NPCS={
- marwen:{town:'Hollowmere',name:'Elder Marwen',title:'Village elder',col:'#9a86c2',x:14,y:24,idle:'Keep to the roads after dark. The fen remembers every path that was ever drowned.'},
- corra:{town:'Hollowmere',name:'Huntress Corra',title:'Ridge warden',col:'#7f9c58',x:22.6,y:24.4,idle:'The wolves on the ridge hunt in threes. Watch your flanks.'},
- ysolde:{town:'Hollowmere',name:'Ysolde',title:'Herbalist',col:'#5ea69b',x:9,y:24.2,idle:'Lantern-moss stops bleeding, bog-myrtle stops fevers, and nothing stops a ghoul but a blade.'},
- pell:{town:'Hollowmere',name:'Pell',title:'Pedlar',col:'#c48a52',x:19.8,y:29.6,idle:'Tonics, curios, and no questions. Gold only.',shop:true},
+ marwen:{town:'Hollowmere',name:'Elder Marwen',title:'Village elder',col:'#9a86c2',x:12.8,y:25.4,idle:'Keep to the roads after dark. The fen remembers every path that was ever drowned.'},
+ corra:{town:'Hollowmere',name:'Huntress Corra',title:'Ridge warden',col:'#7f9c58',x:25.6,y:23.9,idle:'The wolves on the ridge hunt in threes. Watch your flanks.'},
+ ysolde:{town:'Hollowmere',name:'Ysolde',title:'Herbalist',col:'#5ea69b',x:5.2,y:24.4,idle:'Lantern-moss stops bleeding, bog-myrtle stops fevers, and nothing stops a ghoul but a blade.'},
+ pell:{town:'Hollowmere',name:'Pell',title:'Pedlar',col:'#c48a52',x:20,y:26.6,idle:'Tonics, curios, and no questions. Gold only.',shop:true,place:"Pell's Store"},
+ bram:{town:'Hollowmere',name:'Bram',title:'Blacksmith',col:'#8a6a52',x:20.3,y:24.2,idle:'Bring ore and I will see it right. Good steel does not care who swings it.',shop:true,place:"Bram's Forge",tab:'craft'},
  hassa:{name:'Warden Hassa',title:'Keeper of the Well',col:'#c08040',x:12.5,y:11.4,town:"Qarim's Rest",idle:'Drink before you are thirsty, and never chase a shade into the dunes at noon.'},
  tamsin:{name:'Tamsin',title:'Caravan Trader',col:'#8a5ab0',x:9.2,y:11.8,town:"Qarim's Rest",idle:'Silk, salt and tonics. The caravan leaves when the wind turns, so buy now.',shop:true},
  brun:{name:'Brun Ironhide',title:'Hold Captain',col:'#6a5a4a',x:42.5,y:31.4,town:'Kellhold',idle:'Keep your fire lit and your blade dry. The cold kills slower than the wolves, but it kills.'},
@@ -1430,6 +1431,7 @@ function landscape3D(m,g,ge,sh,Rn){const th=m.theme||0,rc=ROCKC[th],stone=th===1
   else if(p.k==='graves'){for(let k=0;k<7;k++){const gx=x+(k%4)*.9-1.3+Rn()*.2,gz=z+Math.floor(k/4)*1.1-.5,gy=groundH(gx,gz),tilt=(Rn()-.5)*.3;if(k%3===0){g.box(T3(gx,gy+.45,gz,.1,.9,.1,0,tilt),vary(stone,.08,Rn));g.box(T3(gx,gy+.62,gz,.5,.1,.1,0,tilt),vary(stone,.08,Rn))}else g.box(T3(gx,gy+.26,gz,.42,.55,.12,(Rn()-.5)*.3,tilt),vary(stone,.1,Rn),vary(stone,.06,Rn));g.box(T3(gx,gy+.02,gz+.45,.4,.06,.7),[70,60,48])}}
   else if(p.k==='bones'){const s=p.s||1;for(let k=0;k<5;k++)g.torus(T3(x+(k-2)*.45*s,y-.1,z,s*(1-.12*Math.abs(k-2)),s*(1-.12*Math.abs(k-2)),s,r0,Math.PI/2),[226,216,190],.85,.07*s,14,5);g.cyl(T3(x-1.4*s,y+.15,z,1,2.8*s,1,r0,0,Math.PI/2),[226,216,190],6,.1*s,.08*s);g.ico(T3(x+1.6*s,y+.3*s,z,.42*s,.34*s,.5*s),[230,222,198],.25,Rn)}
   else if(p.k==='arch'){const a=p.a||0,dx=Math.cos(a)*1.6,dz=Math.sin(a)*1.6,c=p.bone?[226,216,190]:stone;for(const sg of[-1,1])g.box(T3(x+dx*sg,y+1.3,z+dz*sg,.55,2.7,.55),vary(c,.06,Rn));g.box(T3(x,y+2.75,z,3.9,.45,.65,-a),vary(c,.05,Rn));if(p.bone)g.torus(T3(x,y+.3,z,1.7,1.9,1,-a+Math.PI/2,Math.PI/2),c,1.25,.14,16,5)}
+  else if(p.k==='mill'){g.cyl(T3(x,y-.05,z,1,3,1),stone,8,1.15,.8);g.cyl(T3(x,y+2.95,z,1,1,1),[92,58,44],8,.95,.05);g.box(T3(x,y+1.1,z-1.08,.6,1.1,.08),[66,46,30]);const hy=y+2.75,hz=z-.98;g.cyl(T3(x,hy,hz,1,.14,1,0,Math.PI/2),wood,6,.12,.12);for(let k=0;k<4;k++){const a=k/4*TAU+.4,L=1.7;g.box(T3(x+Math.cos(a)*L/2,hy+Math.sin(a)*L/2,hz-.08,L,.42,.04,0,0,a),[214,204,178],wood)}sh.blob(x,z,1.6,1.3,.4)}
   else if(p.k==='well'){g.cyl(T3(x,y,z,1,.7,1),stone,10,.62,.62,false);g.cyl(T3(x,y+.05,z,1,.5,1),[30,30,34],10,.5,.5);for(const sg of[-1,1])g.box(T3(x+sg*.55,y+.95,z,.1,1.4,.1),wood);g.box(T3(x,y+1.62,z,1.4,.06,.7,0,0,0),wood);g.cyl(T3(x,y+1.25,z,1,.3,1,0,0,Math.PI/2),wood,6,.08,.08);sh.blob(x,z,1.2,.9,.35)}
   else if(p.k==='cart'){g.box(T3(x,y+.55,z,1.8,.4,1,r0,0,.1),wood,[124,92,58]);g.torus(T3(x+.6,y+.4,z+.55,1,1,1,r0,0,0),[70,52,34],.38,.05,12,4);g.torus(T3(x-.7,y+.15,z-.6,1,1,1,r0,Math.PI/2.4,0),[70,52,34],.38,.05,12,4);crate(x+1.2,z+.9);sh.blob(x,z,.8,1.2,.4)}
   else if(p.k==='hay'){g.ico(T3(x,y+.35,z,.62,.5,.62,Rn()*3),[214,182,96],.3,Rn,0)}
@@ -1444,6 +1446,13 @@ function landscape3D(m,g,ge,sh,Rn){const th=m.theme||0,rc=ROCKC[th],stone=th===1
   else if(p.k==='tent')tent(x,z,p.s||1,r0,p.col||[150,120,84]);
   else if(p.k==='fire')fire(x,z)}}
 
+/* Hollowmere's layout, in map tiles. Buildings face south unless face is 'n'. */
+const HOLLOWMERE={square:[12,22,17,28],fountain:[14,24,15,25],
+ paths:[[14,18,15,21],[14,29,15,31],[18,25,23,26],[3,25,11,26],[18,23,22,24],[8,23,9,24],[8,27,9,27],[3,24,4,24],[3,27,4,27],[29,26,30,27]],
+ flowers:[[10,23,11,24],[6,23,7,24],[10,27,11,27],[12,19,13,21],[16,19,17,21]],
+ buildings:[{r:[7,19,11,22],sign:'Village Hall'},{r:[18,19,22,22],sign:'Forge'},{r:[7,28,11,31],face:'n',sign:'The Inn'},{r:[18,28,22,31],face:'n',sign:'General Store'},{r:[2,21,5,23],sign:'Herb Hut',roof:[70,92,58]},{r:[2,28,5,30],face:'n'},{r:[28,28,32,31],face:'n',sign:'Stable'}],
+ stalls:[[20,27.6,[201,163,106],[139,58,42]],[12.4,30.3,[230,220,190],[60,90,130]],[17.6,30.3,[230,220,190],[70,110,70]]],
+ mill:[22.5,35.5]};
 function buildVale(){
  const m=makeMap('vale',64,48,T.GRASS),Rn=rng(11);
  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){if(x<2||y<2||x>=m.w-2||y>=m.h-2){m.set(x,y,T.TREE);continue}if(x>=34&&y>=27){m.set(x,y,T.BOG);if(Rn()<0.02)m.set(x,y,T.TREE)}}
@@ -1452,19 +1461,18 @@ function buildVale(){
  forestNoise(m,Rn,2,2,33,16,.1,3.1);forestNoise(m,Rn,33,2,62,22,.27,7.7,.12);forestNoise(m,Rn,2,34,33,46,.075,11.3);forestNoise(m,Rn,24,16,33,33,.05,5.5);forestNoise(m,Rn,2,17,5,33,.2,9.1);
  flowerNoise(m,2,2,33,16,.46,2.2);flowerNoise(m,2,34,33,46,.4,6.1);
  outcrop(m,7,6,2.2,Rn);outcrop(m,29.5,4,1.6,Rn);outcrop(m,44,18,2.3,Rn);outcrop(m,57.5,13,1.9,Rn);outcrop(m,35,10,1.5,Rn);outcrop(m,4.5,44,1.6,Rn);outcrop(m,58,44,1.6,Rn);outcrop(m,53.5,17.5,1.4,Rn);
- m.rect(6,19,23,31,T.COBBLE);
- m.houses=[[7,20,10,22],[17,19,21,21],[7,28,10,30],[18,26,21,28]];
- m.rect(7,20,10,21,T.ROOF);m.rect(7,22,10,22,T.WALL);m.rect(17,19,21,20,T.ROOF);m.rect(17,21,21,21,T.WALL);
- m.rect(7,28,10,29,T.ROOF);m.rect(7,30,10,30,T.WALL);m.rect(18,26,21,27,T.ROOF);m.rect(18,28,21,28,T.WALL);
+ {const H=HOLLOWMERE;m.rect(...H.square,T.COBBLE);for(const r of H.paths)m.rect(...r,T.PATH);for(const r of H.flowers)m.rect(...r,T.FLOWER);m.houses=[];m.signs=[];
+  for(const b of H.buildings){const[x0,y0,x1,y1]=b.r,n=b.face==='n',fy=n?y0:y1;m.rect(x0,y0,x1,y1,T.ROOF);m.rect(x0,fy,x1,fy,T.WALL);m.houses.push([x0,y0,x1,y1,b]);if(b.sign)m.signs.push([(x0+x1+1)/2,n?y0-.1:y1+1.1,b.sign])}}
  m.rect(54,2,61,10,T.RUIN);m.rect(55,3,60,9,T.FLOOR);m.rect(54,6,54,7,T.PATH);
  m.rect(16,32,19,35,T.COBBLE);
  road(m,[[23.5,25.5],[30,24.4],[38.5,25.5]],1.05,1.1,1);road(m,[[38.5,25.5],[37.4,16],[39.5,6.5]],1.05,1.2,2);road(m,[[39.5,6.5],[46,7.8],[54.5,6.5]],1.05,.9,3);
  road(m,[[14.5,19],[14,12],[10.5,8]],1,1.1,4);road(m,[[14.5,31.5],[16,32.5]],1,0,5);road(m,[[17.5,35.5],[16,40],[10,43.3]],1,1,6);road(m,[[38.5,26.5],[38,32],[39.5,37.5],[44.5,43]],.95,1,7);
- m.rect(14,20,15,21,T.FOUNT);for(const[x,y]of[[13,18],[16,18],[24,24],[24,27],[37,22],[40,22]])m.set(x,y,T.FOUNT);
- m.blossom=new Set();for(const[x,y]of[[4,20],[4,27],[25,20],[25,31],[11,33],[18,33],[3,24],[22,17],[6,17]]){m.set(x,y,T.TREE);m.blossom.add(x+','+y)}
+ m.rect(...HOLLOWMERE.fountain,T.FOUNT);for(const[x,y]of[[13,18],[16,18],[24,24],[24,27],[37,22],[40,22]])m.set(x,y,T.FOUNT);
+ m.blossom=new Set();for(const[x,y]of[[4,20],[5,27],[25,20],[25,31],[11,33],[18,33],[2,24],[22,17],[6,17]]){m.set(x,y,T.TREE);m.blossom.add(x+','+y)}
  // landmarks
  ruinRing(m,48.5,4.2,2.1,Math.PI/2);prop(m,'pillar',46,4.5);
  prop(m,'shrine',35.5,23.5,{foot:[[0,0]]});
+ prop(m,'mill',...HOLLOWMERE.mill,{foot:[[0,0],[-1,0],[1,0],[0,-1],[0,1]]});prop(m,'fence',0,0,{pts:[[25,27.6],[27.7,27.6],[27.7,31.6],[25,31.6],[25,27.6]]});
  stoneRing(m,25,9.5,2.2,6,{h:1.3});
  prop(m,'bones',52.5,15.5,{s:.7,rot:.4});prop(m,'logs',49,13.5,{rot:1.1});
  prop(m,'graves',55.5,33.5);prop(m,'pillar',44,30);m.set(43,31,T.RUIN);m.set(45,29,T.RUIN);
@@ -1473,15 +1481,15 @@ function buildVale(){
  for(const[x,y]of[[48,6],[38,24],[39,37],[51,15],[37,29]])ensureWalk(m,x+.5,y+.5,1);
  m.start={x:14.5*TS,y:27*TS};
  m.portals=[{x:59.6*TS,y:3.55*TS,rot:0,label:'Enter the Sunken Abbey',to:'abbey',locked:()=>!P||!P.q.q5,lockMsg:'The abbey gate is sealed with river-weed and old iron. Elder Marwen may know how to open it.'}];
- m.npcs=['marwen','corra','ysolde','pell'];
+ m.npcs=['marwen','corra','ysolde','pell','bram'];
  m.spawns=[{type:'rat',x0:5,y0:4,x1:31,y1:15,n:9,l0:1,l1:3},{type:'rat',x0:4,y0:34,x1:30,y1:45,n:6,l0:3,l1:5},{type:'wolf',x0:35,y0:4,x1:53,y1:21,n:9,l0:5,l1:9},{type:'ghoul',x0:36,y0:29,x1:60,y1:45,n:9,l0:9,l1:13},{type:'wisp',x0:36,y0:29,x1:60,y1:45,n:6,l0:9,l1:13}];
- m.zones=[{n:'Abbey Gate',s:'The north road ends',x0:53,y0:1,x1:62,y1:11},{n:'Hollowmere',s:'Village',x0:5,y0:17,x1:24,y1:33},{n:'Barrowgrass Meadow',s:'Levels 1–3',x0:2,y0:2,x1:33,y1:16},
+ m.zones=[{n:'Abbey Gate',s:'The north road ends',x0:53,y0:1,x1:62,y1:11},{n:'Hollowmere',s:'Village',x0:2,y0:17,x1:32,y1:33},{n:'Barrowgrass Meadow',s:'Levels 1–3',x0:2,y0:2,x1:33,y1:16},
   {n:'Thornback Ridge',s:'Levels 5–9',x0:33,y0:2,x1:62,y1:22},{n:'Lantern Fen',s:'Levels 9–13',x0:34,y0:27,x1:62,y1:46},{n:'Southfield',s:'Levels 3–5',x0:2,y0:34,x1:33,y1:46}];
  m.set(17,33,T.WAY);m.way=[17.5,33.5];m.wild='The Low Road';m.theme=0;
  m.portals.push({x:17.5*TS,y:33.5*TS,label:'Use the Waystone',to:'way'});
  m.labels=[[15,15.6,'Hollowmere',17],[17,7,'Barrowgrass Meadow'],[45,15,'Thornback Ridge'],[48,40,'Lantern Fen'],[16,42,'Southfield'],[58,11.7,'Sunken Abbey',14],[25,12.6,'Barrow Ring',12],[48.5,8.2,'Old Watchtower',12]];
  m.badges=[[15,25,'⌂'],[59.6,4.6,'☠','#e8d4c0'],[17.5,33.5,'✦','#bff0ff']];
- m.lamps=[[12.5,25.5],[16.5,25.5],[12.5,22.5],[16.5,22.5],[23.6,24.2],[23.6,27.6]];
+ m.lamps=[[12.4,22.4],[17.6,22.4],[12.4,28.6],[17.6,28.6],[23.6,24.2],[23.6,27.6],[6.4,24.6],[6.4,27.4]];
  return m}
 function wildBase(id,w,h,theme,seed){const m=makeMap(id,w,h,T.GRASS),Rn=rng(seed);m.theme=theme;m.npcs=[];m.portals=[];m.lamps=[];
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(x<2||y<2||x>=w-2||y>=h-2)m.set(x,y,T.TREE);return[m,Rn]}
@@ -2097,7 +2105,7 @@ const RESF={ore:{n:['Copper Ore','Iron Ore','Darkiron Ore','Runestone Ore','Star
 const AREAG={vale:1,dunes:2,frost:3,gloam:4,ember:5};
 const matKey=(f,g)=>f+g,matName=(f,g)=>RESF[f].n[g-1],matValue=(f,g)=>Math.round([2,5,12,26,55][g-1]*(f==='gem'?2.5:1));
 function spawnResources(){const m=G.map;G.res=[];if(!m||m.id==='abbey'||!AREAG[m.id])return;G.resMap=G.resMap||{};if(G.resMap[m.id]){G.res=G.resMap[m.id];return}
- const Rn=rng(m.id.length*31+7),base=AREAG[m.id],list=[],town=m.zones.find(z=>z.s==='Town'),bad=(x,y)=>(town&&x>=town.x0-1&&x<=town.x1+1&&y>=town.y0-1&&y<=town.y1+1)||(m.arena&&Math.hypot(x+.5-m.arena.x,y+.5-m.arena.y)<m.arena.r+2.5);
+ const Rn=rng(m.id.length*31+7),base=AREAG[m.id],list=[],town=m.zones.find(z=>z.s==='Town'||z.s==='Village'),bad=(x,y)=>(town&&x>=town.x0-1&&x<=town.x1+1&&y>=town.y0-1&&y<=town.y1+1)||(m.arena&&Math.hypot(x+.5-m.arena.x,y+.5-m.arena.y)<m.arena.r+2.5);
  const fams=[];for(const f in RESF)for(let k=0;k<RESF[f].w;k++)fams.push(f);
  for(const fam of fams){for(let t=0;t<120;t++){const x=3+Math.floor(Rn()*(m.w-6)),y=3+Math.floor(Rn()*(m.h-6)),v=m.get(x,y);if(SOLID[v]||v===T.PATH||v===T.COBBLE||v===T.WAY||bad(x,y))continue;
   if(fam==='ore'&&t<90&&![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m.get(x+dx,y+dy)===T.ROCK))continue;
@@ -2569,8 +2577,8 @@ function rock(g,x,z,s,Rn,col){const y=groundH(x,z);g.ico(T3(x,y+.05*s,z,s,s*.6,s
 function tuft(g,x,z,Rn,base,tip,hgt,n=4){const y=groundH(x,z);for(let k=0;k<n;k++){const a=Rn()*TAU,ox=Math.cos(a)*.06,oz=Math.sin(a)*.06,h=hgt*(.6+Rn()*.6),lx=(Rn()-.5)*.18,lz=(Rn()-.5)*.18,w2=.035,pa=a+Math.PI/2;
  const A=[x+ox+Math.cos(pa)*w2,y-.02,z+oz+Math.sin(pa)*w2],B=[x+ox-Math.cos(pa)*w2,y-.02,z+oz-Math.sin(pa)*w2],C=[x+ox+lx,y+h,z+oz+lz];const up=[0,1,0];
  g.v(A,up,base,0);g.v(B,up,base,0);g.v(C,up,vary(tip,.25,Rn),1)}}
-function house(g,ge,sh,r,Rn,m){const[x0,y0,x1,y1]=r,W=x1-x0+1-.08,D=y1-y0+1-.08,cx=(x0+x1+1)/2,cz=(y0+y1+1)/2,y=groundH(cx,cz)-.05;
- const plaster=vary([200,186,152],.08,Rn),timber=[58,42,30],stone=[104,100,94],roof=m.theme===2?vary([232,238,246],.03,Rn):vary([92,58,44],.15,Rn);
+function house(g,ge,sh,r,Rn,m){const[x0,y0,x1,y1,opt]=r,fs=opt&&opt.face==='n'?-1:1,W=x1-x0+1-.08,D=y1-y0+1-.08,cx=(x0+x1+1)/2,cz=(y0+y1+1)/2,y=groundH(cx,cz)-.05;
+ const plaster=vary([200,186,152],.08,Rn),timber=[58,42,30],stone=[104,100,94],roof=m.theme===2?vary([232,238,246],.03,Rn):vary(opt&&opt.roof||[92,58,44],.15,Rn);
  g.box(T3(cx,y+.15,cz,W+.12,.35,D+.12),stone,[120,116,108]);
  g.box(T3(cx,y+.32+.95,cz,W,1.9,D),plaster);
  const wallTop=y+2.22;
@@ -2584,12 +2592,23 @@ function house(g,ge,sh,r,Rn,m){const[x0,y0,x1,y1]=r,W=x1-x0+1-.08,D=y1-y0+1-.08,
  g.box(T3(cx,wallTop+rh+.06,cz,W+.75,.12,.22),[70,44,34]);
  for(const s of[-1,1]){const gx=cx+s*W/2;g.tri([gx,wallTop,cz-D/2],[gx,wallTop,cz+D/2],[gx,wallTop+rh,cz],plaster,0,[cx,wallTop,cz])}
  g.box(T3(cx+W*.28,wallTop+rh*.75,cz-D*.18,.38,1.5,.38),[110,96,86],[60,54,50]);g.box(T3(cx+W*.28,wallTop+rh*.75+.75,cz-D*.18,.46,.08,.46),[90,80,72]);if(m.chimneys)m.chimneys.push([cx+W*.28,wallTop+rh*.75+.85,cz-D*.18]);
- const fz=cz+D/2+.04;g.box(T3(x0+1.5,y+.85,fz,.62,1.25,.08),[66,46,30]);g.box(T3(x0+1.5,y+.85,fz+.01,.72,1.35,.05),timber);
- for(const wx of[x0+2.7,x0+W-.5])if(wx<x1+.6){ge.box(T3(wx,y+1.65,fz,.5,.42,.06),[255,196,110]);g.box(T3(wx,y+1.65,fz+.02,.6,.08,.05),timber);g.box(T3(wx,y+1.65,fz+.02,.06,.5,.05),timber)}
- ge.box(T3(cx-W*.2,y+1.65,cz-D/2-.04,.45,.4,.06),[255,190,100]);
- for(const wx of[x0+2.7,x0+W-.5])if(wx<x1+.6){g.box(T3(wx,y+1.37,fz+.1,.58,.12,.17),[96,64,40]);for(let k=0;k<5;k++)g.ico(T3(wx-.22+k*.11,y+1.48,fz+.1,.065,.055,.065),pick2(Rn,[[226,64,74],[244,206,84],[206,124,226],[250,250,240],[255,150,60]]),.3,Rn,.6)}
- g.box(T3(x0+.3,wallTop-.6,fz+.06,.34,.95,.02),[150,30,30]);g.box(T3(x0+.3,wallTop-.1,fz+.07,.4,.05,.04),[214,170,72]);g.box(T3(x0+.3,wallTop-.6,fz+.075,.1,.1,.01,0,0,.78),[214,170,72]);g.box(T3(x0+.3,wallTop-1.08,fz+.06,.34,.04,.02),[214,170,72]);
+ const fz=cz+fs*(D/2+.04),F=d=>fz+fs*d;g.box(T3(x0+1.5,y+.85,fz,.62,1.25,.08),[66,46,30]);g.box(T3(x0+1.5,y+.85,F(.01),.72,1.35,.05),timber);
+ for(const wx of[x0+2.7,x0+W-.5])if(wx<x1+.6){ge.box(T3(wx,y+1.65,fz,.5,.42,.06),[255,196,110]);g.box(T3(wx,y+1.65,F(.02),.6,.08,.05),timber);g.box(T3(wx,y+1.65,F(.02),.06,.5,.05),timber)}
+ ge.box(T3(cx-W*.2,y+1.65,cz-fs*(D/2+.04),.45,.4,.06),[255,190,100]);
+ for(const wx of[x0+2.7,x0+W-.5])if(wx<x1+.6){g.box(T3(wx,y+1.37,F(.1),.58,.12,.17),[96,64,40]);for(let k=0;k<5;k++)g.ico(T3(wx-.22+k*.11,y+1.48,F(.1),.065,.055,.065),pick2(Rn,[[226,64,74],[244,206,84],[206,124,226],[250,250,240],[255,150,60]]),.3,Rn,.6)}
+ g.box(T3(x0+.3,wallTop-.6,F(.06),.34,.95,.02),[150,30,30]);g.box(T3(x0+.3,wallTop-.1,F(.07),.4,.05,.04),[214,170,72]);g.box(T3(x0+.3,wallTop-.6,F(.075),.1,.1,.01,0,0,.78),[214,170,72]);g.box(T3(x0+.3,wallTop-1.08,F(.06),.34,.04,.02),[214,170,72]);
  sh.rect(x0-.1,y0-.1,x1+1.1,y1+1.1,3.4,.62);sh.ao(x0,y0,x1+1,y1+1,.5,.35)}
+function hollowDress(m,g,ge,Rn,sh){const wood=[70,50,34],dark=[60,56,54],stone=[104,100,94],at=(x,z)=>groundH(x,z);
+ {const x=19,z=23.8,y=at(x,z);g.box(T3(x,y+.2,z,.3,.4,.3),dark);g.box(T3(x,y+.48,z,.66,.16,.26),[76,74,74]);sh.blob(x,z,.5,.5,.3)}
+ {const x=21.5,z=23.5,y=at(x,z);g.box(T3(x,y+.35,z,1.1,.7,.8),stone,[120,116,108]);ge.box(T3(x,y+.72,z,.8,.05,.5),[255,130,50]);m.chimneys.push([x,y+1.05,z])}
+ {const x=18.6,z=23.35,y=at(x,z);g.box(T3(x,y+.22,z,.9,.44,.4),wood);g.box(T3(x,y+.42,z,.74,.04,.26),[70,110,130])}
+ for(const x of[7.3,11.2]){const z=23.3,y=at(x,z);g.cyl(T3(x,y,z,1,3,1),wood,6,.06,.05);g.box(T3(x,y+2.15,z+.04,.62,1.5,.04),[150,30,30]);g.box(T3(x,y+2.15,z+.07,.24,.24,.02,0,0,.78),[214,170,72])}
+ {const x=8.5,z=23.35,y=at(x,z);g.box(T3(x,y+.07,z,1.7,.14,.7),[150,146,136]);g.box(T3(x,y+.16,z-.16,1.3,.14,.36),[160,156,146])}
+ {const x=10.4,z=27.5,y=at(x,z);g.cyl(T3(x,y,z,1,2.2,1),wood,6,.05,.05);g.box(T3(x,y+2.1,z-.3,.05,.05,.65),wood);g.box(T3(x,y+1.72,z-.42,.05,.56,.5),[140,96,50]);g.box(T3(x+.03,y+1.72,z-.42,.02,.26,.2),[226,190,110])}
+ for(const[x,z]of[[7.4,27.45],[11.6,27.5]]){const y=at(x,z);g.cyl(T3(x,y,z,1,.6,1),[100,70,44],8,.2,.2)}
+ {const x=2.6,z=24.5,y=at(x,z);g.cyl(T3(x,y,z,1,1.7,1),wood,6,.05,.04);g.box(T3(x,y+1.7,z,.26,.05,.26),wood);ge.box(T3(x,y+1.5,z,.18,.3,.18),[255,214,130])}
+ for(let k=0;k<3;k++){const x=3.9+k*.42,z=23.2,y=at(x,z);g.ico(T3(x,y+.14,z,.16,.16,.16),pick2(Rn,[[96,150,84],[120,170,90],[150,160,80]]),.3,Rn)}
+ {const x=30.5,z=27.5,y=at(x,z);g.box(T3(x,y+.2,z,1,.4,.4),wood);g.box(T3(x,y+.38,z,.84,.04,.26),[170,150,90])}}
 function buildVale3D(m,g,ge,Rn,sh){
  // trees inside
  for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){const v=m.get(x,y);const cx=x+.5+(Rn()-.5)*.5,cz=y+.5+(Rn()-.5)*.5;
@@ -2602,20 +2621,20 @@ function buildVale3D(m,g,ge,Rn,sh){
  // margin forest
  for(let y=-MG;y<m.h+MG;y++)for(let x=-MG;x<m.w+MG;x++){if(x>=0&&y>=0&&x<m.w&&y<m.h)continue;const d=Math.max(-x,-y,x-m.w+1,y-m.h+1);if(Rn()>(d<5?.6:.3))continue;
   const kind=(x>40&&y<26)?(Rn()<.4?'conifer':'autumn'):(x>40&&y>=26)?(Rn()<.5?'dead':'broad'):(Rn()<.35?'conifer':'broad');tree(g,sh,x+.5+(Rn()-.5)*.7,y+.5+(Rn()-.5)*.7,1+Rn()*.7+d*.03,kind,Rn,0)}
- m.chimneys=[];for(const r of m.houses)house(g,ge,sh,r,Rn,m);
- {const x=17.2,z=30.9,y=groundH(x,z);g.cyl(T3(x,y,z,1,1.7,1),[70,50,34],6,.05,.05);g.box(T3(x+.3,y+1.6,z,.66,.06,.06),[70,50,34]);g.box(T3(x+.38,y+1.32,z,.52,.38,.05),[150,110,70]);g.box(T3(x+.38,y+1.32,z+.03,.32,.15,.01),[214,170,72])}
- for(const[x,z]of[[25.5,23.4],[26.6,23.1],[25.9,28.6],[5.4,24.4]]){const y=groundH(x,z);g.ico(T3(x,y+.32,z,.62,.5,.62,Rn()*3),[220,186,92],.25,Rn,0,1,1);sh.blob(x,z,.6,.6,.3)}
+ m.chimneys=[];for(const r of m.houses)house(g,ge,sh,r,Rn,m);hollowDress(m,g,ge,Rn,sh);
+ {const x=16.4,z=31.4,y=groundH(x,z);g.cyl(T3(x,y,z,1,1.7,1),[70,50,34],6,.05,.05);g.box(T3(x+.3,y+1.6,z,.66,.06,.06),[70,50,34]);g.box(T3(x+.38,y+1.32,z,.52,.38,.05),[150,110,70]);g.box(T3(x+.38,y+1.32,z+.03,.32,.15,.01),[214,170,72])}
+ for(const[x,z]of[[27.5,22.8],[28.6,22.6],[25.9,28.6],[29.2,27.4],[26.4,30.6]]){const y=groundH(x,z);g.ico(T3(x,y+.32,z,.62,.5,.62,Rn()*3),[220,186,92],.25,Rn,0,1,1);sh.blob(x,z,.6,.6,.3)}
  {const x=26.8,z=28.2,y=groundH(x,z);g.box(T3(x,y+.62,z,1.4,.36,.82),[124,86,50],[140,98,58]);for(const s2 of[-1,1])g.torus(T3(x+.3,y+.38,z+s2*.46,1,1,1,0,Math.PI/2),[74,52,34],.36,.05,14,5);g.box(T3(x-1.05,y+.45,z,1,.06,.06,0,0,.28),[96,68,42]);for(let k=0;k<3;k++)g.cyl(T3(x-.3+k*.32,y+.8,z,1,.42,1),[110,76,46],8,.15,.15);sh.blob(x,z,.6,1,.4)}
  for(const[x,z,r]of[[24.6,22.4,0],[24.6,29.6,0]]){const y=groundH(x,z);g.cyl(T3(x,y,z,1,3.4,1),[80,58,40],6,.07,.06);g.box(T3(x,y+3.3,z+.35,.06,.06,.75),[80,58,40]);g.box(T3(x,y+2.5,z+.65,.04,1.5,.6),[150,30,30]);g.box(T3(x,y+2.5,z+.66,.045,.25,.25,0,0,.78),[214,170,72]);g.box(T3(x,y+1.78,z+.65,.045,.06,.62),[214,170,72])}
  // lamps
  for(const[lx,lz]of m.lamps){const y=groundH(lx,lz);g.cyl(T3(lx,y,lz,1,1.9,1),[44,36,28],6,.06,.045);g.box(T3(lx,y+1.95,lz,.26,.06,.26),[44,36,28]);ge.box(T3(lx,y+1.78,lz,.18,.26,.18),[255,200,120]);g.box(T3(lx,y+1.62,lz,.24,.05,.24),[44,36,28])}
  // market stall at Pell
- {const sx=19.8,sz=30.7,y=groundH(sx,sz);for(const[ox,oz]of[[-1.1,-.4],[1.1,-.4],[-1.1,.45],[1.1,.45]])g.cyl(T3(sx+ox,y,sz+oz,1,1.9,1),[70,50,34],5,.05,.05);
-  for(let k=0;k<6;k++)g.box(T3(sx-1.05+k*.42,y+1.95,sz,.42,.06,1.15,0,-.12),k%2?[201,163,106]:[139,58,42]);g.box(T3(sx,y+.75,sz+.35,2.1,.12,.5),[96,70,46]);
+ for(const[sx,sz,c1,c2]of HOLLOWMERE.stalls){const y=groundH(sx,sz);for(const[ox,oz]of[[-1.1,-.4],[1.1,-.4],[-1.1,.45],[1.1,.45]])g.cyl(T3(sx+ox,y,sz+oz,1,1.9,1),[70,50,34],5,.05,.05);
+  for(let k=0;k<6;k++)g.box(T3(sx-1.05+k*.42,y+1.95,sz,.42,.06,1.15,0,-.12),k%2?c1:c2);g.box(T3(sx,y+.75,sz+.35,2.1,.12,.5),[96,70,46]);
   for(let k=0;k<4;k++)g.ico(T3(sx-.7+k*.45,y+.88,sz+.35,.1,.08,.1),pick2(Rn,[[190,70,50],[220,170,60],[120,150,60]]),.2,Rn)}
- for(const[cx,cz]of[[22.6,27.6],[22.3,28.4],[23.1,28.3],[11.4,23.6],[6.7,26.5],[16.6,21.9]]){const y=groundH(cx,cz);if(Rn()<.5)g.box(T3(cx,y+.22,cz,.44,.44,.44,Rn()),[112,82,52],[128,96,62]);else g.cyl(T3(cx,y,cz,1,.6,1),[100,70,44],8,.2,.2)}
+ for(const[cx,cz]of[[23.4,27.6],[23.3,28.5],[23.7,29.1],[12.4,21.4],[6.4,27.6],[16.7,20.6]]){const y=groundH(cx,cz);if(Rn()<.5)g.box(T3(cx,y+.22,cz,.44,.44,.44,Rn()),[112,82,52],[128,96,62]);else g.cyl(T3(cx,y,cz,1,.6,1),[100,70,44],8,.2,.2)}
  // fountain
- {const fx=15,fz=21,y=groundH(fx,fz),st=[160,156,146],st2=[184,180,170],P8=Math.PI/8;
+ {const fx=15,fz=25,y=groundH(fx,fz),st=[160,156,146],st2=[184,180,170],P8=Math.PI/8;
   g.cyl(T3(fx,y,fz,1,.52,1,P8),st,8,1.38,1.33,false,0,true);g.cyl(T3(fx,y,fz,1,.52,1,P8),[120,116,108],8,1.2,1.2,false,0,true);g.cyl(T3(fx,y+.02,fz,1,.06,1,P8),[80,96,100],8,1.22,1.22,true,0,true);
   for(let k=0;k<8;k++){const a=k/8*TAU+P8+Math.PI/8;g.box(T3(fx+Math.cos(a)*1.27,y+.55,fz+Math.sin(a)*1.27,.22,.1,1.08,-a),st2);g.box(T3(fx+Math.cos(a-Math.PI/8)*1.37,y+.62,fz+Math.sin(a-Math.PI/8)*1.37,.12,.14,.12),[210,170,80])}
   g.cyl(T3(fx,y,fz,1,1.55,1,P8),[146,142,132],8,.3,.24,true,0,true);g.cyl(T3(fx,y+1.25,fz,1,.32,1,P8),st,8,.3,.78,false,0,true);g.cyl(T3(fx,y+1.25,fz,1,.32,1,P8),[120,116,108],8,.24,.68,false,0,true);g.cyl(T3(fx,y+1.55,fz,1,.06,1,P8),st2,8,.82,.82,false,0,true);
@@ -2788,6 +2807,7 @@ function loadModels(){
  MODELS.corra=H({top:[90,110,60],bottom:[70,60,40],hood:[66,82,40],cape:[58,74,36],pauldron:[120,86,50],trim:[150,120,70],weapon:'bow',quiver:true,skin:[186,134,98],bracer:[120,86,50]});
  MODELS.ysolde=H({top:[60,136,126],robe:[46,110,102],trim:[200,180,120],hair:[150,76,40],long:true,sleeve:[60,136,126],apron:[214,204,170]});
  MODELS.pell=H({top:[132,88,52],bottom:[78,60,42],hat:[64,46,30],pack:true,apron:[160,126,82],beard:[100,66,42],hair:[100,66,42]});
+ MODELS.bram=H({top:[92,70,54],bottom:[62,50,40],boots:[52,42,34],apron:[70,54,42],beard:[60,44,34],hair:[60,44,34],sleeve:[150,110,86],glove:[80,60,46],skin:[196,146,112]});
  MODELS.ghoul=H({top:[66,64,50],bottom:[54,50,42],skin:[116,134,96],sleeve:[118,136,98],glove:[104,122,86],eyes:'#e0ff80',hunch:.55,longArms:true,hair:[60,70,50],ribs:true,moss:true});
  MODELS.acolyte=H({top:[60,90,96],robe:[50,76,82],hood:[40,62,68],dark:true,sleeve:[60,90,96],glove:[126,146,140],eyes:'#a8f0ff',trim:[120,108,72],rune:'#7fe8ff',chain:true});
  MODELS.prior=H({top:[56,88,96],robe:[42,70,78],trim:[214,178,90],mitre:[40,62,68],skin:[124,144,138],dark:true,eyes:'#7fe8ff',sleeve:[56,88,96],weapon:'bell',pauldron:[44,70,78],spikes:true,rune:'#7fe8ff',chain:true,cape:[30,50,56]});
@@ -2876,7 +2896,7 @@ function snapCam(){updateCam(1,true)}
 function camDist(){const portrait=VH>VW;return(portrait?10.5:7.4)*CAM.zoom}
 function updateCam(dt,snap){
  let tx,ty,tz;
- if(G.mode==='title'){tx=15;tz=23.8;CAM.yaw=Math.PI;}
+ if(G.mode==='title'){tx=15;tz=27.8;CAM.yaw=Math.PI;}
  else{tx=P.x*U;tz=P.y*U}
  ty=groundH(tx,tz)+1.05;
  const k=snap?1:Math.min(1,dt*10);CAM.tx+=(tx-CAM.tx)*k;CAM.ty+=(ty-CAM.ty)*k;CAM.tz+=(tz-CAM.tz)*k;
@@ -3068,6 +3088,7 @@ function renderOverlay(){
  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,VW,VH);const m=G.map;if(!m||!VPm)return;
  const lk=KBM?Math.max(1,HZ/1.25):1,proj=(x,y,z)=>{const q=project(x,y,z);if(q){q[0]/=lk;q[1]/=lk}return q};ctx.setTransform(DPR*lk,0,0,DPR*lk,0,0);
  ctx.textAlign='center';ctx.lineJoin='round';
+ if(G.mode==='play'&&m.signs)for(const[x,z,t]of m.signs){if(Math.hypot(x-CAM.tx,z-CAM.tz)>13)continue;const s=proj(x,groundH(x,z)+2.75,z);if(!s)continue;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.8)';ctx.font='13px Marcellus,serif';ctx.strokeText(t,s[0],s[1]);ctx.fillStyle='#f2d28a';ctx.fillText(t,s[0],s[1])}
  if(G.mode==='play')for(const k of m.npcs){const n=NPCS[k],d=Math.hypot(n.x-CAM.tx,n.y-CAM.tz);if(d>22)continue;const s=proj(n.x,groundH(n.x,n.y)+1.62,n.y);if(!s)continue;
   ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.font='600 11.5px Alegreya,serif';const tl='‹'+n.title+'›';ctx.strokeText(tl,s[0],s[1]-15);ctx.fillStyle='#8fe8f0';ctx.fillText(tl,s[0],s[1]-15);
   ctx.font='15px Marcellus,serif';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#f6e8c4';ctx.fillText(n.name,s[0],s[1]);
@@ -3194,6 +3215,11 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:25,date:'4 Nov 2026',title:'Hollowmere rebuilt',items:[
+  'Hollowmere has a new layout: a small square around the fountain, with lanes leading out to its buildings.',
+  'Look for the Village Hall, the Inn, the General Store, the Herb Hut and the Stable. Their names appear as you walk near. You can\'t go inside them yet.',
+  'Meet Bram, the new blacksmith at the Forge, who opens straight on the Craft tab. Elder Marwen, Huntress Corra, Ysolde and Pell have moved to new spots, so check the map if you can\'t find them.',
+  'A windmill now stands beyond the Waystone, on the way to Southfield.']},
  {id:24,date:'4 Nov 2026',title:'Fury and Light',items:[
   'Reavers now build Fury with each Hew that connects and each hit they take. Lumens build Light with each Light Mote that hits. Each has a new bar under stamina, and it fades soon after a fight.',
   'Using a skill spends the whole bar, and a fuller bar gives a bigger boost, up to 50%. Reaver skills hit harder, except Battle Roar, which leaves Fury alone. Lumen healing skills heal more, and Judgement hits harder.',
@@ -3419,7 +3445,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   h=`<div class="npcbox"><div class="npcport"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn">${esc(n.name)}</div><div class="npct">‹${esc(n.title)}›</div><blockquote>${esc(say)}</blockquote></div></div>`;
   const q=ready||av||active;if(q){const st=P.q[q.id];h+=`<div class="qcard2"><div class="qc-t">[${q.lv}] ${esc(q.title)} <span class="qkind">${QKIND[q.kind]}${q.camp?' · Campaign':''}</span></div><div><b>Objective:</b> ${esc(q.obj)}${q.n>1?` — ${st?st.n:0} / ${q.n}`:''}</div>${rewards(q)}</div>`}
   h+=`<div class="btnrow">${ready?`<button class="gbtn sm gold" data-act="turnin" data-q="${ready.id}">Complete</button>`:av?`<button class="cbtn" data-act="close">Not now</button><button class="gbtn sm" data-act="accept" data-q="${av.id}">Accept</button>`:`<button class="cbtn" data-act="close">Farewell</button>`}${n.shop?'<button class="cbtn" data-act="trade">Trade</button>':''}</div>`}
- else if(k==='shop'){const sn=NPCS[a]||NPCS.pell;title=`${sn.name.split(' ').pop()}'s Stall`;const tab=G.shopTab||'buy';h=`<div class="tabs"><button class="tab ${tab==='buy'?'on':''}" data-act="shtab" data-t="buy">Buy</button><button class="tab ${tab==='sell'?'on':''}" data-act="shtab" data-t="sell">Sell</button><button class="tab ${tab==='craft'?'on':''}" data-act="shtab" data-t="craft">Craft</button><button class="tab ${tab==='repair'?'on':''}" data-act="shtab" data-t="repair">Repair</button></div>`;
+ else if(k==='shop'){const sn=NPCS[a]||NPCS.pell;title=sn.place||`${sn.name.split(' ').pop()}'s Stall`;const tab=G.shopTab||'buy';h=`<div class="tabs"><button class="tab ${tab==='buy'?'on':''}" data-act="shtab" data-t="buy">Buy</button><button class="tab ${tab==='sell'?'on':''}" data-act="shtab" data-t="sell">Sell</button><button class="tab ${tab==='craft'?'on':''}" data-act="shtab" data-t="craft">Craft</button><button class="tab ${tab==='repair'?'on':''}" data-act="shtab" data-t="repair">Repair</button></div>`;
   if(tab==='buy')h+=`<div class="npcbox" style="padding:12px 16px 0;grid-template-columns:72px minmax(0,1fr);align-items:center"><div class="npcport" style="width:72px;height:72px;border-width:3px"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn" style="font-size:21px">${esc(sn.name)} <span class="npct" style="font-size:14px">‹${esc(sn.title)}›</span></div><blockquote style="margin-top:4px;font-size:15px">${esc(sn.idle)}</blockquote></div></div>`;h+=`<div class="pad">${tab==='buy'?'<div class="sgrid">':''}`;
   if(tab==='buy'){const SL=SHOPLIST(),okF=s=>P.gold>=s.price&&(!s.gear||P.bag.length<bagCap())&&(!s.cons||consRoom(s.cons[0],s.cons[1])>=s.cons[2]);for(const s of SL){if(s.sub)continue;const ok=okF(s),pk=s.pack&&SL.find(x=>x.id===s.pack);h+=`<div class="scard"><div class="sc-t">${esc(s.n)}</div><div class="sc-i"><div class="sk" style="--c:${s.col}"><span class="ic">${svg(s.icon)}</span></div></div><div class="sc-d">${esc(s.d)}</div>${ok?'':`<span class="obar">${P.gold<s.price?"Can't afford":'Bag is full'}</span>`}${pk?`<div class="sc-2"><button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>×1</span><b>${s.price}<i class="coin"></i></b></button><button class="gbar" data-act="buy" data-id="${pk.id}" ${okF(pk)?'':'disabled'}><span>×5</span><b>${pk.price}<i class="coin"></i></b></button></div>`:`<button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>Buy</span><b>${s.price}<i class="coin"></i></b></button>`}</div>`}}
   else if(tab==='craft')h+=craftHTML();
@@ -3615,7 +3641,7 @@ function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGam
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
-function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab='buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else usePortal(n.p)}
+function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
@@ -3785,7 +3811,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

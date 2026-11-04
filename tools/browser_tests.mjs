@@ -398,6 +398,28 @@ await test('Only the Reaver and Lumen have a bar, and it is not saved', () => ev
   for(const c of['bulwark','ashcaller','thornstalker']){V.startNew(c,'Tester');V.hud();if(!w.hidden)bad.push(c+' shows a bar');V.P.iframes=0;V.P.hp=1e6;V.hurtPlayer(10,null);V.resGain(50);if(V.P.res!==0)bad.push(c+' built a resource');for(let i=1;i<6;i++)if(V.resDmg(i)!==1||V.resHeal(i)!==1)bad.push(c+' got a bonus');if(V.resNote(1)!=='')bad.push(c+' has resource text');localStorage.clear()}
   for(const [c,cl] of [['reaver','fury'],['lumen','light']]){V.startNew(c,'Tester');V.P.res=100;V.hud();if(w.hidden||!w.classList.contains(cl)||!w.classList.contains('full'))bad.push(c+' bar looks wrong: '+w.className);if(parseFloat(document.getElementById('pfRes').style.width)!==100)bad.push(c+' bar width '+document.getElementById('pfRes').style.width);const d=V.serialize();if('res' in d||'resB' in d)bad.push(c+' bar went into the save');V.loadSave(JSON.parse(JSON.stringify(d)));if(V.P.res!==0)bad.push(c+' reloaded with a full bar');if(!V.P.resB||V.P.resB.length!==6)bad.push(c+' reloaded with no bonus list');if(!/Spends all your/.test(V.resNote(1)))bad.push(c+' has no skill text');V.P.res=80;V.P.hp=1;V.die();if(V.P.res!==0)bad.push(c+' kept the bar through death');V.P.dead=false;V.closePanel(true);localStorage.clear()}return bad}`));
 
+await reset();
+await test('You can walk from the start to everyone and everything in Hollowmere', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const m=V.G.maps.vale,TS=m.start.x/14.5,sx=Math.floor(m.start.x/TS),sy=Math.floor(m.start.y/TS),seen=new Set([sx+','+sy]),q=[[sx,sy]],open=(x,y)=>{const v=m.get(x,y);return v>=0&&!V.SOLID[v]};
+  if(!open(sx,sy))bad.push('the start is blocked');while(q.length){const[x,y]=q.pop();for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const k=(x+a)+','+(y+b);if(!seen.has(k)&&open(x+a,y+b)){seen.add(k);q.push([x+a,y+b])}}}
+  const near=(x,y,r=1)=>{for(let b=-r;b<=r;b++)for(let a=-r;a<=r;a++)if(seen.has((Math.floor(x)+a)+','+(Math.floor(y)+b)))return true;return false};
+  for(const k of m.npcs){const n=V.NPCS[k];if(!open(Math.floor(n.x),Math.floor(n.y)))bad.push(k+' stands in something solid');if(!near(n.x,n.y))bad.push(k+' cannot be reached')}
+  for(const[name,x,y]of[['north road',14,10],['east road',36,25],['south road',16,40],['Waystone',m.way[0],m.way[1]],['Abbey gate',58,6],['Southfield',8,38]])if(!near(x,y,2))bad.push(name+' cannot be reached');
+  for(const b of V.HOLLOWMERE.buildings){const[x0,y0,x1,y1]=b.r,door=x0+1.5,fy=b.face==='n'?y0-1:y1+1;if(!near(door,fy,0))bad.push('the door at '+x0+','+y0+' cannot be reached')}
+  for(const Q of V.QUESTS.filter(q=>q.map==='vale'))for(const p of[...(Q.spots||[]),...(Q.nodes||[])])if(!near(p[0],p[1],3))bad.push(Q.id+' spot '+p[0]+','+p[1]+' cannot be reached');
+  const h=m.houses.map(r=>r.slice(0,4));h.forEach((a,i)=>h.forEach((b,j)=>{if(i<j&&a[0]<=b[2]&&b[0]<=a[2]&&a[1]<=b[3]&&b[1]<=a[3])bad.push('buildings overlap at '+a[0]+','+a[1])}));return bad}`));
+
+await reset();
+await test('Bram opens on the Craft tab, Pell on Buy, and buildings have names', () => ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const m=V.G.map,P=V.P;if(!m.npcs.includes('bram'))bad.push('Bram is missing');const before=V.readErrors().length;const TS=m.start.x/14.5;
+  const talk=k=>{const n=V.NPCS[k];P.x=n.x*TS;P.y=(n.y+.6)*TS;V.G.near={kind:'npc',id:k};V.interact();const t=document.querySelector('#book .tab.on'),title=(document.getElementById('book').textContent||'');const r={tab:t&&t.dataset.t,panel:V.G.panel,text:title};V.closePanel(true);return r};
+  const b=talk('bram');if(b.tab!=='craft')bad.push('Bram opened on '+b.tab);if(!/Bram's Forge/.test(b.text))bad.push('no Forge title');const p=talk('pell');if(p.tab!=='buy')bad.push('Pell opened on '+p.tab);if(!/Pell's Store/.test(p.text))bad.push('no Store title');
+  for(const s of['Village Hall','Forge','The Inn','General Store','Herb Hut','Stable'])if(!m.signs.some(x=>x[2]===s))bad.push('no sign for '+s);
+  const res=V.G.res||[];const z=m.zones.find(z=>z.n==='Hollowmere');for(const r of res){const x=r.x/TS,y=r.y/TS;if(x>=z.x0&&x<=z.x1&&y>=z.y0&&y<=z.y1)bad.push('a resource grew in the village at '+x.toFixed(0)+','+y.toFixed(0))}await new Promise(r=>setTimeout(r,600));if(V.readErrors().length>before)bad.push('drawing the village caused an error: '+V.readErrors().slice(-1)[0].m);return bad}`));
+
+await reset();
+await test('A hero saved where a building now stands loads safely, and other towns keep their houses', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const m=V.G.maps.vale,TS=m.start.x/14.5,d=V.serialize();d.map='vale';d.x=9.5*TS;d.y=20.5*TS;V.loadSave(JSON.parse(JSON.stringify(d)));if(V.G.map.solidAt(V.P.x,V.P.y))bad.push('the hero loaded inside a building');if(V.P.x!==V.G.map.start.x||V.P.y!==V.G.map.start.y)bad.push('the hero was not moved to the start');
+  for(const id of['dunes','frost','gloam','ember']){if(!V.G.maps[id])V.G.maps[id]=V.BUILD[id]();const t=V.G.maps[id];if(!t.houses||!t.houses.length)bad.push(id+' lost its houses');if(t.signs)bad.push(id+' gained signs')}
+  V.enterMap('vale',V.G.maps.vale.start);V.update(1/30);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
