@@ -550,7 +550,7 @@ await reset();
 await test('Saves are unchanged, and nothing about the time is stored', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');V.TIMEO.time='night';const d=V.serialize(),t=JSON.stringify(d);if(d.v!==5)bad.push('save version became '+d.v);if(/night|weather|clock|worldTime/i.test(Object.keys(d).join(',')))bad.push('time got saved');V.loadSave(JSON.parse(t));V.update(1/30);V.TIMEO.time=null;return bad}`));
 
 await reset();
-await test('The sun or moon by the compass follows the time, and hides in the Abbey', () => ev(`()=>{const V=window.__veyl,bad=[],T=V.TIMEO;V.startNew('reaver','Tester');const el=document.getElementById('dayIcon');if(!el){bad.push('no icon');return bad}for(const[p,name]of[['day','Day'],['dawn','Dawn'],['dusk','Dusk'],['night','Night']]){T.time=p;V.dayIcon();if(el.title!==name)bad.push(p+' showed '+el.title);if(!el.textContent)bad.push(p+' has no icon');if(el.hidden)bad.push(p+' hid the icon')}T.time='day';V.dayIcon();const d=el.textContent;T.time='night';V.dayIcon();if(el.textContent===d)bad.push('day and night share an icon');V.enterMap('abbey');V.dayIcon();if(!el.hidden)bad.push('showed in the Abbey');V.enterMap('vale',V.G.maps.vale.start);V.dayIcon();if(el.hidden)bad.push('stayed hidden');T.time=null;return bad}`));
+await test('The sun or moon by the compass follows the time, and hides in the Abbey', () => ev(`()=>{const V=window.__veyl,bad=[],T=V.TIMEO;V.startNew('reaver','Tester');const el=document.getElementById('dayIcon');if(!el){bad.push('no icon');return bad}for(const[p,name]of[['day','Day'],['dawn','Dawn'],['dusk','Dusk'],['night','']]){T.time=p;V.dayIcon();const want=name||V.moonNow().name;if(!el.title.startsWith(want+'.'))bad.push(p+' showed '+el.title);if(!el.textContent)bad.push(p+' has no icon');if(el.hidden)bad.push(p+' hid the icon')}T.time='day';V.dayIcon();const d=el.textContent;T.time='night';V.dayIcon();if(el.textContent===d)bad.push('day and night share an icon');V.enterMap('abbey');V.dayIcon();if(!el.hidden)bad.push('showed in the Abbey');V.enterMap('vale',V.G.maps.vale.start);V.dayIcon();if(el.hidden)bad.push('stayed hidden');T.time=null;return bad}`));
 
 await reset();
 await test('Every zone draws without errors at every time of day', async () => {
@@ -590,6 +590,58 @@ await test('Weather specks appear when they should, and every zone draws without
   await send('Page.navigate', { url: url + '?weather=frogs' }); await sleep(3000);
   if ((await ev(`()=>window.__veyl.TIMEO.weather`)) !== null) problems.push('?weather=frogs was accepted');
   return problems;
+});
+
+// The moon (44.a).
+await reset();
+await test('The moon follows the clock: 28 in-game days, eight phases, four moon nights', () => ev(`()=>{const V=window.__veyl,M=V.MOON,bad=[],H=3600000,base=1793000000000-1793000000000%(28*H);
+  const names=new Set(),evs={};for(let d=0;d<28;d++){const c=V.moonAt(base+(d+.9)*H);if(c.day!==d)bad.push('day '+d+' read as '+c.day);names.add(c.name);if(c.ev)(evs[c.ev]=evs[c.ev]||[]).push(d);if(!(c.p>=0&&c.p<1))bad.push('day '+d+' phase '+c.p)}
+  if(names.size!==8)bad.push(names.size+' phase names');for(const k in M.events){const want=[-1,0,1].map(o=>(M.events[k].day+o+28)%28).sort((a,b)=>a-b),got=(evs[k]||[]).sort((a,b)=>a-b);if(JSON.stringify(want)!==JSON.stringify(got))bad.push(k+' moon nights fall on days '+got)}
+  for(const k in M.events){const c=V.moonAt(base+(M.events[k].day+.9)*H);if(!c.name.toLowerCase().startsWith(k==='first'?'first':k==='last'?'last':k))bad.push(k+' night is named '+c.name)}
+  if(V.moonAt(base).cycle+1!==V.moonAt(base+28*H).cycle)bad.push('a cycle is not 28 hours');if(JSON.stringify(V.moonAt(base+5e6))!==JSON.stringify(V.moonAt(base+5e6)))bad.push('the moon is not the same for everyone');return bad}`));
+
+await test('Moon spots are reachable, out of towns and boss arenas, and every zone has its shadow creatures', () => ev(`()=>{const V=window.__veyl,M=V.MOON,bad=[];V.startNew('reaver','Tester');
+  for(const id of ['vale','dunes','frost','gloam','ember']){V.enterMap(id);const m=V.G.map,town=m.zones.find(z=>z.s==='Town'||z.s==='Village');
+   for(const what of ['mark','cache']){const s=M.spots[id]&&M.spots[id][what];if(!s){bad.push(id+' has no '+what);continue}const[x,y]=V.walkSpot(m,s[0]+.5,s[1]+.5),v=m.get(Math.floor(x),Math.floor(y));
+    if(v<0||V.SOLID[v])bad.push(id+' '+what+' is not on open ground');if(Math.hypot(x-s[0]-.5,y-s[1]-.5)>3)bad.push(id+' '+what+' moved '+Math.hypot(x-s[0],y-s[1]).toFixed(1)+' tiles to find ground');
+    if(m.arena&&Math.hypot(x-m.arena.x,y-m.arena.y)<m.arena.r+2)bad.push(id+' '+what+' is in the boss arena');if(town&&x>=town.x0&&x<=town.x1&&y>=town.y0&&y<=town.y1)bad.push(id+' '+what+' is in town')}
+   const types=new Set((m.spawns||[]).map(s=>s.type));for(const t of M.shadow[id]||[])if(!types.has(t))bad.push(id+': '+t+' never spawns there');if(!(M.shadow[id]||[]).length)bad.push(id+' has no shadow creatures')}
+  V.enterMap('vale',V.G.maps.vale.start);return bad}`));
+
+await test('Moon nights: more shadows, moonlit elites, a Warden marking and a relic cache, once per cycle', () => ev(`()=>{const V=window.__veyl,M=V.MOON,O=V.MOONO,T=V.TIMEO,G=V.G,bad=[],tick=()=>{G.moonT=0;V.moonTick(1)};V.startNew('reaver','Tester');T.time='night';
+  O.moon='new';V.enterMap('vale',G.maps.vale.start);const n0=G.enemies.length;tick();const want=G.map.spawns.filter(s=>M.shadow.vale.includes(s.type)).reduce((a,s)=>a+Math.round(s.n*M.extra),0),extra=G.enemies.filter(e=>e.moonX).length;
+  if(extra!==want)bad.push('new moon added '+extra+' shadows, not '+want);if(G.enemies.some(e=>e.moonX&&!M.shadow.vale.includes(e.type)))bad.push('a non-shadow creature was added');if(G.enemies.length!==n0+want)bad.push('monster count '+G.enemies.length);
+  tick();if(G.enemies.filter(e=>e.moonX).length!==want)bad.push('shadows were added twice');
+  const ch=M.eliteChance;M.eliteChance=1;O.moon='full';tick();if(G.enemies.some(e=>e.moonX))bad.push('new moon shadows stayed after it ended');const el=G.enemies.filter(e=>e.moonElite);M.eliteChance=ch;
+  const can=G.enemies.filter(e=>!e.dead&&!e.d.boss&&!e.elite&&!e.summoned&&!e.ev);if(el.length!==can.length)bad.push(el.length+' of '+can.length+' became elites');const e=el[0];
+  if(e){if(!/^Moonlit /.test(e.d.name))bad.push('elite is named '+e.d.name);if(!(e.max>e.mBase.max*2))bad.push('elite health '+e.max);if(V.EN[e.type].name.startsWith('Moonlit'))bad.push('the monster table changed');
+   const g=V.P.gems?JSON.stringify(V.P.gems):'';e.hp=1;V.hitEnemy(e,{a:99999},{quiet:true});if(!e.dead)bad.push('elite did not die');if((V.P.gems?JSON.stringify(V.P.gems):'')===g)bad.push('elite gave no gem');
+   e.respawn=.01;V.P.x=e.hx+5000;V.P.y=e.hy;V.update(1/30);V.update(1/30);if(e.moonElite&&G.moonK!=='full')bad.push('elite respawned as elite');V.P.x=G.map.start.x;V.P.y=G.map.start.y}
+  O.moon='first';tick();if(G.enemies.some(e=>e.moonElite&&!e.dead&&e.state!=='chase'))bad.push('elites stayed after the full moon');const mk=(G.moonO||[]).find(o=>o.what==='mark');if(!mk)bad.push('no Warden marking on the first-quarter night');
+  if(mk){const g0=V.P.gold,x0=V.P.xp+V.P.lvl*1e9;V.useMoon(mk);if(!(V.P.gold>g0))bad.push('the marking gave no gold');if(!(V.P.xp+V.P.lvl*1e9>x0))bad.push('the marking gave no XP');if(G.moonO.length)bad.push('the marking stayed after use');
+   V.enterMap('vale',G.maps.vale.start);tick();if(G.moonO.length)bad.push('the marking came back in the same cycle');if((V.P.moon.mark||{}).vale!==mk.cycle)bad.push('the marking was not remembered')}
+  O.moon='last';tick();const ca=(G.moonO||[]).find(o=>o.what==='cache');if(!ca)bad.push('no relic cache on the last-quarter night');
+  if(ca){const b0=V.P.bag.length,q0=V.P.bag.filter(i=>i.slot==='mat').reduce((a,i)=>a+i.qty,0),g0=V.P.gold;V.useMoon(ca);const q1=V.P.bag.filter(i=>i.slot==='mat').reduce((a,i)=>a+i.qty,0);if(!(q1>q0))bad.push('the cache gave no materials');if(!(V.P.gold>g0))bad.push('the cache gave no gold')}
+  O.moon='last';V.enterMap('dunes');tick();if(!(G.moonO||[]).some(o=>o.what==='cache'))bad.push('the dunes cache is missing after taking the Veylmoor one');
+  T.time='day';tick();if(G.moonO.length)bad.push('moon objects stayed by day');if(V.moonEvent()!==null)bad.push('a moon night by day');V.enterMap('abbey');T.time='night';if(V.moonEvent()!==null)bad.push('a moon night in the Abbey');
+  const d=V.serialize();V.loadSave(JSON.parse(JSON.stringify(d)));if(!V.P.moon||(V.P.moon.mark||{}).vale!==0)bad.push('moon rewards were not saved');const old=JSON.parse(JSON.stringify(d));delete old.moon;V.loadSave(old);if(!V.P.moon||typeof V.P.moon!=='object')bad.push('an old save has no moon record');
+  O.moon=null;T.time=null;V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+await test('The compass moon shows the phase at night and tapping it tells you about the moon', () => ev(`()=>{const V=window.__veyl,T=V.TIMEO,O=V.MOONO,bad=[];V.startNew('reaver','Tester');const el=document.getElementById('dayIcon');
+  T.time='night';for(const k of ['new','first','full','last']){O.moon=k;V.dayIcon();const c=V.moonNow();if(el.textContent!==c.icon)bad.push(k+' shows '+el.textContent);el.click();const t=document.getElementById('toasts').innerText;if(!t.includes(c.name))bad.push('tapping at '+k+' said: '+t.slice(0,80));if(!/full moon in/.test(t))bad.push('no next full moon in: '+t.slice(0,80))}
+  O.moon=null;T.time='day';V.dayIcon();if(/[\u{1F311}-\u{1F318}]/u.test(el.textContent))bad.push('the moon shows by day');T.time=null;if(document.querySelector('.panel:not([hidden])#mapPanel'))bad.push('tapping opened the map');return bad}`));
+
+await test('The ?moon= link holds a phase at night, and the moon draws in every zone without errors', async () => {
+  const problems = [];
+  await send('Page.navigate', { url: url + '?moon=full' }); await sleep(3000);
+  const held = await ev(`()=>[window.__veyl.MOONO.moon,window.__veyl.TIMEO.time]`);
+  if (held[0] !== 'full' || held[1] !== 'night') problems.push('the ?moon=full link gave ' + held);
+  const drawn = await ev(`async()=>{const V=window.__veyl,bad=[],before=V.readErrors().length;V.startNew('lumen','Tester');for(const id of ['vale','dunes','frost','gloam','ember','abbey']){V.enterMap(id);await new Promise(r=>setTimeout(r,500))}V.enterMap('vale',V.G.maps.vale.start);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`);
+  problems.push(...drawn);
+  await send('Page.navigate', { url: url + '?moon=blue&time=day' }); await sleep(3000);
+  const bad = await ev(`()=>[window.__veyl.MOONO.moon,window.__veyl.TIMEO.time]`);
+  if (bad[0] !== null || bad[1] !== 'day') problems.push('?moon=blue gave ' + bad);
+  return [...problems, ...logs];
 });
 
 const failed = results.filter(r => r.problems.length).length;

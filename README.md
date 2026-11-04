@@ -8,6 +8,7 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - Levels 1 to 50 across five zones linked by waystones: Veylmoor (1–19), Sunscar Dunes (17–27), Frostfang Reach (25–35), Gloamwood (33–43) and Emberfall Caldera (41–50), each with an area boss, winding roads, rivers, outcrops and landmarks
 - The Reaver builds Fury and the Lumen builds Light, spent on skills for up to 50% more damage or healing
 - Gems from bosses and elites to fuse and set in sockets
+- Day and night, weather, and a moon that runs through its phases every 28 hours, with shadow-filled new moons, moonlit elites at full moon, and Warden markings and relic caches on the quarter moons
 - Ore, herbs and crystals to gather, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 

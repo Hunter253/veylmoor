@@ -85,7 +85,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #tracker .qo.ready{color:#8be06a}
 #menuBtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:max(10px,env(safe-area-inset-right,0px));width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6a5434,#1e150a 70%);border:3px solid #b08a46;color:var(--gold2);font:300 36px/1 var(--f-num);display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.2);padding:0 0 4px}
 #menuDot{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:#e8402a;border:2px solid #fff}
-#dayIcon{position:absolute;left:-14px;top:-2px;font-weight:400;font-size:16px;color:#ffe9b0}
+#dayIcon{position:absolute;left:-18px;top:-6px;padding:4px;font-weight:400;font-size:16px;line-height:1;color:#ffe9b0;cursor:pointer}
 #compass{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(max(10px,env(safe-area-inset-right,0px)) + 66px);width:92px;height:80px;pointer-events:none;font:400 15px/1 var(--f-ui);color:#f4ecd8;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.9)}
 #compass span{position:absolute}
 #compass .n{top:0;left:50%;transform:translateX(-50%)}#compass .s{bottom:0;left:50%;transform:translateX(-50%)}#compass .w{left:0;top:50%;transform:translateY(-50%)}#compass .e{right:0;top:50%;transform:translateY(-50%)}
@@ -1024,7 +1024,7 @@ function applyWeb(m){const g=webGraph(P.cls);for(const id in P.tal||{}){const r=
 function talentSelf(){const s=S.m.self;let f=1;if(s.shield&&P.shield>0)f+=s.shield;if(s.low&&P.hp<S.maxHp*.5)f+=s.low;if(s.full&&P.hp>S.maxHp*.8)f+=s.full;if(S.m.k.berserk)f+=.4*clamp(1-P.hp/S.maxHp,0,1);return f}
 function talentVs(e){const v=S.m.vs;let f=1;const dot=k=>e.dots&&e.dots.some(d=>d.k===k);
  if(v.cc&&(e.stun>0||e.root>0))f+=v.cc;if(v.slow&&e.slowT>0)f+=v.slow;if(v.burn&&dot('burn'))f+=v.burn;if(v.bleed&&dot('bleed'))f+=v.bleed;if(v.low&&e.hp<e.max*.35)f+=v.low;
- if(v.full&&e.hp>e.max*.8)f+=v.full;if(v.boss&&(isBoss(e)||e.elite))f+=v.boss;if(v.mark&&e.markT>0)f+=v.mark;if(v.weak&&e.weakT>0)f+=v.weak;
+ if(v.full&&e.hp>e.max*.8)f+=v.full;if(v.boss&&(isBoss(e)||e.elite||e.moonElite))f+=v.boss;if(v.mark&&e.markT>0)f+=v.mark;if(v.weak&&e.weakT>0)f+=v.weak;
  if(S.m.k.killfield)for(const a of G.areas)if(a.kind==='thorns'&&dist(a.x,a.y,e.x,e.y)<a.r+e.d.r){f+=.25;break}return f}
 function talentHit(e,r,a){const m=S.m,L=m.on[r.i];
  if(r.crit){const c=m.crit2;if(c.heal)healP(S.maxHp*c.heal,true);if(c.mana)P.mp=Math.min(S.maxMp,P.mp+S.maxMp*c.mana);if(c.bleed&&!e.dead)addDot(e,'bleed',a*c.bleed,4,3)}
@@ -1076,7 +1076,7 @@ function gemName(k){const g=gemParse(k);return g?`${RAR[g.r].n} ${GEMCOL[g.c].n}
 function gemGive(k,q=1){P.gems[k]=(P.gems[k]||0)+q}
 function gemRollKey(area){const r=Math.max(0,AREA_ORDER.indexOf(area==='abbey'?'vale':area)),main=CLASSES[P.cls].main,cols=Object.keys(GEMCOL),pref=cols.find(c=>GEMCOL[c].st===main);return gemKey(R()<GEMDROP.mainBias&&pref?pref:pick(cols),r,1)}
 /* Returns the gem keys a defeated foe gives; bosses and elites only. */
-function awardGems(e){const boss=e.d&&e.d.boss;if(!boss&&!e.elite)return[];const area=(e.d&&e.d.area)||(G.map&&G.map.id)||'vale';let n=boss?GEMDROP.bossN+(R()<GEMDROP.bossExtra?1:0):GEMDROP.eliteN;const out=[];while(n-->0){const k=gemRollKey(area);gemGive(k);out.push(k)}return out}
+function awardGems(e){const boss=e.d&&e.d.boss;if(!boss&&!e.elite&&!e.moonElite)return[];const area=(e.d&&e.d.area)||(G.map&&G.map.id)||'vale';let n=boss?GEMDROP.bossN+(R()<GEMDROP.bossExtra?1:0):GEMDROP.eliteN;const out=[];while(n-->0){const k=gemRollKey(area);gemGive(k);out.push(k)}return out}
 /* Five of one gem become one of the next level. Socketed gems aren't counted, because they have left P.gems. */
 function gemFuse(k){const g=gemParse(k);if(!g||g.l>=GEMMAXL||(P.gems[k]||0)<GEMFUSE)return false;P.gems[k]-=GEMFUSE;if(!P.gems[k])delete P.gems[k];gemGive(gemKey(g.c,g.r,g.l+1));return true}
 function gemSocket(k,slot){const it=P.eq[slot];if(!gemParse(k)||!it||!it.soc||!SOCKSLOTS.has(it.slot)||(P.gems[k]||0)<1)return false;const i=it.soc.indexOf(null);if(i<0)return false;it.soc[i]=k;P.gems[k]--;if(!P.gems[k])delete P.gems[k];return true}
@@ -1271,7 +1271,7 @@ Object.assign(NPCS,{
  fennick:{town:'Duskhollow',name:'Fennick',title:'Hexwright',col:'#6a8a5a',x:12.5,y:28.4,idle:'Charms, tonics, a little hex-craft. Nothing that bites back, mostly.',shop:true},
  vael:{town:'Cinderwatch',name:'Commander Vael',title:'Watch Commander',col:'#c0603a',x:8,y:37.4,idle:'Every day the Caldera burns closer. Every day we hold the gate anyway.'},
  rusk:{town:'Cinderwatch',name:'Rusk',title:'Quartermaster',col:'#8a6a4a',x:15,y:37.6,idle:'Ash in the bread, ash in the tonics. Still sells.',shop:true}});
-const NODEK={herb:{act:'Gather',verb:'Gathering',c:'#9be07a'},ore:{act:'Mine',verb:'Mining',c:'#8fe8ff'},relic:{act:'Take',verb:'Recovering',c:'#ffd27a'},captive:{act:'Free',verb:'Freeing',c:'#ffe6a0'},
+const NODEK={wmark:{act:'Touch',verb:'Touching',c:'#9fd8ff'},mcache:{act:'Open',verb:'Opening',c:'#ffd27a'},herb:{act:'Gather',verb:'Gathering',c:'#9be07a'},ore:{act:'Mine',verb:'Mining',c:'#8fe8ff'},relic:{act:'Take',verb:'Recovering',c:'#ffd27a'},captive:{act:'Free',verb:'Freeing',c:'#ffe6a0'},
  totem:{act:'Smash',verb:'Smashing',c:'#c080ff'},banner:{act:'Burn',verb:'Burning',c:'#ff9a4a'},altar:{act:'Break',verb:'Breaking',c:'#ff7a30'}};
 const QKIND={kill:'Slay',collect:'Collect',gather:'Gather',explore:'Explore',deliver:'Deliver',hunt:'Hunt',rescue:'Rescue',destroy:'Destroy',defend:'Defend',boss:'Area boss'};
 const QUESTS=[
@@ -1747,7 +1747,7 @@ function hitEnemy(e,r,o={}){
  if(e.hp<=0&&!e.dead)killEnemy(e)}
 function killEnemy(e){
  if(!e.dead){talentKill(e);foeDeath(e)} if(e.markT>0&&P.cls==='thornstalker'&&P.cds[2]>0){P.cds[2]=0;txt(P.x,P.y,2.3,'Vault ready','#c8ff9a',13)}e.dots=null;e.slowT=e.vulnT=e.weakT=e.markT=e.taunt=0;e.kb=null;sfx('kill');
- e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite)e.respawn=-1;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
+ e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite||e.moonX)e.respawn=-1;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
  gainXP(Math.max(1,Math.round(e.d.xp*PL(e.lvl)*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
  const gold=Math.round(PL(e.lvl)*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
  for(const q of QUESTS){const st=P.q[q.id];if(!st||st.s!=='active')continue;
@@ -1988,7 +1988,7 @@ function moveEnt(o,dx,dy,r){const m=G.map;if(dx&&!blocked(m,o.x+dx,o.y,r))o.x+=d
 
 /* ================= Update ================= */
 function update(dt){
- G.time+=dt;wearTick(dt);
+ G.time+=dt;wearTick(dt);moonTick(dt);
  for(let k=G.timers.length-1;k>=0;k--){const t=G.timers[k];t.t-=dt;if(t.t<=0){G.timers.splice(k,1);t.fn()}}
  updatePlayer(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
  for(let k=G.tele.length-1;k>=0;k--){const t=G.tele[k];t.t+=dt;if(t.t>=t.max){G.tele.splice(k,1);t.cb()}}
@@ -2029,7 +2029,7 @@ function updatePlayer(dt){
  P.mv+=(moving-P.mv)*Math.min(1,dt*10);
  if(P.jz>0||P.jv>0){P.jz+=P.jv*dt;P.jv-=13*dt;if(P.jz<=0){P.jz=0;P.jv=0;sfx('land');burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',8,60,.45,3,.05)}}
  if(P.cast){P.cast.t+=dt;if(len>0.3&&!P.dash){txt(P.x,P.y,2.2,'Interrupted','#ff4a3a',16);P.cast=null}
-  else if(P.cast.t>=P.cast.max){const c=P.cast;P.cast=null;if(c.i===-2){const d=c.dest;enterMap(d,G.maps[d]?G.maps[d].start:null);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.4});sfx('portal');ring(P.x,P.y,60,'#9ff0ff',1,4,true);toast(`Welcome to <b>${esc(AREAS[d].town)}</b>`,'q')}else if(c.i===-1){P.mounted=true;burst(P.x,P.y,'#e0c890',18,80,.6,3,.3);ring(P.x,P.y,50,'#ffe0a0',.5,3)}else if(c.i===-3)useNode(c.node);else if(c.i===-4)harvest(c.res);else execAbility(c.i,c.tgt)}}
+  else if(P.cast.t>=P.cast.max){const c=P.cast;P.cast=null;if(c.i===-2){const d=c.dest;enterMap(d,G.maps[d]?G.maps[d].start:null);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.4});sfx('portal');ring(P.x,P.y,60,'#9ff0ff',1,4,true);toast(`Welcome to <b>${esc(AREAS[d].town)}</b>`,'q')}else if(c.i===-1){P.mounted=true;burst(P.x,P.y,'#e0c890',18,80,.6,3,.3);ring(P.x,P.y,50,'#ffe0a0',.5,3)}else if(c.i===-3)useNode(c.node);else if(c.i===-4)harvest(c.res);else if(c.i===-5)useMoon(c.moon);else execAbility(c.i,c.tgt)}}
  if(G.tgt&&(G.tgt.dead||dist(P.x,P.y,G.tgt.x,G.tgt.y)>620))G.tgt=null;
  if(P.auto&&G.tgt&&!P.cast&&!P.mounted&&!P.blocking){const r=CLS.ab[0].range+G.tgt.d.r+12;if(dist(P.x,P.y,G.tgt.x,G.tgt.y)<=r)useAbility(0)}
  if(P.auto&&!G.tgt)P.auto=false;
@@ -2038,6 +2038,7 @@ function updatePlayer(dt){
  for(const k of G.map.npcs){const n=NPCS[k];const d=dist(P.x,P.y,n.x*TS,n.y*TS);if(d<58&&d<nd){nd=d;near={kind:'npc',id:k}}}
  for(const p of G.map.portals){const d=dist(P.x,P.y,p.x,p.y);if(d<70&&d<nd){nd=d;near={kind:'portal',p}}}
  for(const o of G.nodes||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'node',o}}}for(const o of G.res||[]){if(o.t>0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'res',o}}}if(!G.event)for(const o of G.beacons||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<72&&d<nd){nd=d;near={kind:'beacon',o}}}
+ for(const o of G.moonO||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'moon',o}}}
  if((G.spotT=(G.spotT||0)-dt)<=0){G.spotT=.25;checkSpots()}
  G.near=near;checkZone()}
 /* ================= Enemy tactics (7.b) =================
@@ -2141,7 +2142,7 @@ function tacHunt(e,d,dt){const T=TACTICS.senses,by=tacBy(e);if(P.dead||dist(e.x,
 function updateEnemies(dt){
  tacFrame(dt);
  for(const e of G.enemies){
-  if(e.dead){if(e.respawn>0){e.respawn-=dt;if(e.respawn<=0){if(dist(P.x,P.y,e.hx,e.hy)>340){Object.assign(e,{dead:false,hp:e.max,x:e.hx,y:e.hy,state:'idle',fade:0.6,stun:0,root:0});tacReset(e)}else e.respawn=3}}continue}
+  if(e.dead){if(e.respawn>0){e.respawn-=dt;if(e.respawn<=0){if(dist(P.x,P.y,e.hx,e.hy)>340){moonRespawn(e);Object.assign(e,{dead:false,hp:e.max,x:e.hx,y:e.hy,state:'idle',fade:0.6,stun:0,root:0});tacReset(e);moonRespawned(e)}else e.respawn=3}}continue}
   e.px=e.x;e.py=e.y;
   if(e.fade>0){e.fade-=dt;continue}
   e.hitFlash-=dt;e.anim+=dt;e.stun-=dt;e.root-=dt;e.cd-=dt;
@@ -2519,11 +2520,14 @@ void main(){vec2 p=vW.xz;float t=uTime;float a=vn(p*2.2+vec2(t*.35,t*.2)),b=vn(p
  col=mix(col,vec3(.9,.95,.93)*(.45+.35*uSunCol.g),clamp(foam,0.,1.)*.8);float al=uFoam>.5?uAlpha*clamp(dep*4.+.25,0.,1.)+foam*.35:uAlpha;
  gl_FragColor=vec4(finish(col,vW),clamp(al,0.,1.));}`;
 const VS_Q=`attribute vec2 aQ;varying vec2 vQ;void main(){vQ=aQ;gl_Position=vec4(aQ,.9999,1.);}`;
-const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight;
+const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight,uMoonK,uMoonS;uniform vec4 uMoon;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 void main(){vec3 d=normalize(uF+vQ.x*uTan.x*uR+vQ.y*uTan.y*uU);float y=d.y;vec3 c=mix(uHor,uTop,pow(clamp(y,0.,1.),.5));float sd=max(dot(d,uSun),0.);
  c+=uSunC*(pow(sd,900.)*40.+pow(sd,30.)*.7+pow(sd,5.)*.2)*uDay;
  if(uNight>0.&&y>0.){float st=fract(sin(dot(floor(d*190.),vec3(12.9898,78.233,37.719)))*43758.5453);c+=vec3(.85,.9,1.)*step(.9965,st)*(.5+.5*sin(uTime*2.+st*90.))*uNight*smoothstep(.04,.25,y);}
+ if(uMoonK>0.){vec3 md=normalize(uMoon.xyz),mr=normalize(cross(md,vec3(0.,1.,0.))),mu=cross(mr,md);float mz=dot(d,md),sz=uMoonS,u=dot(d,mr)/sz,v=dot(d,mu)/sz,rr=u*u+v*v;
+  if(mz>0.){float k=cos(6.2832*uMoon.w),e=k*sqrt(max(0.,1.-v*v)),lit=uMoon.w<.5?step(e,u):step(u,-e);float disc=1.-smoothstep(.9,1.,rr);float tex=.85+.15*fbm(vec2(u,v)*2.2+3.);
+  c=mix(c,c*.35+vec3(.04,.05,.08),disc*uMoonK);c+=vec3(1.,.97,.88)*1.25*tex*lit*disc*uMoonK;float il=abs(.5-abs(uMoon.w-.5))*2.;c+=vec3(.55,.65,.85)*pow(max(mz,0.),400.)*.35*il*uMoonK;}}
  if(uDay>.5&&y>0.){vec2 p=d.xz/(y+.07)*1.2+vec2(uTime*.018,uTime*.008);float n=fbm(p)*.62+fbm(p*2.7+3.)*.38;float cl=smoothstep(.46,.76,n)*smoothstep(.0,.22,y);
   float lit=clamp(fbm(p+uSun.xz*.3)-n+.62,0.,1.);vec3 cc=mix(vec3(.62,.66,.76),vec3(1.12,1.06,.98),lit)+uSunC*pow(sd,6.)*.8;cc*=1.-uNight*.8;c=mix(c,cc,cl*.9);}
  float az=atan(d.x,d.z);float mh=.03+.075*fbm(vec2(az*2.,1.3))+.035*fbm(vec2(az*6.5,4.));float mh2=.02+.045*fbm(vec2(az*3.3,8.));
@@ -2936,7 +2940,9 @@ function loadModels(){
   totem:[mk(g=>{g.cyl(T3(0,0,0,1,1.9,1),[56,42,40],6,.13,.09);g.box(T3(0,1.7,0,.36,.36,.32),[200,190,170]);for(const sg of[-1,1])g.box(T3(sg*.26,1.25,0,.34,.06,.06,0,0,sg*.4),[56,42,40]);g.box(T3(0,1.05,0,.3,.08,.3),[90,60,110])}),mk(g=>{for(const sg of[-1,1])g.box(T3(sg*.08,1.74,.165,.07,.07,.02),[255,255,255])})],
   banner:[mk(g=>{g.cyl(T3(0,0,0,1,2.5,1),[90,64,40],6,.05,.04);g.box(T3(.34,1.85,0,.62,.95,.03),[170,40,30]);g.box(T3(.34,1.85,.02,.3,.3,.01),[230,190,80]);g.box(T3(.32,2.36,0,.74,.05,.05),[90,64,40])}),null],
   altar:[mk(g=>{g.box(T3(0,.3,0,.95,.6,.62),[50,40,38]);g.box(T3(0,.65,0,1.05,.1,.72),[70,56,50]);for(const sg of[-1,1])g.cyl(T3(sg*.42,.7,0,1,.5,1),[50,40,38],5,.05,.03)}),mk(g=>g.ico(T3(0,.92,0,.2,.26,.2),[255,255,255],.2,R))],
+  wmark:null,mcache:null,
   beacon:[mk(g=>{g.cyl(T3(0,0,0,1,1.1,1),[96,90,84],8,.34,.26);g.cyl(T3(0,1.1,0,1,.18,1),[70,60,50],8,.4,.44);for(let k=0;k<4;k++){const a=k/4*TAU;g.box(T3(Math.cos(a)*.32,.6,Math.sin(a)*.32,.08,1.2,.08,a),[60,50,40])}}),null]};
+ MODELS.node.wmark=MODELS.node.altar;MODELS.node.mcache=MODELS.node.relic;
  MODELS.resOre=[mk(g=>{g.ico(T3(0,.24,0,.78,.5,.66),[96,90,84],.35,R,0);g.ico(T3(.42,.12,.32,.32,.22,.3),[84,80,74],.3,R,0);g.ico(T3(-.4,.1,-.25,.26,.18,.26),[90,86,80],.3,R,0)}),mk(g=>{for(let k=0;k<6;k++){const a=k*1.05;g.box(T3(Math.cos(a)*.42,.3+Math.sin(k*1.7)*.12,Math.sin(a)*.34,.14,.22,.12,a,.4,.3),[255,255,255])}})];
  MODELS.resHerb=[mk(g=>{for(let k=0;k<8;k++){const a=k/8*TAU;g.box(T3(Math.cos(a)*.13,.18,Math.sin(a)*.13,.04,.38,.12,a,.4),[50,96,40])}}),mk(g=>{for(let k=0;k<5;k++){const a=k/5*TAU+.3;g.sphere(T3(Math.cos(a)*.17,.42+(k%2)*.08,Math.sin(a)*.17,.075,.075,.075),[255,255,255],6,4)}}),mk(g=>{for(let k=0;k<5;k++){const a=k/5*TAU;g.box(T3(Math.cos(a)*.1,.06,Math.sin(a)*.1,.04,.12,.1,a,.6),[90,84,50])}})];
  MODELS.resGem=[mk(g=>{for(let k=0;k<6;k++){const a=k/6*TAU,d=k?.26:0,h=k?.5+(k%3)*.18:1.05;g.box(T3(Math.cos(a)*d,h/2,Math.sin(a)*d,.17,h,.17,a,k?Math.cos(a)*.35:0,k?Math.sin(a)*.35:0),[255,255,255])}}),mk(g=>{g.ico(T3(0,.06,0,.42,.12,.42),[80,76,86],.3,R,0)})];
@@ -2999,6 +3005,58 @@ function worldClock(ms){const T=WORLDTIME,t=((ms/1000)%T.cycle+T.cycle)%T.cycle,
  if(t>=dl){night=1;phase='night'}else if(t>=dl-T.fade){night=(t-dl+T.fade)/T.fade;glow=Math.sin(night*Math.PI);phase='dusk'}else if(t<T.fade){const f=t/T.fade;night=1-f;glow=Math.sin(f*Math.PI);phase='dawn'}return{t,night,glow,phase}}
 const clockMs=()=>TIMEO.time?WORLDTIME.presets[TIMEO.time]*1000:Date.now();
 const worldNow=()=>worldClock(clockMs());
+/* ================= Moon (44.a) =================
+   The moon runs on the day-and-night clock: a lunar cycle is 28 in-game days (28 real hours), the same for every player.
+   Each moon night covers win nights either side of its day, and only after dark. phases must agree with events and win.
+   ?moon=new, first, full or last holds a phase, and night too unless ?time is set, for playtesting. */
+const MOON={days:28,win:1,nightAt:.5,
+ phases:[[0,'New Moon','🌑'],[2,'Waxing Crescent','🌒'],[6,'First Quarter','🌓'],[9,'Waxing Gibbous','🌔'],[13,'Full Moon','🌕'],[16,'Waning Gibbous','🌖'],[20,'Last Quarter','🌗'],[23,'Waning Crescent','🌘'],[27,'New Moon','🌑']],
+ events:{new:{day:0,rise:'The new moon rises. Shadows gather in the dark.',tip:'Shadow creatures roam in greater numbers.'},
+  first:{day:7,rise:'The first-quarter moon rises. A Warden marking glows somewhere in this land.',tip:'A Warden marking glows at one landmark in each zone.'},
+  full:{day:14,rise:'The full moon rises. Night creatures grow powerful.',tip:'Some night creatures rise as moonlit elites.'},
+  last:{day:21,rise:'The last-quarter moon rises. Old ruins stir.',tip:'A relic cache stirs at one ruin in each zone.'}},
+ extra:.3,eliteChance:.15,elite:{hp:3,dmg:1.4,sc:1.3,xp:3,tint:[1.15,1.25,1.7]},
+ shadow:{vale:['ghoul','wisp'],dunes:['sandsh'],frost:['rimedead','rimewr'],gloam:['hexwisp','blightghoul'],ember:['flameshade','cinderdead']},
+ spots:{vale:{mark:[25,12,'the Barrow Ring'],cache:[48,6,'the Old Watchtower']},dunes:{mark:[13,27.5,'the Oasis'],cache:[30,25,'the old well']},
+  frost:{mark:[48.5,17,'the Rime Circle'],cache:[7.5,39.5,'the frozen shrine']},gloam:{mark:[8.5,11,'the standing stones'],cache:[50.5,10,'the old graves']},
+  ember:{mark:[46,6,'the Glassfields'],cache:[26.5,14.5,'the Old Forge']}},
+ reward:{markXp:.06,markGold:[5,3],cacheGold:[10,5],cacheMats:[2,3]},
+ sky:{dir:[-.14,.22,-.97],size:.06}};
+const MOONO={moon:null};
+try{const v=new URLSearchParams(location.search).get('moon');if(v&&MOON.events[v]){MOONO.moon=v;if(!TIMEO.time)TIMEO.time='night'}}catch(_){}
+function moonAt(ms){const T=WORLDTIME,dd=ms/1000/T.cycle,d=MOONO.moon?MOON.events[MOONO.moon].day+.86:(dd%MOON.days+MOON.days)%MOON.days,day=Math.floor(d);
+ let ph=MOON.phases[0];for(const q of MOON.phases)if(day>=q[0])ph=q;let ev=null;
+ for(const k in MOON.events){const o=((day-MOON.events[k].day)%MOON.days+MOON.days)%MOON.days;if(o<=MOON.win||o>=MOON.days-MOON.win){ev=k;break}}
+ return{d,day,p:d/MOON.days,name:ph[1],icon:ph[2],ev,cycle:MOONO.moon?0:Math.floor(dd/MOON.days)}}
+const moonNow=()=>moonAt(clockMs());
+function moonEvent(){const m=G.map;if(!m||!MOON.spots[m.id]||worldNow().night<MOON.nightAt)return null;return moonNow().ev}
+/* How long until the next new and full moon, in real hours (one in-game day is one real hour). */
+function moonNext(){const c=moonNow(),f=k=>{let h=MOON.events[k].day-c.d;while(h<=0)h+=MOON.days;return h*WORLDTIME.cycle/3600};return{c,full:f('full'),new:f('new')}}
+function moonInfo(){const{c,full,new:nw}=moonNext(),h=x=>x<1.5?'about an hour':'about '+Math.round(x)+' hours',k=moonEvent();
+ return`<b>${c.name}</b>. ${k?esc(MOON.events[k].tip)+' ':''}Next full moon in ${h(full)}, next new moon in ${h(nw)}.`}
+const moonCanElite=e=>!e.dead&&!e.d.boss&&!e.elite&&!e.summoned&&!e.ev&&!e.moonElite;
+function moonElite(e){const L=MOON.elite,b=e.d,f=e.max?e.hp/e.max:1;e.mBase={d:b,max:e.max,dmg:e.dmg};
+ e.d=Object.assign({},b,{name:'Moonlit '+b.name,sc:(b.sc||1)*L.sc,h:b.h*L.sc,r:b.r*1.15,xp:b.xp*L.xp,tint:L.tint});e.max=Math.round(e.max*L.hp);e.hp=Math.round(e.max*f);e.dmg*=L.dmg;e.moonElite=1}
+function moonPlain(e){if(!e.moonElite)return;const B=e.mBase,f=e.max?e.hp/e.max:1;e.d=B.d;e.max=B.max;e.hp=Math.round(B.max*f);e.dmg=B.dmg;e.moonElite=0;e.mBase=null}
+function moonStart(k){const m=G.map,c=moonNow();toast(esc(MOON.events[k].rise),'q');
+ if(k==='new'){const sh=MOON.shadow[m.id]||[];for(const sp of m.spawns||[]){if(!sh.includes(sp.type))continue;for(let i=Math.round(sp.n*MOON.extra);i>0;i--){const p=findSpot(m,sp);if(!p)continue;const e=mkEnemy(sp.type,ri(sp.l0,sp.l1),p.x,p.y);e.moonX=1;e.fade=.6;G.enemies.push(e)}}}
+ if(k==='full')for(const e of G.enemies)if(moonCanElite(e)&&R()<MOON.eliteChance)moonElite(e);
+ if(k==='first'||k==='last'){const what=k==='first'?'mark':'cache',s=MOON.spots[m.id];P.moon=P.moon||{};if(s&&(P.moon[what]||{})[m.id]!==c.cycle){const[x,y]=walkSpot(m,s[what][0]+.5,s[what][1]+.5);
+  G.moonO.push({kind:what==='mark'?'wmark':'mcache',what,i:0,x:x*TS,y:y*TS,name:what==='mark'?'Warden marking':'Relic cache',place:s[what][2],cycle:c.cycle})}}}
+function moonEnd(k){const busy=e=>e.state==='chase'||e.state==='hunt'||e===G.tgt;
+ if(k==='new')for(let i=G.enemies.length-1;i>=0;i--){const e=G.enemies[i];if(!e.moonX)continue;if(!e.dead&&!busy(e)){e.dead=true;burst(e.x,e.y,'#8a80b0',10,70,.5,3,.3)}if(e.dead){e.respawn=-1;G.enemies.splice(i,1)}}
+ if(k==='full')for(const e of G.enemies)if(e.moonElite&&!e.dead&&!busy(e))moonPlain(e);G.moonO=[]}
+/* Checked once a second. Entering a map makes a fresh G.enemies, so the moon night is set up again there. */
+function moonTick(dt){if((G.moonT=(G.moonT||0)-dt)>0)return;G.moonT=1;const k=moonEvent();if(G.moonSet===G.enemies&&G.moonK===k)return;
+ if(G.moonSet!==G.enemies){G.moonSet=G.enemies;G.moonO=[]}else if(G.moonK)moonEnd(G.moonK);G.moonK=k;if(k)moonStart(k)}
+function moonRespawn(e){moonPlain(e)}
+function moonRespawned(e){if(G.moonK==='full'&&moonCanElite(e)&&R()<MOON.eliteChance)moonElite(e)}
+function useMoon(o){const i=(G.moonO||[]).indexOf(o);if(i<0||!P)return;G.moonO.splice(i,1);const m=G.map,W=MOON.reward;P.moon=P.moon||{};(P.moon[o.what]=P.moon[o.what]||{})[m.id]=o.cycle;
+ const c=o.what==='mark'?'#9fd8ff':'#ffd27a';burst(o.x,o.y,c,24,110,.8,3,.5);rise(o.x,o.y,c,12,14,1,3);sfx('heal',.8);
+ if(o.what==='mark'){const g=W.markGold[0]+P.lvl*W.markGold[1];gainXP(Math.round(XPN(P.lvl)*W.markXp));P.gold+=g;toast(`The <b>Warden marking</b> at ${esc(o.place)} flares, then fades. +${g} gold`,'q')}
+ else{const g=W.cacheGold[0]+P.lvl*W.cacheGold[1],gr=AREAG[m.id]||1,fams=Object.keys(RESF),f=fams[Math.floor(R()*fams.length)],q=ri(W.cacheMats[0],W.cacheMats[1]),got=addMat(f,gr,q);P.gold+=g;
+  toast(`You open the <b>relic cache</b> at ${esc(o.place)}: +${g} gold${got?', '+got+' '+esc(matName(f,gr)):''}`,'q');if(got<q)toast('Your bag is full. Sell something to make room.','warn')}
+ save()}
 const mix3=(a,b,f)=>[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f];
 const NIGHTENV={};
 function nightEnv(th){if(NIGHTENV[th])return NIGHTENV[th];const L=WORLDTIME.look[th]||WORLDTIME.look[0],c=k=>{const v=L[k];return Array.isArray(v)?lin(v[0]).map(x=>x*v[1]):lin(v)};return NIGHTENV[th]={sun:c('sun'),sky:c('sky'),gnd:c('gnd'),fog:c('fog'),top:c('top'),hor:c('hor'),sunC:c('sunC'),mtn:c('mtn'),rimC:c('rimC'),fogN:L.fogN,fogF:L.fogF,fogMax:L.fogMax,exp:L.exp,water:L.water}}
@@ -3007,7 +3065,7 @@ function sceneEnv(){const b=baseEnv();b.night=0;b.waterK=1;if(!G.map||G.map.id==
  if(n>0){const N=nightEnv(G.map.theme||0);for(const k of['sun','sky','gnd','fog','top','hor','sunC','mtn','rimC'])b[k]=mix3(b[k],N[k],n);for(const k of['fogN','fogF','fogMax','exp'])b[k]+=(N[k]-b[k])*n;b.night=n;b.waterK=1+(N.water-1)*n}
  if(c.glow>0){const G0=WORLDTIME.glow,w=lin(G0.col);b.hor=mix3(b.hor,w,c.glow*G0.hor);b.sun=mix3(b.sun,w.map(x=>x*2),c.glow*G0.sun)}
  const W=weatherNow();b.wx=W;if(W&&W.s>0&&WX.kinds[W.k]){const K=WX.kinds[W.k],f=W.s,tint=lin(K.fog).map(v=>v*(1-.8*n)),d=1+(K.dim-1)*f*(1-.7*n);b.fog=mix3(b.fog,tint,f);b.top=mix3(b.top,tint,f*WX.skyMix);b.hor=mix3(b.hor,tint,f*WX.skyMix);b.sun=b.sun.map(v=>v*d);b.sunC=b.sunC.map(v=>v*d);b.sky=mix3(b.sky,tint,f*WX.groundMix).map(v=>v*(1+(K.dim-1)*f*.6*(1-.7*n)));b.exp*=1+((K.exp||1)-1)*f*(1-.7*n);b.fogF=Math.max(Math.min(b.fogF,WX.minFogF),b.fogF*(1+(K.fogF-1)*f));b.fogN=Math.min(b.fogN,b.fogF*.4)}return b}
-function dayIcon(){const el=$h('dayIcon');if(!el)return;const out=G.map&&G.map.id==='abbey';el.hidden=!!out;if(out)return;const p=worldNow().phase;if(el.dataset.p!==p){el.dataset.p=p;el.textContent=WORLDTIME.icons[p];el.title=WORLDTIME.names[p]}}
+function dayIcon(){const el=$h('dayIcon');if(!el)return;const out=G.map&&G.map.id==='abbey';el.hidden=!!out;if(out)return;const w=worldNow(),c=w.phase==='night'?moonNow():null,p=c?'m'+c.day:w.phase;if(el.dataset.p!==p){el.dataset.p=p;el.textContent=c?c.icon:WORLDTIME.icons[w.phase];el.title=c?c.name+'. Tap for the moon.':WORLDTIME.names[w.phase]+'. Tap for the moon.'}}
 function baseEnv(){const ab=G.map&&G.map.id==='abbey',th=G.map&&G.map.theme;
  if(th===3)return{sun:lin('#dccfff').map(v=>v*1.7),sky:lin('#7a72a8').map(v=>v*.62),gnd:lin('#3a3046').map(v=>v*.5),fog:lin('#3e3858'),fogN:12,fogF:58,fogMax:.9,exp:1.12,top:lin('#141430'),hor:lin('#5a4e78'),sunC:lin('#e8d8ff'),mtn:lin('#262440'),rimC:lin('#c8b0ff')};
  if(th===4)return{sun:lin('#ffb878').map(v=>v*2.2),sky:lin('#8a5a50').map(v=>v*.6),gnd:lin('#5a2010').map(v=>v*.55),fog:lin('#6a3a2c'),fogN:16,fogF:70,fogMax:.86,exp:1.0,top:lin('#2a0e0a'),hor:lin('#b0502a'),sunC:lin('#ffc070'),mtn:lin('#3a1c14'),rimC:lin('#ffa060')};
@@ -3115,6 +3173,7 @@ function renderWorld(dt){
  {const pr=useProg(PR.sky);gl.depthMask(false);gl.disable(gl.DEPTH_TEST);bindQuad();const V=VIEW;
   gl.uniform3f(pr.U.uR,V[0],V[4],V[8]);gl.uniform3f(pr.U.uU,V[1],V[5],V[9]);gl.uniform3f(pr.U.uF,-V[2],-V[6],-V[10]);gl.uniform2f(pr.U.uTan,1/PROJ[0],1/PROJ[5]);
   gl.uniform3fv(pr.U.uTop,env.top);gl.uniform3fv(pr.U.uHor,env.hor);gl.uniform3fv(pr.U.uFog,env.fog);gl.uniform3fv(pr.U.uSun,SUN);gl.uniform3fv(pr.U.uSunC,env.sunC);gl.uniform3fv(pr.U.uMtn,env.mtn);gl.uniform1f(pr.U.uTime,G.time);gl.uniform1f(pr.U.uDay,m.id!=='abbey'?1:0);gl.uniform1f(pr.U.uNight,env.night);
+  {const mc=moonNow(),D=MOON.sky.dir;gl.uniform4f(pr.U.uMoon,D[0],D[1],D[2],mc.p);gl.uniform1f(pr.U.uMoonS,MOON.sky.size);gl.uniform1f(pr.U.uMoonK,m.id!=='abbey'?env.night*(env.wx?1-.7*env.wx.s:1):0)}
   gl.drawArrays(gl.TRIANGLES,0,6);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
  const mapSize=[m.w,m.h];
  // terrain
@@ -3160,7 +3219,7 @@ function renderWorld(dt){
   // loot
   for(const l of G.loot){const x=l.x*U,z=l.y*U,y=groundH(x,z);drawMesh(MODELS.chest,M4.trs(x,y,z,l.t*.5+l.x));const c=RAR[l.it.rar].c;sprite(x,y+.3,z,.6,.6,c,.6);if(l.it.rar>=2)sprite(x,y,z,.18,3.5,c,.7,1);decal(x,z,y+.04,.4,.4,0,0,[0,0,0],.4)}
   // quest objects
-  for(const n of G.nodes||[]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
+  for(const n of[...(G.nodes||[]),...(G.moonO||[])]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
    sprite(x,y+.5,z,.9,.9,k.c,.3);sprite(x,y,z,.12,4+Math.sin(G.time*3)*.3,k.c,.4,1);decal(x,z,y+.04,.6,.6,G.time,5,hexC(k.c).map(v=>v/255),.55,.6)}
   for(const b of G.beacons||[]){const x=b.x*U,z=b.y*U,y=groundH(x,z),lit=G.event&&G.event.q===b.q;drawMesh(MODELS.node.beacon[0],M4.trs(x,y,z,0));
    if(lit){const f=1+Math.sin(G.time*13)*.1;sprite(x,y+1.55,z,.55*f,1.2*f,'#ff9a3a',.95,1);sprite(x,y+1.7,z,1.9,1.9,'#ffb060',.4);decal(x,z,y+.05,330*U,330*U,0,1,[1,.6,.25],.4,.97)}else{sprite(x,y,z,.14,4.5,'#ffd27a',.45,1);decal(x,z,y+.05,.9,.9,G.time,5,[1,.8,.4],.55,.6)}}
@@ -3239,7 +3298,7 @@ function renderOverlay(){
   const mk=npcMark(k)||(n.shop?'$':null);if(mk){const b=Math.sin(G.time*4)*3,cy=s[1]-44+b;ctx.beginPath();ctx.arc(s[0],cy,14,0,TAU);ctx.fillStyle=mk==='$'?'#123a44':'#2a1a08';ctx.fill();ctx.lineWidth=2.5;const cc=mk==='?'?'#ffe060':mk==='$'?'#8fe8f0':'#f2c24a';ctx.strokeStyle=cc;ctx.stroke();ctx.font='800 19px "Alegreya Sans",sans-serif';ctx.fillStyle=cc;ctx.textBaseline='middle';ctx.fillText(mk==='$'?'⚖':mk,s[0],cy+1);ctx.textBaseline='alphabetic'}}
  if(G.mode!=='play')return;
  for(const o of G.res||[]){if(o.t>0||Math.hypot(o.x*U-CAM.tx,o.y*U-CAM.tz)>11)continue;const s=proj(o.x*U,groundH(o.x*U,o.y*U)+1.05,o.y*U);if(!s)continue;ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(o.name,s[0],s[1]);ctx.fillStyle=RAR[o.g-1].c2;ctx.fillText(o.name,s[0],s[1])}
- for(const n of[...(G.nodes||[]),...(G.beacons||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=proj(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
+ for(const n of[...(G.nodes||[]),...(G.beacons||[]),...(G.moonO||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=proj(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
  if(!P.dead){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(P.name,s[0],s[1]);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],s[1])}}
  for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=proj(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
   const w=46,x=s[0]-w/2,y=s[1];ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(x-1,y-1,w+2,7);ctx.fillStyle=e.state==='chase'?'#d24a3e':'#b89a5a';ctx.fillRect(x,y,w*Math.max(0,e.hp/e.max),5);
@@ -3319,7 +3378,7 @@ function hud(){hudF++;if(hudF%30===1)dayIcon();
  EL.carrow.style.transform=`rotate(${((Math.PI-P.rot)*180/Math.PI).toFixed(1)}deg)`;
  if(hudF%6===0){let h='';for(const d of P.deb||[])h+=`<div class="bf debuff" title="${DEBN[d.k][0]}" aria-label="${DEBN[d.k][0]}" style="color:${DEBN[d.k][1]}">${svg(DEBI[d.k])}<b>${Math.ceil(d.t)}</b></div>`;if(wadeSlow()>0){const lava=G.map&&G.map.theme===4;h+=`<div class="bf debuff" title="${P.wade>0?(lava?'Lava shallows':'Wading'):'Soaked'}: ${Math.round(wadeSlow()*100)}% slower" aria-label="${P.wade>0?'Wading':'Soaked'}, ${Math.round(wadeSlow()*100)} percent slower">${svg('wave')}<b>-${Math.round(wadeSlow()*100)}%</b></div>`}for(const b of P.buffs){const ic=BUFFI[b.id];if(ic)h+=`<div class="bf">${svg(ic)}<b>${Math.ceil(b.t)}</b></div>`}if(P.mounted)h+=`<div class="bf">${svg('boot')}</div>`;EL.buffs.innerHTML=h}
  const n=G.near,key=n?(n.kind==='npc'?n.id:n.kind==='portal'?n.p.label:n.kind+n.o.name+(n.o.i??'')):null;
- if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):n.kind==='res'?esc(RESF[n.o.fam].act+' '+n.o.name):esc(n.p.label))+'<kbd>'+(PAD?gpg('a'):'E')+'</kbd>'}}
+ if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):n.kind==='res'?esc(RESF[n.o.fam].act+' '+n.o.name):n.kind==='moon'?esc(NODEK[n.o.kind].act+' the '+n.o.name.toLowerCase()):esc(n.p.label))+'<kbd>'+(PAD?gpg('a'):'E')+'</kbd>'}}
  if(hudF%5===0)updLoot();
  if(OPT.mini!==false&&hudF%3===1)drawMini();
  EL.tracker.hidden=!OPT.tracker||!!G.boss}
@@ -3331,7 +3390,7 @@ function drawMini(){const c=EL.mmap,m=G.map;if(!c||!m||!m.mini)return;const x=c.
  for(const l of G.loot)dot(l.x/TS,l.y/TS,RAR[l.it.rar].c,4,'#000');
  for(const o of G.res||[])if(o.t<=0&&Math.hypot(o.tx-px,o.ty-py)<15)dot(o.tx+.5,o.ty+.5,RESF[o.fam].c[o.g-1],3.2,'#120c06');
  const qd=(tx,ty,c)=>{let[a,b]=at(tx,ty);const dx=a-W/2,dy=b-H/2,lim=W/2-9,mm=Math.abs(dx)+Math.abs(dy);if(mm>lim){a=W/2+dx*lim/mm;b=H/2+dy*lim/mm}x.save();x.translate(a,b);x.rotate(Math.PI/4);x.fillStyle=c;x.strokeStyle='#1a1206';x.lineWidth=2;x.fillRect(-4.5,-4.5,9,9);x.strokeRect(-4.5,-4.5,9,9);x.restore()};
- for(const n of G.nodes||[])qd(n.x/TS,n.y/TS,'#ffd860');for(const b of G.beacons||[])qd(b.x/TS,b.y/TS,'#ffb060');for(const sp of G.spots||[])qd(sp.x/TS,sp.y/TS,'#8fe8ff');for(const e of G.enemies)if(e.elite&&!e.dead)qd(e.x/TS,e.y/TS,'#ff9a3a');
+ for(const n of G.nodes||[])qd(n.x/TS,n.y/TS,'#ffd860');for(const o of G.moonO||[])qd(o.x/TS,o.y/TS,NODEK[o.kind].c);for(const b of G.beacons||[])qd(b.x/TS,b.y/TS,'#ffb060');for(const sp of G.spots||[])qd(sp.x/TS,sp.y/TS,'#8fe8ff');for(const e of G.enemies)if(e.elite&&!e.dead)qd(e.x/TS,e.y/TS,'#ff9a3a');
  if(m.arena)qd(m.arena.x,m.arena.y,P.bosses&&P.bosses[m.id]?'#8a7a70':'#ff4a2a');
  for(const e of G.enemies){if(e.dead||e.fade>0)continue;const d=Math.hypot(e.x/TS-px,e.y/TS-py);if(d>14)continue;dot(e.x/TS,e.y/TS,e.d.boss?'#ff5a3a':e===G.tgt?'#ffb040':e.state==='chase'?'#ff3a2a':'#c84a3a',e.d.boss?8:e===G.tgt?6:4.5,'#1a0806')}
  for(const k of m.npcs){const n=NPCS[k],mk=npcMark(k);if(mk){const[a,b]=at(n.x,n.y);dot(n.x,n.y,'#2a1a08',9,'#f2c24a');x.fillStyle='#ffd860';x.font='900 13px "Alegreya Sans",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(mk,a,b+1)}else dot(n.x,n.y,n.shop?'#9be07a':'#e8e0c8',4,'#1a120a')}
@@ -3359,6 +3418,14 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:29,date:'4 Nov 2026',title:'The moon',items:[
+  'A moon now crosses its phases over 28 in-game days, which is 28 real hours. It is the same moon for every player, and it keeps moving while you are away.',
+  'Look for it in the night sky. At night the icon by the compass shows the moon\'s phase. Tap it to see the phase and how long until the next full and new moon.',
+  'New Moon nights: shadow creatures such as ghouls, wisps and flame shades roam in greater numbers.',
+  'Full Moon nights: some night creatures rise as Moonlit elites. They are bigger and tougher, give more experience and drop gems.',
+  'First Quarter nights: a Warden marking glows at one landmark in each zone. Touch it for experience and gold.',
+  'Last Quarter nights: a relic cache stirs at one ruin in each zone, with gold and crafting materials inside. Each marking and cache can be claimed once per moon cycle in each zone.',
+  'Each moon night lasts about three nights around its phase.']},
  {id:28,date:'4 Nov 2026',title:'Day, night and weather',items:[
   'The world now has a day and a night. One full day takes an hour: 45 minutes of daylight, then 15 of night, with a dawn and a dusk between them. Time keeps passing while you are away.',
   'Each zone has its own night. Look for cold moonlight over Veylmoor, stars above the Dunes, blue light on the Frostfang snow, fireflies in Gloamwood and the glow of the lava in Emberfall.',
@@ -3691,7 +3758,7 @@ function drawWorldMap(cnv){if(!cnv)return;const r={width:cnv.parentElement.clien
  c.fillStyle='rgba(190,130,60,.12)';c.fillRect(0,0,W,H);
  const badge=(x,y,glyph,col='#f3e6c4')=>{const px=ox+x*sc,py=oy+y*sc,rr2=13*d;c.beginPath();c.arc(px,py,rr2,0,TAU);c.fillStyle=col;c.fill();c.lineWidth=2.5*d;c.strokeStyle='#5a3a18';c.stroke();c.fillStyle='#4a2a10';c.font=`800 ${15*d}px "Alegreya Sans",sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillText(glyph,px,py+d)};
  const label=(x,y,t,s=16)=>{c.font=`${s*d}px Marcellus,serif`;c.textAlign='center';c.textBaseline='middle';c.lineWidth=4*d;c.strokeStyle='rgba(240,220,170,.85)';c.strokeText(t,ox+x*sc,oy+y*sc);c.fillStyle='#4a2a10';c.fillText(t,ox+x*sc,oy+y*sc)};
- if(!ab){for(const l of m.labels||[])label(l[0],l[1],l[2],l[3]||16);for(const b of m.badges||[])badge(b[0],b[1],b[2],b[3]);for(const k of m.npcs){const mk=npcMark(k);if(mk)badge(NPCS[k].x,NPCS[k].y-1.6,mk,'#ffe08a')}for(const n of[...(G.nodes||[]),...(G.beacons||[])])badge(n.x/TS,n.y/TS,'◆','#ffe08a');for(const sp of G.spots||[])badge(sp.x/TS,sp.y/TS,'◆','#bff0ff');for(const e of G.enemies)if(e.elite&&!e.dead)badge(e.x/TS,e.y/TS,'★','#ffc070')}
+ if(!ab){for(const l of m.labels||[])label(l[0],l[1],l[2],l[3]||16);for(const b of m.badges||[])badge(b[0],b[1],b[2],b[3]);for(const k of m.npcs){const mk=npcMark(k);if(mk)badge(NPCS[k].x,NPCS[k].y-1.6,mk,'#ffe08a')}for(const n of[...(G.nodes||[]),...(G.beacons||[])])badge(n.x/TS,n.y/TS,'◆','#ffe08a');for(const o of G.moonO||[])badge(o.x/TS,o.y/TS,'◆',NODEK[o.kind].c);for(const sp of G.spots||[])badge(sp.x/TS,sp.y/TS,'◆','#bff0ff');for(const e of G.enemies)if(e.elite&&!e.dead)badge(e.x/TS,e.y/TS,'★','#ffc070')}
  else{for(const z of m.zones)label((z.x0+z.x1)/2,1.2,z.n,12);badge(65.5,11.5,'☠','#e8d4c0');badge(2.8,12,'⇦')}
  const px=ox+P.x/TS*sc,py=oy+P.y/TS*sc;c.save();c.translate(px,py);c.rotate(-P.rot+Math.PI);c.fillStyle='#1a9ad8';c.strokeStyle='#fff';c.lineWidth=2*d;c.beginPath();c.moveTo(0,-14*d);c.lineTo(10*d,10*d);c.lineTo(0,5*d);c.lineTo(-10*d,10*d);c.closePath();c.fill();c.stroke();c.restore();
  const cx=W-70*d,cy=H-70*d;c.save();c.translate(cx,cy);c.strokeStyle='rgba(90,60,30,.7)';c.fillStyle='rgba(90,60,30,.55)';c.lineWidth=1.5*d;c.beginPath();c.arc(0,0,40*d,0,TAU);c.stroke();for(let k=0;k<4;k++){c.rotate(Math.PI/2);c.beginPath();c.moveTo(0,-48*d);c.lineTo(7*d,0);c.lineTo(-7*d,0);c.closePath();c.fill()}c.restore();
@@ -3804,7 +3871,7 @@ function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGam
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
-function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else usePortal(n.p)}
+function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
@@ -3852,6 +3919,7 @@ function toggleFS(){if(document.fullscreenElement){document.exitFullscreen().cat
 document.addEventListener('fullscreenchange',()=>{if(G.panel==='options')renderPanel()});
 let installEv=null;addEventListener('beforeinstallprompt',e=>{installEv=e;if(G.panel==='options')renderPanel()});addEventListener('appinstalled',()=>{installEv=null;if(G.panel==='options')renderPanel()});
 $h('menuBtn').addEventListener('click',()=>{if(G.mode==='play')setMini(OPT.mini===false)});
+$h('dayIcon').addEventListener('click',ev=>{ev.stopPropagation();if(G.mode==='play')toast(moonInfo(),'q')});
 $h('compass').addEventListener('click',()=>{if(G.mode==='play'&&!P.dead&&OPT.mini!==false)openPanel('map')});
 const openBag=()=>{if(G.mode==='play'&&P&&!P.dead)openPanel('bag')};
 $h('pf').addEventListener('click',openBag);
@@ -3862,7 +3930,7 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
@@ -3928,7 +3996,7 @@ $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if
  if(b.dataset.t==='del'&&si>=0){if(!titleConfirm){titleConfirm=true;renderTitle();return}try{localStorage.removeItem(slotKey(si))}catch(_){}titleSel=null;titleConfirm=false;renderTitle();return}
  if(b.dataset.t==='play'){if(si>=0){const sv=readSlot(si);if(sv){useSlot(si);loadSave(sv)}return}const k=titleModelKey();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
 function startNew(cls,name){const free=freeSlot();if(free<0)return false;useSlot(free);P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);migratePotions();addCons('food','loaf',2);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q');if(canBlockCls())later(7,()=>toast('Tap dodge to roll. <b>Hold it to raise your shield</b> and block.','q'))}
-function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);if(!webValid(P.cls,P.tal)){const had=Object.keys(P.tal||{}).length;P.tal={};if(had)later(1.5,()=>toast('The talent web is new. Your talent points are back to spend in Spells.','lvl'))}P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;migratePotions();P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
+function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);if(!P.moon||typeof P.moon!=='object')P.moon={};P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);if(!webValid(P.cls,P.tal)){const had=Object.keys(P.tal||{}).length;P.tal={};if(had)later(1.5,()=>toast('The talent web is new. Your talent points are back to spend in Spells.','lvl'))}P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;migratePotions();P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
 function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').hidden=true;$h('hud').hidden=false;setupButtons();restStick();CAM.zoom=OPT.camD||1;CAM.pitchAdj=0;titleConfirm=false;
  if(!G.maps[mid])G.maps[mid]=BUILD[mid]();const mm=G.maps[mid];let p=pos||mm.start;if(mm.solidAt(p.x,p.y))p=mm.start;enterMap(mid,p);save();$h('camHint').classList.remove('off');setTimeout(()=>$h('camHint').classList.add('off'),6000)}
 function toTitle(){closePanel(true);G.mode='title';$h('hud').hidden=true;G.map=G.maps.vale;G.enemies=[];G.projs=[];G.loot=[];G.areas=[];G.tele=[];G.fx=[];G.boss=null;G.tgt=null;titleSel=null;titleConfirm=false;snapCam();renderTitle()}
@@ -3974,7 +4042,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={WX,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
