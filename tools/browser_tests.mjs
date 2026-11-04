@@ -797,6 +797,24 @@ await test('Beasts can be skinned for a while after they fall, and others cannot
   for(let i=0;i<Math.ceil(V.SKIN.last*2)+2;i++)V.update(.5);if(G.skins.some(o=>o.t>0))bad.push('bodies never went away');const last=G.skins[0];if(last&&V.skinIt(last))bad.push('an old body could still be skinned');
   V.enterMap('vale',G.maps.vale.start);if(G.skins.length)bad.push('bodies followed you to another zone');return bad}`));
 
+// Fishing (17.d).
+await reset();
+await test('Every zone has fishing spots by the water, and three fish to catch', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('lumen','Tester');
+  for(const id of ['vale','dunes','frost','gloam','ember']){V.enterMap(id);const m=G.map,S=G.fishS||[];if(S.length<2)bad.push(id+' has '+S.length+' fishing spots');
+   for(const o of S){const v=m.get(o.tx,o.ty);if(v<0||V.SOLID[v])bad.push(id+' spot on blocked ground');if(![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m.get(o.tx+dx,o.ty+dy)===2))bad.push(id+' spot is not beside water');if(m.arena&&Math.hypot(o.tx+.5-m.arena.x,o.ty+.5-m.arena.y)<m.arena.r+2)bad.push(id+' spot in the boss arena')}
+   const fs=V.FISH.zones[id];if(!fs||fs.length!==3)bad.push(id+' does not have three fish');else for(const[k]of fs){const f=V.FOODS['fish_'+id+'_'+k];if(!f||!f.caught||!(f.heal>0)||!(f.price>0))bad.push(id+' '+k+' is not a proper food')}}
+  V.enterMap('abbey');if((G.fishS||[]).length)bad.push('fishing in the Abbey');V.enterMap('vale',G.maps.vale.start);const a=JSON.stringify(V.fishSpots(G.map).map(o=>[o.tx,o.ty]));G.fishMap={};if(JSON.stringify(V.fishSpots(G.map).map(o=>[o.tx,o.ty]))!==a)bad.push('fishing spots move between visits');
+  let n=[0,0,0];for(let i=0;i<4000;i++){const s=G.fishS[0];s.t=0;V.fishStart(s);n[G.fishing.i]++;V.closePanel(true)}if(!(n[0]>n[1]&&n[1]>n[2]&&n[2]>0))bad.push('fish odds look wrong: '+n);
+  if(!(V.FISH.width[2]<V.FISH.width[0]&&V.FISH.period[2]<V.FISH.period[0]))bad.push('rare fish are not harder');return bad}`));
+
+await test('Reeling in at the right moment catches a fish; a miss, a fight or a full bag does not', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('bulwark','Tester');const P=V.P;V.enterMap('frost');G.enemies=[];V.closePanel(true);const s=G.fishS[0];
+  const count=()=>P.bag.filter(x=>x.kind==='food'&&/^fish_/.test(x.fid)).reduce((a,x)=>a+x.qty,0);s.t=0;if(!V.fishStart(s)||G.panel!=='fish')bad.push('fishing did not start');if(!document.querySelector('#book [data-act="reel"]'))bad.push('no Reel in button');
+  const F=G.fishing,c0=count();if(V.fishReel(F.a+F.w/2)!==true)bad.push('a reel in the zone missed');if(count()!==c0+1)bad.push('no fish in the bag');if(G.panel)bad.push('the panel stayed open');if(V.fishStart(s))bad.push('the same spot bit again at once');
+  for(let i=0;i<40;i++)V.update(.25);if(!V.fishStart(s))bad.push('the spot never came back');const F2=G.fishing,miss=F2.a>.5?F2.a-.05:F2.a+F2.w+.05;if(V.fishReel(miss)!==false)bad.push('a reel outside the zone caught a fish');if(count()!==c0+1)bad.push('a miss still gave a fish');
+  for(let i=0;i<40;i++)V.update(.25);const e=V.mkEnemy('frostwolf',30,P.x+40,P.y);e.state='chase';G.enemies.push(e);if(V.fishStart(s))bad.push('fished in the middle of a fight');G.enemies=[];P.lastHurt=-99;
+  const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));P.bag=P.bag.filter(x=>!(x.kind==='food'&&/^fish_/.test(x.fid)));while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));V.fishStart(s);const F3=G.fishing;if(V.fishReel(F3.a+F3.w/2)!==false)bad.push('a full bag still took a fish');
+  const f=P.bag.length;P.bag.pop();V.addCons('food','fish_frost_trout',1);const it=P.bag.find(x=>x.fid==='fish_frost_trout');if(!it)bad.push('a fish could not be added');else if(!/svg/.test(V.itemIcon(it)))bad.push('fish have no icon');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
