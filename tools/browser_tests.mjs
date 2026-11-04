@@ -265,6 +265,37 @@ await test('Gems and sockets survive saves, old saves and hero files', async () 
   return bad;
 });
 
+await reset();
+await test('Gear wears in fights and on death, but not at rest', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G;G.enemies=[];P.eq.helm=V.rollItem(10,0,'helm',2);
+  if(V.itemDur(P.eq.helm)!==100)bad.push('new gear is not at full durability');P.lastHurt=-1e6;for(let i=0;i<60;i++)V.wearTick(1);if(V.itemDur(P.eq.helm)!==100)bad.push('gear wore out at rest');
+  for(let i=0;i<60;i++){P.lastHurt=G.time;V.wearTick(1)}const a=100-V.itemDur(P.eq.helm),want=60*V.DUR.fightPerSec;if(Math.abs(a-want)>.01)bad.push('a minute of fighting cost '+a);
+  const b=V.itemDur(P.eq.helm);P.lastHurt=-1e6;P.hp=1;V.die();if(Math.abs(b-V.itemDur(P.eq.helm)-V.DUR.deathLoss)>.01)bad.push('death cost '+(b-V.itemDur(P.eq.helm)));P.dead=false;
+  const inBag=V.rollItem(10,0,'boots',2);P.bag.push(inBag);V.wearAll(5);if(V.itemDur(inBag)!==100)bad.push('gear in the bag wore out');
+  P.eq.helm.dur=.001;V.wearAll(5);if(V.itemDur(P.eq.helm)!==0)bad.push('durability went below zero');if(!P.eq.helm)bad.push('broken gear was destroyed');return bad}`));
+
+await reset();
+await test('Broken gear gives nothing until it is repaired, and repairs cost fairly', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P;P.lvl=30;P.eq.weapon=V.rollItem(30,0,'weapon',4);P.eq.weapon.soc=['red.4.5'];P.gold=0;V.recalc();
+  const on={atk:V.S.atk,str:V.S.a.str,uq:!!V.S.uq[P.eq.weapon.uq]};P.eq.weapon.dur=0;V.recalc();if(!(V.S.atk<on.atk))bad.push('a broken weapon still gives damage');if(!(V.S.a.str<on.str))bad.push('a broken weapon still gives its gem');if(V.S.uq[P.eq.weapon.uq])bad.push('a broken weapon still gives its effect');
+  const cost=V.repairCost(P.eq.weapon);if(!(cost>0))bad.push('a broken item has no repair cost');if(V.repairItem(P.eq.weapon)||!V.itemBroken(P.eq.weapon))bad.push('repaired without gold');
+  P.gold=cost;if(!V.repairItem(P.eq.weapon))bad.push('could not repair with exactly enough gold');if(P.gold!==0||V.itemBroken(P.eq.weapon))bad.push('repair did not work');if(Math.abs(V.S.atk-on.atk)>1e-9||V.S.a.str!==on.str)bad.push('stats did not come back');
+  P.eq.weapon.dur=50;const half=V.repairCost(P.eq.weapon);if(!(half<=Math.ceil(cost/2)+1&&half>=Math.floor(cost/2)-1))bad.push('half wear cost '+half+' against '+cost);
+  P.eq.weapon.dur=100;if(V.repairCost(P.eq.weapon)!==0)bad.push('a full item has a repair cost');
+  P.eq.weapon.dur=10;P.eq.helm=V.rollItem(30,0,'helm',2);P.eq.helm.dur=0;const bag=V.rollItem(30,0,'boots',1);bag.dur=40;P.bag.push(bag);const tot=V.repairables().reduce((a,x)=>a+V.repairCost(x.it),0);if(V.repairables().length!==3)bad.push('expected 3 items to repair');
+  P.gold=tot-1;if(V.repairAll())bad.push('Repair All worked without enough gold');if(V.itemDur(P.eq.helm)!==0)bad.push('a refused Repair All changed an item');P.gold=tot;if(!V.repairAll())bad.push('Repair All failed');if(P.gold!==0||V.repairables().length)bad.push('Repair All left work or gold');return bad}`));
+
+await reset();
+await test('The player is told about worn gear, and the shop repairs it by clicking', () => ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;P.eq.helm=V.rollItem(10,0,'helm',2);P.gold=100000;const wait=ms=>new Promise(r=>setTimeout(r,ms)),note=()=>{const e=document.getElementById('durNote');return e&&!e.hidden?e.textContent:''};
+  await wait(1500);if(note())bad.push('notice shown with healthy gear');P.eq.helm.dur=26;const r=V.wearAll(2);if(!r.worn.length)bad.push('crossing 25% was not reported');await wait(1500);if(!/wearing out/.test(note()))bad.push('no worn notice: '+note());
+  P.eq.helm.dur=0;await wait(1500);if(!/broken/i.test(note()))bad.push('no broken notice: '+note());
+  V.openPanel('char');const s=document.querySelector('#book [data-act="seleq"][data-slot="helm"]');if(!s)bad.push('no helm button');else{s.click();if(!/Broken/.test(document.querySelector('#book').innerText))bad.push('item card does not say Broken')}V.closePanel();
+  V.openPanel('shop','pell');const q=x=>document.querySelector('#book '+x);q('[data-act="shtab"][data-t="repair"]').click();if(!q('[data-act="repair"][data-k="helm"]'))bad.push('no repair button for the helm');else q('[data-act="repair"][data-k="helm"]').click();if(V.itemDur(P.eq.helm)!==100)bad.push('clicking Repair failed');if(q('[data-act="repairall"]'))q('[data-act="repairall"]').click();if(!/good condition/.test(q('.gemnote')?q('.gemnote').textContent:''))bad.push('no all-clear message');V.closePanel();await wait(1500);if(note())bad.push('notice stayed after repair');return bad}`));
+
+await reset();
+await test('Durability survives saves and hero files, and old gear counts as full', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('thornstalker','Saver');const P=V.P;P.eq.boots=V.rollItem(10,0,'boots',2);P.eq.boots.dur=33.5;const old=V.rollItem(10,0,'helm',2);delete old.dur;P.eq.helm=old;dispatchEvent(new Event('pagehide'));
+  const d=V.readSlot(0);if(d.eq.boots.dur!==33.5)bad.push('save lost durability');if(V.itemDur(d.eq.helm)!==100)bad.push('old gear did not count as full');V.loadSave(JSON.parse(JSON.stringify(d)));if(V.itemDur(V.P.eq.boots)!==33.5)bad.push('load lost durability');
+  dispatchEvent(new Event('pagehide'));const f=V.heroFileText(V.readSlot(0)),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else if(V.readSlot(r.slot).eq.boots.dur!==33.5)bad.push('hero file lost durability');
+  const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});for(const v of [-1,101,'full'])if(!V.parseHeroFile(signed({...g,eq:{...g.eq,boots:{...g.eq.boots,dur:v}}})).err)bad.push('accepted durability '+v);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
