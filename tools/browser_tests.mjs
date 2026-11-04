@@ -105,7 +105,7 @@ for (const cls of ['bulwark', 'reaver', 'ashcaller', 'thornstalker', 'lumen']) {
 await reset();
 await test('A hero survives saving, reloading and an old-version save', () => ev(`()=>{const V=window.__veyl,K='veylmoor-hero-0',bad=[];V.startNew('lumen','Saver');V.gainXP(500);dispatchEvent(new Event('pagehide'));
   const s=JSON.parse(localStorage.getItem(K)),a=JSON.stringify([V.P.lvl,V.P.xp,V.P.gold,V.P.bag.length]);V.loadSave(JSON.parse(JSON.stringify(s)));if(a!==JSON.stringify([V.P.lvl,V.P.xp,V.P.gold,V.P.bag.length]))bad.push('save and reload changed the hero');
-  const old={...s,v:3,lvl:20,xp:100};localStorage.setItem(K,JSON.stringify(old));const m=V.readSave();if(!m||m.v!==4||m.lvl!==39)bad.push('version 3 save upgraded to '+JSON.stringify(m&&[m.v,m.lvl]));
+  const old={...s,v:3,lvl:20,xp:100};localStorage.setItem(K,JSON.stringify(old));const m=V.readSave();if(!m||m.v!==5||m.lvl!==39||!m.gems)bad.push('version 3 save upgraded to '+JSON.stringify(m&&[m.v,m.lvl]));
   localStorage.setItem(K,JSON.stringify(s));return bad}`));
 
 await reset();
@@ -218,6 +218,52 @@ await test('Bad hero files are refused and leave existing heroes alone', () => e
   for(const n in cases){const r=V.importHeroText(cases[n]);if(!r.err)bad.push('accepted: '+n)}
   if(localStorage.getItem('veylmoor-hero-0')!==before)bad.push('the existing hero changed');if(V.heroes().filter(x=>x.raw).length!==1)bad.push('a bad file created a hero');
   for(let i=1;i<5;i++)if(V.importHeroText(JSON.stringify(good)).err)bad.push('good file refused');const full=V.importHeroText(JSON.stringify(good));if(!/full/.test(full.err||''))bad.push('a full roster did not refuse the import');return bad}`));
+
+await reset();
+await test('Sockets follow the rules by rarity and slot', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const lim={0:[0,0],1:[0,0],2:[0,1],3:[1,2],4:[1,3]};
+  for(const s of ['weapon','charm','cloak'])for(const r in lim){const seen=new Set();for(let i=0;i<150;i++){const n=(V.rollItem(30,0,s,+r).soc||[]).length;seen.add(n);if(n<lim[r][0]||n>lim[r][1])bad.push(s+' rarity '+r+' rolled '+n+' sockets')}if(seen.size!==lim[r][1]-lim[r][0]+1)bad.push(s+' rarity '+r+' only rolled '+[...seen])}
+  for(const s of ['helm','chest','boots'])for(let i=0;i<40;i++)if(V.rollItem(30,0,s,4).soc)bad.push(s+' rolled sockets');return [...new Set(bad)].slice(0,6)}`));
+
+await reset();
+await test('Only bosses and elites drop gems, with rarity set by zone', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P,count=()=>Object.values(P.gems).reduce((a,b)=>a+b,0),kill=(t,l)=>{const e=V.mkEnemy(t,l,P.x+400,P.y);V.G.enemies.push(e);return e};
+  const a=kill('wolf',5);V.killEnemy(a);if(count()!==0)bad.push('a normal monster dropped a gem');
+  V.enterMap('dunes');for(let i=0;i<6;i++){const before=count();V.killEnemy(kill('qassar',27));const n=count()-before;if(n<1||n>2)bad.push('boss gave '+n+' gems')}
+  for(const k in P.gems)if(V.gemParse(k).r!==1||V.gemParse(k).l!==1)bad.push('dunes boss gave '+k);
+  V.enterMap('vale');P.gems={};const el=kill('wolf',9);el.elite='v3';V.killEnemy(el);if(count()!==1)bad.push('an elite gave '+count());for(const k in P.gems)if(V.gemParse(k).r!==0)bad.push('Veylmoor elite gave '+k);return bad}`));
+
+await reset();
+await test('Fusing needs five matching gems and stops at level 5', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,k=V.gemKey('red',2,1),n=V.gemKey('red',2,2);P.gems={[k]:4};
+  if(V.gemFuse(k)||P.gems[k]!==4)bad.push('four gems fused');P.gems[k]=7;if(!V.gemFuse(k)||P.gems[k]!==2||P.gems[n]!==1)bad.push('five did not become one: '+JSON.stringify(P.gems));
+  const top=V.gemKey('red',2,5);P.gems={[top]:9};if(V.gemFuse(top)||P.gems[top]!==9)bad.push('a level 5 gem fused');
+  P.eq.weapon=V.rollItem(30,0,'weapon',4);P.eq.weapon.soc=[null];const s=V.gemKey('blue',0,1);P.gems={[s]:5};V.gemSocket(s,'weapon');if(V.gemFuse(s)||P.gems[s]!==4)bad.push('a socketed gem counted towards fusing');return bad}`));
+
+await reset();
+await test('Socketed gems change stats, come back when removed, and survive selling', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P;P.lvl=30;P.eq.weapon=V.rollItem(30,0,'weapon',4);P.eq.weapon.soc=[null,null];P.eq.helm=V.rollItem(30,0,'helm',4);V.recalc();
+  const red=V.gemKey('red',4,5),pur=V.gemKey('purple',4,5),a0=V.S.a.str,c0=V.S.crit;P.gems={[red]:1,[pur]:1};
+  if(V.gemSocket(red,'helm'))bad.push('a helm took a gem');if(V.gemSocket(V.gemKey('red',0,1),'weapon'))bad.push('a gem you do not own was set');
+  if(!V.gemSocket(red,'weapon')||!V.gemSocket(pur,'weapon'))bad.push('gem did not socket');V.recalc();if(V.S.a.str-a0!==V.gemBonus(red).v)bad.push('Strength rose by '+(V.S.a.str-a0));if(!(V.S.crit>c0))bad.push('Critical Chance did not rise');
+  if(Object.keys(P.gems).length)bad.push('socketed gems stayed in the tab');if(V.gemSocket(red,'weapon'))bad.push('a full item took another gem');
+  if(!V.gemRemove(P.eq.weapon,0)||P.gems[red]!==1||P.eq.weapon.soc[0]!==null)bad.push('removing did not return the gem');V.recalc();if(V.S.a.str!==a0)bad.push('Strength did not fall after removal');
+  const n=V.returnGems(P.eq.weapon);if(n!==1||P.gems[pur]!==1)bad.push('selling did not return the gem');return bad}`));
+
+await reset();
+await test('The Gem tab works by clicking', () => ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('thornstalker','Tester');const P=V.P;P.eq.cloak=V.rollItem(30,0,'cloak',4);P.eq.cloak.soc=[null];const k=V.gemKey('green',1,1);P.gems={[k]:6};V.openPanel('bag');const q=s=>document.querySelector('#book '+s),cl=s=>{const e=q(s);if(!e){bad.push('missing '+s);return false}e.click();return true};
+  if(!cl('[data-act="btab"][data-t="gem"]'))return bad;if(!cl('[data-act="selgem"]'))return bad;if(!cl('[data-act="gemfuse"]'))return bad;if(P.gems[k]!==1||P.gems[V.gemKey('green',1,2)]!==1)bad.push('fuse click: '+JSON.stringify(P.gems));
+  if(!q('[data-act="gemsock"]'))bad.push('no socket button');else cl('[data-act="gemsock"]');if(P.eq.cloak.soc[0]!==k)bad.push('socket click failed');
+  cl('[data-act="btab"][data-t="item"]');V.closePanel();return bad}`));
+
+await reset();
+await test('Gems and sockets survive saves, old saves and hero files', async () => {
+  const bad = await ev(`()=>{const V=window.__veyl,bad=[],K='veylmoor-hero-0';V.startNew('bulwark','Saver');const P=V.P,k=V.gemKey('yellow',3,2);P.gems={[k]:3};P.eq.charm=V.rollItem(30,0,'charm',4);P.eq.charm.soc=[k,null];dispatchEvent(new Event('pagehide'));
+   const d=V.readSlot(0);if(d.v!==5||d.gems[k]!==3||d.eq.charm.soc[0]!==k)bad.push('save lost gems');
+   const f=V.heroFileText(d),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else{const e=V.readSlot(r.slot);if(e.gems[k]!==3||e.eq.charm.soc[0]!==k)bad.push('hero file lost gems')}
+   const old={...d,v:4};delete old.gems;localStorage.setItem(K,JSON.stringify(old));const m=V.readSlot(0);if(m.v!==5||JSON.stringify(m.gems)!=='{}')bad.push('version 4 save did not upgrade');
+   const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});
+   const oldFile=V.importHeroText(signed(old));if(oldFile.err)bad.push('a version 4 hero file was refused');
+   for(const [n,h] of Object.entries({'unknown gem':{...g,gems:{'pink.0.1':1}},'gem level 9':{...g,gems:{'red.0.9':1}},'negative gems':{...g,gems:{[k]:-1}},'bad socket':{...g,eq:{...g.eq,charm:{...g.eq.charm,soc:['pink.0.1']}}},'too many sockets':{...g,eq:{...g.eq,charm:{...g.eq.charm,soc:[null,null,null,null]}}}}))if(!V.parseHeroFile(signed(h)).err)bad.push('accepted: '+n);
+   return bad}`);
+  return bad;
+});
 
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);

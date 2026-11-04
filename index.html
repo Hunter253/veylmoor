@@ -129,6 +129,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #zone .z1{font:600 12px/1 var(--f-body);letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px #000}
 #zone .z2{font:400 clamp(24px,calc(6*var(--vw)),38px)/1.1 var(--f-ui);color:#8be06a;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);margin-top:6px}
 #zone .z2::before{content:"- "}#zone .z2::after{content:" -"}
+.socs{display:grid;gap:4px;margin-top:6px}.socrow{display:flex;align-items:center;gap:6px;font-size:13px}.socrow span:nth-child(2){flex:1}.socic{width:22px;height:22px;flex:none;display:block}.socic.empty{box-sizing:border-box;border:1px dashed currentColor;border-radius:50%;opacity:.6}.socbtn{padding:3px 8px!important;font-size:12px!important}.gemnote{margin:10px 0 0;text-align:center;font-size:14px}.gemlv{position:absolute;left:3px;top:2px;font:800 12px var(--f-num);font-style:normal;color:#fff;text-shadow:0 1px 2px #000}
 .fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
 .sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
@@ -1059,6 +1060,25 @@ const SLOTS=['weapon','helm','chest','boots','charm','cloak'];
 const SLOTNAME={weapon:'Weapon',helm:'Head',chest:'Chest',boots:'Feet',charm:'Charm',cloak:'Cloak'};
 const SLOTICON={weapon:'sword',helm:'helm',chest:'chest',boots:'boots',charm:'charm',cloak:'cloak'};
 const RAR=[{n:'Common',c:'#c9cdc5',c2:'#dfe3dc'},{n:'Uncommon',c:'#72c45c',c2:'#9ae884'},{n:'Rare',c:'#5c9fe8',c2:'#8cc0ff'},{n:'Epic',c:'#b878ea',c2:'#d4a6ff'},{n:'Legendary',c:'#f09a44',c2:'#ffb868'}];
+/* ---- Gems: colour sets the stat, the zone sets the rarity, fusing raises the level. Gem keys read colour.rarity.level. ---- */
+const GEMCOL={red:{n:'Ruby',st:'str',c:'#e8524a'},green:{n:'Emerald',st:'agi',c:'#4fc46a'},blue:{n:'Sapphire',st:'int',c:'#4f8fe8'},yellow:{n:'Topaz',st:'vit',c:'#ecc04a'},purple:{n:'Amethyst',st:'crit',c:'#b070e8'}};
+const GEMPOW=[2,3,5,8,12],GEMLV=[1,1.8,3,5,8],GEMCRIT=.1,GEMMAXL=5,GEMFUSE=5,GEMDROP={bossN:1,bossExtra:.25,eliteN:1,mainBias:.5};
+const SOCKETS={2:[0,1],3:[1,2],4:[1,3]},SOCKSLOTS=new Set(['weapon','charm','cloak']);
+const gemKey=(c,r,l)=>`${c}.${r}.${l}`;
+function gemParse(k){const a=String(k).split('.');if(a.length!==3||!Object.prototype.hasOwnProperty.call(GEMCOL,a[0]))return null;const r=+a[1],l=+a[2];if(!Number.isInteger(r)||r<0||r>=GEMPOW.length||!Number.isInteger(l)||l<1||l>GEMMAXL)return null;return{c:a[0],r,l}}
+function gemBonus(k){const g=gemParse(k);if(!g)return null;const st=GEMCOL[g.c].st,v=GEMPOW[g.r]*GEMLV[g.l-1];return{st,v:st==='crit'?Math.round(v*GEMCRIT*10)/10:Math.round(v)}}
+function gemName(k){const g=gemParse(k);return g?`${RAR[g.r].n} ${GEMCOL[g.c].n}, level ${g.l}`:'Unknown gem'}
+function gemGive(k,q=1){P.gems[k]=(P.gems[k]||0)+q}
+function gemRollKey(area){const r=Math.max(0,AREA_ORDER.indexOf(area==='abbey'?'vale':area)),main=CLASSES[P.cls].main,cols=Object.keys(GEMCOL),pref=cols.find(c=>GEMCOL[c].st===main);return gemKey(R()<GEMDROP.mainBias&&pref?pref:pick(cols),r,1)}
+/* Returns the gem keys a defeated foe gives; bosses and elites only. */
+function awardGems(e){const boss=e.d&&e.d.boss;if(!boss&&!e.elite)return[];const area=(e.d&&e.d.area)||(G.map&&G.map.id)||'vale';let n=boss?GEMDROP.bossN+(R()<GEMDROP.bossExtra?1:0):GEMDROP.eliteN;const out=[];while(n-->0){const k=gemRollKey(area);gemGive(k);out.push(k)}return out}
+/* Five of one gem become one of the next level. Socketed gems aren't counted, because they have left P.gems. */
+function gemFuse(k){const g=gemParse(k);if(!g||g.l>=GEMMAXL||(P.gems[k]||0)<GEMFUSE)return false;P.gems[k]-=GEMFUSE;if(!P.gems[k])delete P.gems[k];gemGive(gemKey(g.c,g.r,g.l+1));return true}
+function gemSocket(k,slot){const it=P.eq[slot];if(!gemParse(k)||!it||!it.soc||!SOCKSLOTS.has(it.slot)||(P.gems[k]||0)<1)return false;const i=it.soc.indexOf(null);if(i<0)return false;it.soc[i]=k;P.gems[k]--;if(!P.gems[k])delete P.gems[k];return true}
+function gemRemove(it,i){if(!it||!it.soc||!it.soc[i])return false;gemGive(it.soc[i]);it.soc[i]=null;return true}
+function returnGems(it){let n=0;for(let i=0;it.soc&&i<it.soc.length;i++)if(gemRemove(it,i))n++;return n}
+function gemsValid(g){if(g==null)return true;if(typeof g!=='object'||Array.isArray(g))return false;for(const k of Object.keys(g))if(!gemParse(k)||!Number.isInteger(g[k])||g[k]<0||g[k]>1e6)return false;return true}
+function socketsValid(it){if(!it||it.soc==null)return true;return Array.isArray(it.soc)&&it.soc.length<=3&&it.soc.every(x=>x===null||!!gemParse(x))}
 const ATTR=['str','agi','int','vit'],ATTRN={str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality'};
 const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','cdr','mf'];
 const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find'};
@@ -1135,7 +1155,7 @@ function rollItem(lv,min=0,slot,rar){const ilvl=PL(lv);
  else if(rar===2)name=SPECPRE[sp[0]]+' '+mn+' '+bn;
  else if(rar===1)name=mn+' '+bn+' '+BEAST[keys[0]];
  else name=mn+' '+bn;
- const it={id:P.nid++,slot,rar,ilvl:lv,tier,st,name,base,mt:tier};if(at)it.at=at;if(rar===4)it.uq=LEG[slot].k;return it}
+ const it={id:P.nid++,slot,rar,ilvl:lv,tier,st,name,base,mt:tier};if(at)it.at=at;if(rar===4)it.uq=LEG[slot].k;const sr=SOCKETS[rar];if(sr&&SOCKSLOTS.has(slot)){const sn=ri(sr[0],sr[1]);if(sn)it.soc=Array(sn).fill(null)}return it}
 function itemBase(it){if(it.base)return;const h=(it.id*2654435761>>>0);if(it.slot==='weapon'){const L=CWEAP[P.cls];it.base=L[h%L.length]}else if(it.slot==='charm')it.base=['ring','amulet','trinket'][h%3];else if(it.slot==='cloak')it.base='cloak';else{it.base=it.slot;it.at=ARMT[P.cls]}it.mt=it.tier||tierOf(it.ilvl)}
 
 /* ================= Item pictures (drawn as SVG, 64x64) ================= */
@@ -1558,14 +1578,14 @@ let P=null,CLS=null,S=null;
 const G={mode:'title',map:null,maps:{},enemies:[],projs:[],fx:[],tele:[],areas:[],loot:[],texts:[],parts:[],timers:[],time:0,panel:null,zone:'',boss:null,near:null,tgt:null,shake:0,sel:null,saveT:0};
 const input={up:0,down:0,left:0,right:0,atk:false,sx:0,sy:0};
 const CAM={yaw:Math.PI,pitch:.5,zoom:1,lastDrag:-99,x:0,y:0,z:0,tx:0,ty:0,tz:0};
-function newPlayer(cls){return{cls,lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
+function newPlayer(cls){return{cls,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
 function talentSpent(){let s=0;for(const k in P.tal)s+=P.tal[k];return s}
 const talentPoints=()=>Math.max(0,P.lvl-1-talentSpent());
 function recalc(keep=true){
  const c=CLASSES[P.cls],L=PL(P.lvl),m=Object.assign(newTalMods(),{dmg:1,dmgB:1,dmg1:1,dmg2:1,dmg3:1,dmg4:1,dmg5:1,cdr:0,hpPct:0,crit:0,ls:0,mpReg:1,dr:0,spd:0,heal:1,cost:0,burn:1,bleed:1,shield:1});
  applyWeb(m);
  const g={wd:0,arm:0,str:0,agi:0,int:0,vit:0},uq={};for(const k of SPEC)g[k]=0;
- for(const sl of SLOTS){const it=P.eq[sl];if(!it)continue;for(const k in it.st)if(k in g)g[k]+=it.st[k];if(it.uq)uq[it.uq]=1}
+ for(const sl of SLOTS){const it=P.eq[sl];if(!it)continue;for(const k in it.st)if(k in g)g[k]+=it.st[k];for(const gk of it.soc||[]){const gb=gk&&gemBonus(gk);if(gb&&gb.st in g)g[gb.st]+=gb.v}if(it.uq)uq[it.uq]=1}
  if(uq.roots){m.spd+=0.15;m.dr+=0.08}if(uq.crown){m.mpReg+=0.25;m.cost+=0.15}if(uq.wings)m.dmg+=0.1;
  const a={};for(const k of ATTR)a[k]=Math.round(c.base[k]+c.grow[k]*(L-1)+g[k]);
  const hp0=c.hp-(c.base.str*3+c.base.vit*6),hpL0=Math.max(3,c.hpL-(c.grow.str*3+c.grow.vit*6)),mp0=c.mp-c.base.int*5,mpL0=Math.max(1,c.mpL-c.grow.int*5);
@@ -1698,6 +1718,7 @@ function killEnemy(e){
   if(q.kind!=='kill'&&q.kind!=='collect'&&q.kind!=='boss')continue;if(Array.isArray(q.target)?!q.target.includes(e.type):q.target!==e.type)continue;
   if(q.kind==='collect'){if(R()>(q.chance||.7))continue;txt(e.x,e.y,1.4,'+'+q.thing,'#bfe6c8',13)}qProgress(q)}
  if(S.uq.lantern)healP(S.maxHp*0.05);
+ for(const gk of awardGems(e))toast(`Found a gem: <b style="color:${GEMCOL[gemParse(gk).c].c}">${esc(gemName(gk))}</b>`,'lvl');
  if(e.d.boss){dropItem(e.x-18,e.y+6,rollItem(e.lvl+1,3,null,R()<0.05*(1+((S&&S.mf)||0)/100)?4:3));dropItem(e.x+18,e.y+6,rollItem(e.lvl,2));
   const ab=G.map.id==='abbey',area=e.d.area||'vale';if(ab)G.map.portals.push({x:e.x,y:e.y-60,rot:0,label:'Return to Hollowmere',to:'home'});G.boss=null;
   for(const f of G.enemies)if(!f.dead&&f!==e&&(ab||f.summoned))killEnemy(f);toast(esc(e.d.deathMsg||'The guardian falls.'),'lvl');shake(9);sfx('explode');nova(e.x,e.y,140,e.d.glow||'#ffd27a','#ffffff');
@@ -3126,6 +3147,12 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:20,date:'4 Nov 2026',title:'Gems and sockets',items:[
+  'Gems have arrived. Bosses always drop at least one, and so do the named monsters you hunt for quests. Later zones drop rarer gems.',
+  'Rubies add Strength, Emeralds Agility, Sapphires Intelligence, Topazes Vitality and Amethysts Critical Chance.',
+  'Rare and better weapons, charms and cloaks you find from now on can have sockets. Open your bag and use the Gem tab to set a gem in equipped gear.',
+  'Remove a gem for free at any time from the item it is in. Selling an item returns its gems.',
+  'Fuse five matching gems into one of the next level, up to level 5. Gems in sockets can\'t be fused.']},
  {id:19,date:'4 Nov 2026',title:'Five hero slots',items:[
   'You can now keep up to five heroes at once, each with their own progress. Your current hero is already in your first slot.',
   'Starting a new hero no longer replaces an old one. It takes the next empty slot, and you choose who to play from the title screen.',
@@ -3256,25 +3283,31 @@ function statLines(it){let h='';const st=it.st;
  if(st.wd)h+=`<div style="font-weight:700">${st.wd} Weapon Damage</div>`;if(st.arm)h+=`<div style="font-weight:700">${st.arm} Armor</div>`;
  for(const k of ATTR)if(st[k])h+=`<div>${fmtStat(k,st[k])} ${STATN[k]}${k===CLS.main?' <span style="color:var(--brass2)">◆</span>':''}</div>`;
  for(const k of SPEC)if(st[k])h+=`<div class="st g">${fmtStat(k,st[k])} ${STATN[k]}</div>`;return h}
-function itemCard(it,btns){return`<div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[it.rar].c}">${itemIcon(it)}</div><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div>
+function gemIcon(k){const g=gemParse(k);if(!g)return'';const c=GEMCOL[g.c].c;return`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8l20 14-8 30H20l-8-30z" fill="${c}" stroke="#1a1410" stroke-width="2"/><path d="M32 8v16M12 22l20 2 20-2M32 24L20 52M32 24l12 28" stroke="#fff" stroke-opacity=".45" fill="none"/></svg>`}
+function socketsHTML(it,rm){if(!it.soc||!it.soc.length)return'';return`<div class="socs">${it.soc.map((k,i)=>{const b=k&&gemBonus(k);return b?`<div class="socrow"><span class="socic">${gemIcon(k)}</span><span>${esc(gemName(k))}: +${b.v}${b.st==='crit'?'%':''} ${STATN[b.st]}</span>${rm?`<button class="cbtn socbtn" data-act="unsock" data-i="${i}">Remove</button>`:''}</div>`:`<div class="socrow"><span class="socic empty"></span><span>Empty socket</span></div>`}).join('')}</div>`}
+function gemTabHTML(){const keys=Object.keys(P.gems||{}).filter(k=>P.gems[k]>0&&gemParse(k)).sort((a,b)=>{const x=gemParse(a),y=gemParse(b),o=Object.keys(GEMCOL);return o.indexOf(x.c)-o.indexOf(y.c)||x.r-y.r||x.l-y.l});let h='';for(const k of keys){const g=gemParse(k);h+=`<button class="islot has" style="--rc:${RAR[g.r].c}" data-act="selgem" data-k="${k}" aria-label="${esc(gemName(k))}, ${P.gems[k]} owned">${gemIcon(k)}<i class="gemlv">${g.l}</i><i class="qty">${P.gems[k]}</i></button>`}for(let i=keys.length;i<18;i++)h+='<div class="islot"></div>';
+ return`<div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">${h}</div><p class="gemnote">${keys.length?'Tap a gem to fuse it or set it in a socket. Five matching gems fuse into one of the next level.':'Gems drop from bosses and elites. Set them in the sockets of Rare and better weapons, charms and cloaks.'}</p></div>`}
+function gemTip(k){const g=gemParse(k),q=(P.gems||{})[k]||0;if(!g||!q){G.tip=null;return''}const b=gemBonus(k),open=SLOTS.filter(s=>{const it=P.eq[s];return it&&it.soc&&it.soc.includes(null)});
+ return`<div class="tipwrap"><div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[g.r].c}">${gemIcon(k)}</div><b style="color:${RAR[g.r].c2}">${esc(gemName(k))}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div><div class="split"><span>Gem · you have ${q}</span><span>${RAR[g.r].n}</span></div><div class="st g">+${b.v}${b.st==='crit'?'%':''} ${STATN[b.st]}</div><div class="ic-btns"><button class="cbtn" data-act="gemfuse" ${q>=GEMFUSE&&g.l<GEMMAXL?'':'disabled'}>${g.l>=GEMMAXL?'Highest level':`Fuse ${GEMFUSE} into level ${g.l+1}`}</button></div>${open.length?`<div class="ic-btns">${open.map(s=>`<button class="cbtn" data-act="gemsock" data-slot="${s}">Set in ${esc(P.eq[s].name)}</button>`).join('')}</div>`:'<div style="color:var(--ink2);margin-top:8px">None of your equipped gear has an empty socket.</div>'}</div></div>`}
+function itemCard(it,btns,rm){return`<div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[it.rar].c}">${itemIcon(it)}</div><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div>
  <div>${it.rar>=2?'Binds when picked up':'Binds when equipped'}</div><div class="split"><span>${esc(itemKind(it))} · Tier ${TIERR[it.tier||tierOf(it.ilvl)]}</span><span>${RAR[it.rar].n}</span></div>${statLines(it)}<div style="color:var(--ink2)">Item level ${it.ilvl}</div>
- ${it.uq?`<div class="legfx">Equip: ${esc(legByKey(it.uq).d)}</div>`:''}${btns?`<div class="ic-btns">${btns}</div>`:''}</div>`}
+ ${it.uq?`<div class="legfx">Equip: ${esc(legByKey(it.uq).d)}</div>`:''}${socketsHTML(it,rm)}${btns?`<div class="ic-btns">${btns}</div>`:''}</div>`}
 function cmpCard(it){const cur=P.eq[it.slot];if(!cur)return`<div class="icard"><div class="ic-h"><b>Equipment Comparison</b></div><div>Nothing is equipped in this slot. Equipping this is a straight upgrade.</div></div>`;
  let h='';for(const k of['wd','arm',...ATTR,...SPEC]){const d=(it.st[k]||0)-(cur.st[k]||0);if(Math.abs(d)<.05)continue;const v=PCT.has(k)?Math.abs(d).toFixed(1).replace(/\.0$/,'')+'%':RATE.has(k)?Math.abs(d).toFixed(1)+'/s':Math.abs(Math.round(d));h+=`<div class="st ${d>0?'g':'r'}">${d>0?'+':'-'}${v} ${STATN[k]}</div>`}
  return`<div class="icard"><div class="ic-h"><b>Equipment Comparison</b></div><div style="color:${RAR[cur.rar].c2};font:400 17px var(--f-ui)">${esc(cur.name)}</div>${h||'<div>No difference in stats.</div>'}${cur.uq&&!it.uq?'<div class="st r">Loses its legendary effect</div>':''}</div>`}
-function tipHTML(){const tp=G.tip;if(!tp)return'';const it=tp.src==='eq'?P.eq[tp.slot]:P.bag[tp.idx];if(!it){G.tip=null;return''}
+function tipHTML(){const tp=G.tip;if(!tp)return'';if(tp.src==='gem')return gemTip(tp.k);const it=tp.src==='eq'?P.eq[tp.slot]:P.bag[tp.idx];if(!it){G.tip=null;return''}
  if(it.slot==='use')return consTip(it);
  if(it.slot==='mat'){const D={ore:'Ore for the forge. Take it to any shop and use the Craft tab.',herb:'Brewed into tonics, and needed to forge gear at any shop.',gem:'A crystal needed to forge Rare and better gear.'};
   return`<div class="tipwrap"><div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[it.rar].c}">${itemIcon(it)}</div><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div><div class="split"><span>Material · stack of ${it.qty}</span><span>${RAR[it.rar].n}</span></div><div>${D[it.fam]}</div><div style="color:var(--ink2)">Worth ${matValue(it.fam,it.g)} gold each</div><div class="ic-btns"><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell all'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button></div></div></div>`}
  let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip">Equip</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
- return`<div class="tipwrap">${itemCard(it,btns)}${tp.src==='bag'?cmpCard(it):''}</div>`}
+ return`<div class="tipwrap">${itemCard(it,btns,true)}${tp.src==='bag'?cmpCard(it):''}</div>`}
 const ANG={helm:-90,charm:-30,boots:30,weapon:150,chest:180,cloak:-150};
 function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold').textContent=P?P.gold:0;$h('bkGold').parentElement.style.visibility=G.mode==='play'?'':'hidden';let h='',title='';
  if(k==='bag'){title='Bag';const cap=bagCap(),cells=cap+(cap<BAGMAX?1:0),pages=Math.max(1,Math.ceil(cells/18));G.bagPage=clamp(G.bagPage||0,0,pages-1);const pg=G.bagPage;
-  h=`<div class="tabs"><button class="tab on">${svg('bag')}Item</button><button class="tab" data-act="tipnone" disabled style="opacity:.55">${svg('gem')}Gem</button></div><div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">`;
+  const gt=G.bagTab==='gem';h=`<div class="tabs"><button class="tab ${gt?'':'on'}" data-act="btab" data-t="item">${svg('bag')}Item</button><button class="tab ${gt?'on':''}" data-act="btab" data-t="gem">${svg('gem')}Gem</button></div>`;if(gt)h+=gemTabHTML();else{h+=`<div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">`;
   for(let c=pg*18;c<pg*18+18;c++){if(c<cap){const it=P.bag[c];h+=it?`<button class="islot has" style="--rc:${RAR[it.rar].c}" data-act="selbag" data-idx="${c}" aria-label="${esc(it.name)}">${itemIcon(it)}${better(it)?'<i class="upm">▲</i>':''}${it.slot==='mat'||it.slot==='use'?`<i class="qty">${it.qty}</i>`:''}</button>`:'<div class="islot"></div>'}
    else if(c===cap&&cap<BAGMAX){const pr=bagCost();h+=`<button class="bslot" data-act="bagx" ${P.gold<pr?'disabled style="opacity:.6"':''}><span>+6 slots</span><b>${pr}<i class="coin"></i></b></button>`}else h+='<div></div>'}
-  h+=`</div><div class="pager"><button class="parr l" data-act="bpg" data-d="-1" ${pg<=0?'disabled':''} aria-label="Previous page"></button><span>${pg+1} / ${pages}</span><button class="parr r" data-act="bpg" data-d="1" ${pg>=pages-1?'disabled':''} aria-label="Next page"></button>${P.bag.some(x=>x.rar===0&&x.slot!=='mat'&&x.slot!=='use')?'<button class="cbtn side" data-act="salvageCommon" style="font-size:13px;padding:7px 10px">Sell Commons</button>':''}</div><div style="position:absolute;left:16px;bottom:14px;font:700 13px var(--f-num);color:var(--ink2)">${P.bag.length} / ${cap}</div></div>`}
+  h+=`</div><div class="pager"><button class="parr l" data-act="bpg" data-d="-1" ${pg<=0?'disabled':''} aria-label="Previous page"></button><span>${pg+1} / ${pages}</span><button class="parr r" data-act="bpg" data-d="1" ${pg>=pages-1?'disabled':''} aria-label="Next page"></button>${P.bag.some(x=>x.rar===0&&x.slot!=='mat'&&x.slot!=='use')?'<button class="cbtn side" data-act="salvageCommon" style="font-size:13px;padding:7px 10px">Sell Commons</button>':''}</div><div style="position:absolute;left:16px;bottom:14px;font:700 13px var(--f-num);color:var(--ink2)">${P.bag.length} / ${cap}</div></div>`}}
  else if(k==='char'){title='Character';const tab=G.charTab||'eq';h=`<div class="tabs"><button class="tab ${tab==='eq'?'on':''}" data-act="ctab" data-t="eq">${svg('helm')}Equipment</button><button class="tab ${tab==='attr'?'on':''}" data-act="ctab" data-t="attr">${svg('person')}Attributes</button></div>`;
   if(tab==='eq'){h+=`<div class="eqwrap"><div class="eqring"><div class="eqbg"></div><canvas id="doll" class="doll"></canvas>${SLOTS.map(s=>{const an=ANG[s]*Math.PI/180,x=50+42*Math.cos(an),y=50+42*Math.sin(an),it=P.eq[s];
     return`<button class="islot eqs ${it?'has':''}" style="left:${x}%;top:${y}%;${it?`--rc:${RAR[it.rar].c}`:''}" ${it?`data-act="seleq" data-slot="${s}"`:''} aria-label="${SLOTNAME[s]}${it?': '+esc(it.name):' (empty)'}">${it?itemIcon(it):`<span class="ghost">${svg(SLOTICON[s])}</span>`}</button>`}).join('')}</div>
@@ -3343,11 +3376,15 @@ const SHOPLIST=()=>{const fk=zoneFood(G.map&&G.map.id),F=FOODS[fk];return[{id:'f
 $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){closePanel();return}if(t.classList&&t.classList.contains('tipwrap')){G.tip=null;G.confirm=null;renderPanel();return}
  const nb=t.closest('[data-nav]');if(nb){openPanel(nb.dataset.nav);return}const b=t.closest('[data-act]');if(!b||b.disabled)return;const act=b.dataset.act;
  if(act==='close')return closePanel();if(act==='respawn')return respawn();if(act==='tipclose'){G.tip=null;G.confirm=null}
+ if(act==='btab'){G.bagTab=b.dataset.t;G.tip=null;G.confirm=null}if(act==='selgem'){G.tip={src:'gem',k:b.dataset.k};G.confirm=null}
+ if(act==='gemfuse'&&G.tip&&gemFuse(G.tip.k)){sfx('lvl',.5);const g=gemParse(G.tip.k);toast(`You made a <b>${esc(gemName(gemKey(g.c,g.r,g.l+1)))}</b>.`,'lvl');if(!P.gems[G.tip.k])G.tip=null;save()}
+ if(act==='gemsock'&&G.tip&&gemSocket(G.tip.k,b.dataset.slot)){sfx('lvl',.5);if(!P.gems[G.tip.k])G.tip=null;recalc();save()}
+ if(act==='unsock'&&G.tip){const it=G.tip.src==='eq'?P.eq[G.tip.slot]:P.bag[G.tip.idx];if(gemRemove(it,+b.dataset.i)){recalc();save()}}
  if(act==='selbag'){G.tip={src:'bag',idx:+b.dataset.idx};G.confirm=null}if(act==='seleq'){G.tip={src:'eq',slot:b.dataset.slot};G.confirm=null}
  if(act==='usecons'){const it=P.bag[G.tip.idx];if(it&&it.kind==='food')eatFood(G.tip.idx);else if(it&&it.kind==='tonic'){if(P.potCd>0)toast('You can drink another tonic in a moment.','warn');else{usePotion();if(!P.bag[G.tip.idx]||P.bag[G.tip.idx]!==it)G.tip=null}}}
  if(act==='equip'){const it=P.bag[G.tip.idx];if(!it||it.slot==='mat'||it.slot==='use')return;const old=P.eq[it.slot];P.eq[it.slot]=it;if(old)P.bag[G.tip.idx]=old;else P.bag.splice(G.tip.idx,1);recalc();G.tip=null;toast(`Equipped <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`);save()}
  if(act==='unequip'){const it=P.eq[G.tip.slot];if(P.bag.length<bagCap()){delete P.eq[G.tip.slot];P.bag.push(it);recalc();G.tip=null;save()}}
- if(act==='salvage'){const it=P.bag[G.tip.idx];if((it.rar>=2||it.slot==='mat'||it.slot==='use')&&G.confirm!==it.id)G.confirm=it.id;else{P.bag.splice(G.tip.idx,1);P.gold+=itemValue(it);G.tip=null;G.confirm=null;save()}}
+ if(act==='salvage'){const it=P.bag[G.tip.idx];if((it.rar>=2||it.slot==='mat'||it.slot==='use')&&G.confirm!==it.id)G.confirm=it.id;else{P.bag.splice(G.tip.idx,1);P.gold+=itemValue(it);if(returnGems(it))toast('The gems from that item went back to your Gem tab.');G.tip=null;G.confirm=null;save()}}
  if(act==='bpg')G.bagPage=(G.bagPage||0)+(+b.dataset.d);
  if(act==='bagx'){const pr=bagCost();if(P.gold>=pr&&bagCap()<BAGMAX){P.gold-=pr;P.bagMax=bagCap()+6;toast('Your bag grows by 6 slots.');save()}}
  if(act==='salvageCommon'){let g=0;P.bag=P.bag.filter(it=>{if(it.rar===0&&it.slot!=='mat'&&it.slot!=='use'){g+=itemValue(it);return false}return true});P.gold+=g;if(g)toast(`Sold common items for ${g} gold.`);save()}
@@ -3378,7 +3415,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
    if(s.cons){addCons(...s.cons);sfx('loot');toast(`Bought <b>${esc(s.n)}</b>`)}else{const it=s.id==='cloak'?rollItem(P.lvl,0,'cloak',1):rollItem(P.lvl,1);addToBag(it);toast(`Bought <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`)}save()}}
  if(act==='travel'){const id=b.dataset.id;closePanel();P.auto=false;P.cast={i:-2,t:0,max:1.6,name:'Teleporting to '+AREAS[id].town,dest:id};G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.6});return}
  if(act==='sellsel'){G.sellSel=+b.dataset.idx;G.confirm=null}
- if(act==='sell'){const i=+b.dataset.idx,it=P.bag[i];if(it){if((it.rar>=2||it.slot==='mat'||it.slot==='use')&&G.confirm!==it.id)G.confirm=it.id;else{P.bag.splice(i,1);P.gold+=itemValue(it);G.confirm=null;save()}}}
+ if(act==='sell'){const i=+b.dataset.idx,it=P.bag[i];if(it){if((it.rar>=2||it.slot==='mat'||it.slot==='use')&&G.confirm!==it.id)G.confirm=it.id;else{P.bag.splice(i,1);P.gold+=itemValue(it);if(returnGems(it))toast('The gems from that item went back to your Gem tab.');G.confirm=null;save()}}}
  renderPanel()});
 
 /* ================= World map ================= */
@@ -3556,14 +3593,14 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:4,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
 function noteBadSave(){showNotice("We couldn't read your saved hero. A copy has been kept, and starting a new hero won't erase it. Copy it and email it to wardensofveylmoor@gmail.com if you'd like us to try to repair it.",[['Copy saved hero',()=>{let s='';try{s=localStorage.getItem(BADKEY)||''}catch(_){}copyText(s)}],['Dismiss',null]])}
 /* ---- Hero slots. Each hero has its own storage key, so damage to one can't touch the others.
    The old single save is copied in once and left in place as a backup. ---- */
-const HEROSLOTS=5,SLOTFLAG='veylmoor-slots-v1',LASTKEY='veylmoor-last-slot',SAVEV=4;let curSlot=0,slotsDone=false;
+const HEROSLOTS=5,SLOTFLAG='veylmoor-slots-v1',LASTKEY='veylmoor-last-slot',SAVEV=5;let curSlot=0,slotsDone=false;
 const slotKey=i=>'veylmoor-hero-'+i,slotOf=t=>typeof t==='string'&&t.startsWith('slot:')?+t.slice(5):-1;
 function ensureSlots(){if(slotsDone)return;slotsDone=true;try{if(!localStorage.getItem(SLOTFLAG)){const old=localStorage.getItem(SAVEKEY);if(old){let i=0;while(i<HEROSLOTS&&localStorage.getItem(slotKey(i)))i++;if(i<HEROSLOTS)localStorage.setItem(slotKey(i),old)}localStorage.setItem(SLOTFLAG,'1')}const l=+localStorage.getItem(LASTKEY);if(l>=0&&l<HEROSLOTS)curSlot=l}catch(_){}}
 function slotRaw(i){ensureSlots();try{return localStorage.getItem(slotKey(i))}catch(_){return null}}
@@ -3574,7 +3611,7 @@ function freeSlot(){for(let i=0;i<HEROSLOTS;i++)if(!slotRaw(i))return i;return -
 function anySave(){for(let i=0;i<HEROSLOTS;i++)if(slotRaw(i))return true;return false}
 function useSlot(i){curSlot=i;try{localStorage.setItem(LASTKEY,String(i))}catch(_){}}
 /* ---- Hero files: export and import. The check catches damage and casual edits; it isn't anti-cheat. ---- */
-const HEROFIELDS=['v','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
+const HEROFIELDS=['v','gems','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
 function heroCheck(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)}
 function heroFileText(d){const hero={};for(const k of HEROFIELDS)if(d[k]!==undefined)hero[k]=d[k];return JSON.stringify({game:'wardens-of-veylmoor',format:1,exported:new Date().toISOString(),check:heroCheck(JSON.stringify(hero)),hero})}
 function heroSafe(o,depth=0){if(depth>8)return false;if(typeof o==='string')return o.length<=300&&!/[<>]/.test(o);if(typeof o==='number')return Number.isFinite(o);if(o===null||typeof o==='boolean')return true;if(typeof o!=='object')return false;for(const k of Object.keys(o)){if(k==='__proto__'||k==='constructor'||k==='prototype'||!heroSafe(k,depth+1)||!heroSafe(o[k],depth+1))return false}return true}
@@ -3583,14 +3620,14 @@ function parseHeroFile(text){const NOT="That file isn't a Wardens of Veylmoor he
  if(heroCheck(JSON.stringify(f.hero))!==f.check)return{err:BAD};if(!heroSafe(f.hero))return{err:BAD};if((f.hero.v||0)>SAVEV)return{err:"That hero comes from a newer version of the game. Reload the game to update it, then try again."};
  const h=f.hero,d={};for(const k of HEROFIELDS)if(h[k]!==undefined)d[k]=h[k];let m;try{m=migrateSave(d)}catch(_){return{err:BAD}}
  const num=(v,a,b)=>typeof v==='number'&&v>=a&&v<=b,obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
- if(!CLASSES[m.cls]||!Number.isInteger(m.lvl)||!num(m.lvl,1,MAXL)||!num(m.xp,0,1e12)||!num(m.gold,0,1e12)||!num(m.x,-1e7,1e7)||!num(m.y,-1e7,1e7)||typeof m.name!=='string'||!m.name||m.name.length>40||!Array.isArray(m.bag)||m.bag.length>200||!obj(m.eq)||!obj(m.q)||(m.tal&&!obj(m.tal))||(m.bosses&&!obj(m.bosses)))return{err:BAD};return{d:m}}
+ if(!CLASSES[m.cls]||!Number.isInteger(m.lvl)||!num(m.lvl,1,MAXL)||!num(m.xp,0,1e12)||!num(m.gold,0,1e12)||!num(m.x,-1e7,1e7)||!num(m.y,-1e7,1e7)||typeof m.name!=='string'||!m.name||m.name.length>40||!Array.isArray(m.bag)||m.bag.length>200||!obj(m.eq)||!obj(m.q)||(m.tal&&!obj(m.tal))||(m.bosses&&!obj(m.bosses))||!gemsValid(m.gems)||!m.bag.every(socketsValid)||!Object.values(m.eq).every(socketsValid))return{err:BAD};return{d:m}}
 function importHeroText(text){const r=parseHeroFile(text);if(r.err)return r;const i=freeSlot();if(i<0)return{err:"All five hero slots are full. Delete a hero to make room, then import again."};try{localStorage.setItem(slotKey(i),JSON.stringify(r.d))}catch(_){return{err:"Your browser's storage is full or blocked, so the hero couldn't be imported."}}return{slot:i,name:r.d.name}}
 function exportHero(i){const d=readSlot(i);if(!d)return;const u=URL.createObjectURL(new Blob([heroFileText(d)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download=`${String(d.name).replace(/[^a-zA-Z0-9_-]+/g,'') || 'hero'}-level-${d.lvl}.veylmoor.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
 function pickHeroFile(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.addEventListener('change',async()=>{const f=inp.files&&inp.files[0];if(!f)return;let r;if(f.size>2e6)r={err:"That file isn't a Wardens of Veylmoor hero."};else{try{r=importHeroText(await f.text())}catch(_){r={err:"That file couldn't be read."}}}
   if(r.err){showNotice(r.err,[['Dismiss',null]]);return}titleSel='slot:'+r.slot;titleConfirm=false;renderTitle();showNotice(`${r.name} joined your heroes.`,[['Dismiss',null]])});inp.click()}
 /* Saves before v4 used levels 1-25. Map each level to its new place on the 1-50 scale and keep progress through it. */
-function migrateSave(d){if(!d||(d.v||0)>=4)return d;const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);
- d.xp=L>=25?0:Math.round((d.xp||0)/old(L)*XPN(nl));d.lvl=nl;const up=it=>{if(it&&it.ilvl)it.ilvl=2*it.ilvl-1};(d.bag||[]).forEach(up);for(const k in d.eq||{})up(d.eq[k]);d.v=4;return d}
+function migrateSave(d){if(!d)return d;if((d.v||0)<4){const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);
+ d.xp=L>=25?0:Math.round((d.xp||0)/old(L)*XPN(nl));d.lvl=nl;const up=it=>{if(it&&it.ilvl)it.ilvl=2*it.ilvl-1};(d.bag||[]).forEach(up);for(const k in d.eq||{})up(d.eq[k]);d.v=4}if(d.v<5){d.gems=d.gems||{};d.v=5}return d}
 function clearSave(){try{localStorage.removeItem(slotKey(curSlot))}catch(_){}}
 addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 const NAMES={reaver:['Grimm','Brakka','Ulfar','Kestra'],bulwark:['Aldric','Brenna','Torvald','Hesketh'],ashcaller:['Embra','Corvin','Ysra','Kaelen'],thornstalker:['Wren','Fennick','Rook','Sable'],lumen:['Lumi','Aurel','Seraphine','Ione']};
@@ -3668,7 +3705,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
