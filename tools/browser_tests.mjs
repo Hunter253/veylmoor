@@ -720,6 +720,28 @@ await test('After the Sun-King, a second envoy takes the crown, and the Keeper w
   V.openPanel('npc','envoy2');const a=document.querySelector('#book [data-act="accept"][data-q="d14"]');if(!a)bad.push('the envoy offers nothing');else a.click();V.closePanel(true);tick();if(G.map.npcs.includes('envoy2'))bad.push('the envoy stayed');if(V.qTurn(V.QUESTS.find(q=>q.id==='d14'))!=='hassa')bad.push('the crown is reported to the wrong person');
   P.q.d14={s:'done',n:1};tick();if(G.panelArg!=='k3')bad.push('no letter after the crown: '+G.panel+' '+G.panelArg);V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
 
+// Story part 3: Act III, The Pale Mother.
+await reset();
+await test('Act III data is sound: the carving, the pup by the den, the Keeper in Kellhold', () => ev(`()=>{const V=window.__veyl,bad=[],Q=id=>V.QUESTS.find(q=>q.id===id);V.startNew('bulwark','Tester');
+  if(!/collared wolf/.test(JSON.stringify(Q('f9').spots)))bad.push('the carving is missing from f9');const c=Q('f11');if(!c||!c.choice)bad.push('no pup choice');else for(const[k,o]of Object.entries(c.choice.opts))if(!V.NPCS[o.turn]||!o.done||!o.result)bad.push(k+' is incomplete');
+  if(!Q('f12')||!Q('f12').scene||Q('f12').scene.length<3)bad.push('no stronghold scene');if(!/collar/.test(V.EN.hrimfang.deathMsg))bad.push('the collar does not break');
+  V.enterMap('frost');const m=V.G.map,n=V.NPCS.keeper,v=m.get(Math.floor(n.x),Math.floor(n.y)),town=m.zones.find(z=>z.s==='Town');if(v<0||V.SOLID[v])bad.push('the Keeper stands on blocked ground');if(town&&!(n.x>=town.x0&&n.x<=town.x1&&n.y>=town.y0&&n.y<=town.y1))bad.push('the Keeper is outside Kellhold');
+  for(const o of Object.values(V.NPCS))if(o!==n&&o.town===n.town&&Math.hypot(o.x-n.x,o.y-n.y)<1.5)bad.push('the Keeper stands on '+o.name);const[x,y]=V.walkSpot(m,16.5,12.5),w=m.get(Math.floor(x),Math.floor(y));if(w<0||V.SOLID[w]||Math.hypot(x-16.5,y-12.5)>3)bad.push('the pup is not on open ground');
+  if(m.arena&&Math.hypot(x-m.arena.x,y-m.arena.y)<m.arena.r+2)bad.push('the pup is inside the boss arena');V.enterMap('vale',V.G.maps.vale.start);return bad}`));
+
+await test('The pup choice: saving it goes to Odette, leaving it gives Brun a cloak', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];const run=k=>{V.startNew('reaver','T'+k);const P=V.P;P.lvl=31;for(const id of ['d8','f1','f3','f2','f10'])P.q[id]={s:'done',n:1};V.enterMap('frost');V.closePanel(true);G.enemies=[];
+   const f11=V.QUESTS.find(q=>q.id==='f11');if(!V.qAvail(f11))bad.push(k+': not offered');P.q.f11={s:'active',n:0,got:[]};V.refreshQuestWorld();const node=G.nodes.find(o=>o.q.id==='f11');if(!node){bad.push(k+': no pup');return}V.useNode(node);
+   const b=document.querySelector('#book [data-act="choose"][data-k="'+k+'"]');if(!b){bad.push(k+': no button');return}b.click();const who=V.qTurn(f11),np=V.NPCS[who];P.x=np.x*32;P.y=np.y*32;V.update(1/30);
+   const bag0=P.bag.length;V.openPanel('npc',who);const t=document.querySelector('#book [data-act="turnin"][data-q="f11"]');if(!t)bad.push(k+': cannot hand in to '+who);else t.click();if(P.q.f11.s!=='done')bad.push(k+': not finished');return{who,got:P.bag.length-bag0,pup:V.storyS().f.pup}};
+  const sv=run('save'),lv=run('leave');if(!sv||!lv)return bad;if(sv.who!=='odette')bad.push('saving goes to '+sv.who);if(lv.who!=='brun')bad.push('leaving goes to '+lv.who);if(sv.got!==0)bad.push('saving the pup gave '+sv.got+' items');if(lv.got!==1)bad.push('leaving the pup gave '+lv.got+' items, not a cloak');
+  if(sv.pup!=='save'||lv.pup!=='leave')bad.push('the choice was not kept');V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+await test('After the Mother, the Keeper appears, shows the sealed door, and writes once more', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[],tick=()=>{G.storyT=0;V.storyTick(1)};V.startNew('lumen','Tester');const P=V.P;P.lvl=33;V.enterMap('frost');G.enemies=[];V.closePanel(true);tick();
+  if(G.map.npcs.includes('keeper'))bad.push('the Keeper is there before the Mother');P.q.f5={s:'done',n:1};tick();if(!G.map.npcs.includes('keeper'))bad.push('no Keeper after the Mother');const np=V.NPCS.keeper;P.x=np.x*32;P.y=np.y*32;V.update(1/30);
+  V.openPanel('npc','keeper');const a=document.querySelector('#book [data-act="accept"][data-q="f12"]');if(!a)bad.push('the Keeper offers nothing');else a.click();if(G.panel!=='scene')bad.push('no scene: '+G.panel);if(!/smell of broken seals/.test(document.querySelector('#book').innerText))bad.push('the voice is missing');
+  document.querySelector('#book [data-act="close"]').click();if(G.panel)bad.push('the scene did not close');if(!V.storyS().f.f12)bad.push('the scene was not remembered');tick();if(G.map.npcs.includes('keeper'))bad.push('the Keeper stayed');
+  if(!P.q.f12||P.q.f12.s!=='ready'||V.qTurn(V.QUESTS.find(q=>q.id==='f12'))!=='odette')bad.push('f12 is not ready for Odette');P.q.f12.s='done';tick();if(G.panelArg!=='k4')bad.push('no letter after the scene');V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
