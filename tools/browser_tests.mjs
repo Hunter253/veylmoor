@@ -319,6 +319,29 @@ await test('Professions survive saves and hero files, and old heroes can still c
   const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});if(!V.parseHeroFile(signed({...g,prof:'wizard'})).err)bad.push('accepted a made-up profession');if(!V.parseHeroFile(signed({...g,prof:'constructor'})).err)bad.push('accepted constructor as a profession');
   const old={...d};delete old.prof;V.loadSave(old);if(V.P.prof!==null)bad.push('an old hero arrived with '+V.P.prof);if(!V.profChoose('metal'))bad.push('an old hero could not choose');return bad}`));
 
+await reset();
+await test('Forging earns rank, better forges earn more, and nothing is locked', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,R=V.PROFRANK;P.prof='metal';P.gold=1e7;const give=g=>{V.addMat('ore',g,20);V.addMat('herb',g,12);V.addMat('gem',g,6)};
+  if(V.profRank(0)!==0||V.profRank(R.xp[1]-1)!==0||V.profRank(R.xp[1])!==1||V.profRank(R.xp[4])!==4||V.profRank(1e9)!==4)bad.push('rank thresholds are wrong');
+  give(5);if(!V.canForge(5))bad.push('a Novice was locked out of the Legendary forge');V.forge(5,'helm');if(P.profXp!==R.gradeXp[5])bad.push('Legendary forge gave '+P.profXp+' XP');P.profXp=0;give(1);V.forge(1,'helm');if(P.profXp!==R.gradeXp[1])bad.push('Common forge gave '+P.profXp+' XP');
+  for(let g=2;g<=5;g++)if(!(R.gradeXp[g]>R.gradeXp[g-1]))bad.push('grade '+g+' does not earn more');
+  const before=P.profXp;P.gold=0;give(1);V.forge(1,'helm');if(P.profXp!==before)bad.push('a refused forge gave XP');P.gold=1e7;V.addMat('herb',1,3);V.brew();if(P.profXp!==before)bad.push('brewing gave forge XP');
+  P.profXp=R.xp[3];P.lvl=10;const fee=V.profFee();P.gold=fee;if(!V.profSwitch('cloth')||P.profXp!==0||V.profRank()!==0)bad.push('switching did not reset rank');return bad}`));
+
+await reset();
+await test('Rank bonuses stay within the rules', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const R=V.PROFRANK,F=V.forgeRar;
+  for(let g=1;g<=5;g++){const base=[0,1,2,2,3,3][g];if(F(g,0,g===5?V.FORGELEG:0)!==base)bad.push('a Novice got a bonus at forge '+g)}
+  if(F(1,4,R.rarity[4]-.001)!==2||F(1,4,R.rarity[4])!==1)bad.push('Master bonus chance is wrong at forge 1');if(F(2,4,0)!==3||F(3,4,0)!==3)bad.push('Rare forges should reach Epic with the bonus');if(F(4,4,0)!==3)bad.push('the Epic forge made Legendary');
+  if(F(5,0,V.FORGELEG-.001)!==4)bad.push('Legendary forge lost its base chance');if(F(5,4,V.FORGELEG+R.rarity[4]-.001)!==4||F(5,4,V.FORGELEG+R.rarity[4])!==3)bad.push('Master bonus chance is wrong at the Legendary forge');
+  const mk=(rar,s,n)=>{const i={slot:s,rar};if(n!=null)i.soc=Array(n).fill(null);return i},S=V.forgeSocket;
+  if(S(mk(2,'weapon'),0,0))bad.push('a Novice got an extra socket');let a=mk(2,'weapon');if(!S(a,4,0)||a.soc.length!==1)bad.push('Master got no socket on Rare');a=mk(2,'weapon',1);if(S(a,4,0)||a.soc.length!==1)bad.push('Rare went past 1 socket');a=mk(3,'charm',2);if(S(a,4,0))bad.push('Epic went past 2 sockets');a=mk(4,'cloak',3);if(S(a,4,0))bad.push('Legendary went past 3 sockets');a=mk(4,'cloak',2);if(!S(a,4,0)||a.soc.length!==3)bad.push('Legendary could not reach 3 sockets');
+  if(S(mk(4,'helm'),4,0))bad.push('a helm got a socket');if(S(mk(1,'weapon'),4,0))bad.push('Uncommon gear got a socket');if(S(mk(2,'weapon'),4,R.socket[4]))bad.push('socket chance boundary is wrong');
+  const P=V.P;P.prof='metal';P.gold=1e7;P.profXp=R.xp[4];const seen={};for(let i=0;i<400;i++){V.addMat('ore',1,6);V.addMat('herb',1,3);P.bag=P.bag.filter(x=>x.slot==='mat');V.forge(1,'weapon');const it=P.bag.find(x=>x.slot==='weapon');if(it){seen[it.rar]=(seen[it.rar]||0)+1;if(it.rar===2&&(it.soc||[]).length>1)bad.push('forged a Rare with too many sockets');if(it.rar===1&&it.soc)bad.push('forged an Uncommon with a socket')}}if(!seen[1]||!seen[2])bad.push('a Master never saw the bonus: '+JSON.stringify(seen));return [...new Set(bad)]}`));
+
+await reset();
+await test('Rank shows on the Craft tab and survives saves and hero files', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Saver');const P=V.P,R=V.PROFRANK;P.prof='cloth';P.profXp=R.xp[2];V.openPanel('shop','pell');const q=x=>document.querySelector('#book '+x);q('[data-act="shtab"][data-t="craft"]').click();const tx=q('.profhead').innerText;if(!/Journeyman/.test(tx))bad.push('rank not shown: '+tx);P.gold=1e5;V.closePanel();V.openPanel('shop','pell');const sw=q('[data-act="profswitch"][data-k="metal"]');sw.click();if(!/rank resets/.test(q('[data-act="profswitch"][data-k="metal"]').innerText))bad.push('no warning before rank resets');V.closePanel();
+  dispatchEvent(new Event('pagehide'));const d=V.readSlot(0);if(d.profXp!==R.xp[2])bad.push('save lost rank');const f=V.heroFileText(d),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else if(V.readSlot(r.slot).profXp!==R.xp[2])bad.push('hero file lost rank');
+  const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});if(!V.parseHeroFile(signed({...g,profXp:-1})).err||!V.parseHeroFile(signed({...g,profXp:'lots'})).err)bad.push('accepted bad rank XP');const old={...d};delete old.profXp;V.loadSave(old);if(V.P.profXp!==0||V.profRank()!==0)bad.push('an older hero did not start at Novice');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
