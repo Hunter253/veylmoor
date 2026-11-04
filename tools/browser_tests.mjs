@@ -296,6 +296,29 @@ await test('Durability survives saves and hero files, and old gear counts as ful
   dispatchEvent(new Event('pagehide'));const f=V.heroFileText(V.readSlot(0)),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else if(V.readSlot(r.slot).eq.boots.dur!==33.5)bad.push('hero file lost durability');
   const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});for(const v of [-1,101,'full'])if(!V.parseHeroFile(signed({...g,eq:{...g.eq,boots:{...g.eq.boots,dur:v}}})).err)bad.push('accepted durability '+v);return bad}`));
 
+await reset();
+await test('A profession is needed to forge, and decides the armor family only', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,stock=()=>{V.addMat('ore',1,6);V.addMat('herb',1,3)};P.gold=100000;stock();
+  if(V.canForge(1))bad.push('forged with no profession');const n0=P.bag.length;V.forge(1,'helm');if(P.bag.length!==n0)bad.push('forge ran with no profession');if(V.profChoose('wizard')||P.prof)bad.push('accepted a made-up profession');if(V.profBest()!=='metal')bad.push('wrong best profession for Bulwark');
+  V.addMat('herb',1,3);const tonics=P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0);V.brew();if(P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0)!==tonics+2)bad.push('brewing needs a profession');
+  for(const [pr,at] of [['metal','plate'],['leather','leather'],['cloth','cloth']]){P.prof=null;if(!V.profChoose(pr))bad.push('could not choose '+pr);for(const s of ['helm','chest','boots']){stock();P.bag=P.bag.filter(x=>x.slot==='mat'||x.slot==='use');V.forge(1,s);const it=P.bag.find(x=>x.slot===s);if(!it)bad.push(pr+' made no '+s);else if(it.at!==at)bad.push(pr+' made '+it.at+' '+s)}}
+  P.prof='cloth';for(const s of ['weapon','charm','cloak']){stock();P.bag=P.bag.filter(x=>x.slot==='mat'||x.slot==='use');V.forge(1,s);const it=P.bag.find(x=>x.slot===s);if(!it)bad.push('cloth could not make '+s);else if(s==='weapon'&&!['sword1','mace1','axe1'].includes(it.base))bad.push('weapon does not suit the class: '+it.base)}
+  if(V.profChoose('metal'))bad.push('chose a second profession for free');return bad}`));
+
+await reset();
+await test('Forging costs gold and materials, and refunds when the bag is full', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;P.prof='cloth';V.addMat('ore',1,6);V.addMat('herb',1,3);const fee=V.FORGEGOLD[1];P.gold=fee-1;if(V.canForge(1))bad.push('forged without enough gold');P.gold=fee;if(!V.canForge(1))bad.push('could not forge with exactly enough gold');
+  V.forge(1,'boots');if(P.gold!==0)bad.push('gold left: '+P.gold);if(V.haveMat('ore',1)!==0||V.haveMat('herb',1)!==0)bad.push('materials not spent');
+  V.addMat('ore',1,7);V.addMat('herb',1,4);P.gold=fee;const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));const n=P.bag.length;V.forge(1,'boots');if(P.gold!==fee)bad.push('a full bag still took gold');if(V.haveMat('ore',1)!==7||V.haveMat('herb',1)!==4)bad.push('a full bag lost materials');if(P.bag.length!==n)bad.push('a full bag gained an item');return bad}`));
+
+await reset();
+await test('Switching profession costs a fee, and the Craft tab works by clicking', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('ashcaller','Tester');const P=V.P;P.lvl=10;P.gold=0;V.openPanel('shop','pell');const q=x=>document.querySelector('#book '+x);q('[data-act="shtab"][data-t="craft"]').click();
+  if(!q('[data-act="profpick"][data-k="cloth"]'))return ['no profession choice shown'];if(!q('.ccard.best [data-k="cloth"]'))bad.push('best profession not marked');q('[data-act="profpick"][data-k="cloth"]').click();if(P.prof!=='cloth')bad.push('click did not choose');
+  const fee=V.profFee();if(V.profSwitch('metal')||P.prof!=='cloth')bad.push('switched without gold');if(V.profSwitch('cloth'))bad.push('switched to the same profession');P.gold=fee;V.closePanel();V.openPanel('shop','pell');const sw=()=>q('[data-act="profswitch"][data-k="metal"]');sw().click();if(P.prof!=='cloth'||P.gold!==fee)bad.push('one press switched');sw().click();if(P.prof!=='metal'||P.gold!==0)bad.push('two presses did not switch: '+P.prof+' '+P.gold);V.closePanel();return bad}`));
+
+await reset();
+await test('Professions survive saves and hero files, and old heroes can still choose', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Saver');const P=V.P;P.prof='leather';dispatchEvent(new Event('pagehide'));const d=V.readSlot(0);if(d.prof!=='leather')bad.push('save lost the profession');const f=V.heroFileText(d),r=V.importHeroText(f);if(r.err)bad.push('import refused: '+r.err);else if(V.readSlot(r.slot).prof!=='leather')bad.push('hero file lost the profession');
+  const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});if(!V.parseHeroFile(signed({...g,prof:'wizard'})).err)bad.push('accepted a made-up profession');if(!V.parseHeroFile(signed({...g,prof:'constructor'})).err)bad.push('accepted constructor as a profession');
+  const old={...d};delete old.prof;V.loadSave(old);if(V.P.prof!==null)bad.push('an old hero arrived with '+V.P.prof);if(!V.profChoose('metal'))bad.push('an old hero could not choose');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

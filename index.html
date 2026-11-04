@@ -129,6 +129,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #zone .z1{font:600 12px/1 var(--f-body);letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px #000}
 #zone .z2{font:400 clamp(24px,calc(6*var(--vw)),38px)/1.1 var(--f-ui);color:#8be06a;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);margin-top:6px}
 #zone .z2::before{content:"- "}#zone .z2::after{content:" -"}
+.profpick{margin-bottom:10px}.profq{margin:0 0 8px;font-size:14px}.ccard.best{border-top-color:#ffd870;box-shadow:0 0 0 1px #ffd870}.profhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:8px;font-size:14px}.profhead b{font:400 17px var(--f-ui)}.profhead span:not(.price){flex:1;min-width:140px;color:var(--ink2)}.profhead .cbtn{font-size:13px;padding:5px 9px}
 #durNote{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 24px);transform:translateX(-50%);padding:2px 10px;background:rgba(16,22,26,.85);border:1px solid #d8a040;color:#ffd890;font:500 13px/1.4 var(--f-body);white-space:nowrap;pointer-events:none}#durNote.broken{border-color:#e05a4a;color:#ffb0a0}#durNote[hidden]{display:none}.islot.eqs.worn{box-shadow:0 0 0 2px #d8a040}.islot.eqs.broken{box-shadow:0 0 0 2px #e05a4a;filter:saturate(.35)}.durtxt{color:var(--ink2)}.durtxt.low{color:#e8a040}.durtxt.bad{color:#f07a68}.replist{display:grid;gap:8px;max-width:620px;margin:0 auto}.reprow{display:flex;align-items:center;gap:10px}.reprow .islot{width:48px;flex:none}.repn{flex:1;display:grid;min-width:0}.repn b{font:400 16px var(--f-ui)}.repn span{font-size:13px;color:var(--ink2)}.reprow .gbar{min-width:130px;flex:none}.repall{display:flex;margin:12px auto 0;min-width:220px}
 .socs{display:grid;gap:4px;margin-top:6px}.socrow{display:flex;align-items:center;gap:6px;font-size:13px}.socrow span:nth-child(2){flex:1}.socic{width:22px;height:22px;flex:none;display:block}.socic.empty{box-sizing:border-box;border:1px dashed currentColor;border-radius:50%;opacity:.6}.socbtn{padding:3px 8px!important;font-size:12px!important}.gemnote{margin:10px 0 0;text-align:center;font-size:14px}.gemlv{position:absolute;left:3px;top:2px;font:800 12px var(--f-num);font-style:normal;color:#fff;text-shadow:0 1px 2px #000}
 .fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
@@ -1150,13 +1151,13 @@ const RMUL=[1,1.12,1.28,1.48,1.75];
 const ATTW={weapon:1.1,helm:1,chest:1.25,boots:.85,cloak:.75,charm:1.15};
 function itemKind(it){if(it.slot==='weapon')return WCAT[it.base]?WCAT[it.base].n:'Weapon';if(it.slot==='charm')return CHARMK[it.base]?CHARMK[it.base].n:'Charm';if(it.slot==='cloak')return'Cloak';
  return(ARMK[it.at]?ARMK[it.at].n+' ':'')+SLOTNAME[it.slot]}
-function rollItem(lv,min=0,slot,rar){const ilvl=PL(lv);
+function rollItem(lv,min=0,slot,rar,fam){const ilvl=PL(lv);
  rar=rar==null?rollRar(min):rar;slot=slot||pick(SLOTS);const cls=P.cls,main=CLASSES[cls].main,tier=tierOf(lv),pw=(6+ilvl*2.1)*RMUL[rar],st={};let base,at=null,mat,bn;
  if(slot==='weapon'){base=pick(CWEAP[cls]);const W=WCAT[base];st.wd=Math.round(pw*1.15*W.dmg*rr(.94,1.06));if(W.shield)st.arm=Math.round(st.wd*W.shield);mat=W.mat;bn=pick(W.b);
   if(W.bonus)for(const k in W.bonus){const v=W.bonus[k]*ilvl*(rar+2)/3;st[k]=PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}}
  else if(slot==='charm'){base=pick(Object.keys(CHARMK));mat='jewel';bn=pick(CHARMK[base].b)}
  else if(slot==='cloak'){base='cloak';mat='cloth';bn=pick(CLOAKB);st.arm=Math.round(pw*1.25*.42*rr(.92,1.08))}
- else{at=ARMT[cls];base=slot;mat=at==='plate'?'metal':at;bn=pick(ABASE[slot][at]);st.arm=Math.round(pw*1.25*{helm:.9,chest:1.4,boots:.75}[slot]*ARMK[at].arm*rr(.92,1.08))}
+ else{at=fam||ARMT[cls];base=slot;mat=at==='plate'?'metal':at;bn=pick(ABASE[slot][at]);st.arm=Math.round(pw*1.25*{helm:.9,chest:1.4,boots:.75}[slot]*ARMK[at].arm*rr(.92,1.08))}
  // attributes: armor leans to its family, weapons and jewelry to the class's main attribute
  const lean=at?ARMK[at].lean:[main,'vit'],A=pw*.85*ATTW[slot]*rr(.9,1.1),na=rar>=1||slot==='charm'?2:1,keys=[];
  keys.push(R()<.65?(slot==='weapon'||slot==='charm'||slot==='cloak'?main:lean[0]):pick(ATTR));if(na>1){let k2=R()<.5?lean[1]:pick(ATTR);if(k2===keys[0])k2=pick(ATTR.filter(x=>x!==keys[0]));keys.push(k2)}
@@ -1591,7 +1592,7 @@ let P=null,CLS=null,S=null;
 const G={mode:'title',map:null,maps:{},enemies:[],projs:[],fx:[],tele:[],areas:[],loot:[],texts:[],parts:[],timers:[],time:0,panel:null,zone:'',boss:null,near:null,tgt:null,shake:0,sel:null,saveT:0};
 const input={up:0,down:0,left:0,right:0,atk:false,sx:0,sy:0};
 const CAM={yaw:Math.PI,pitch:.5,zoom:1,lastDrag:-99,x:0,y:0,z:0,tx:0,ty:0,tz:0};
-function newPlayer(cls){return{cls,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
+function newPlayer(cls){return{cls,prof:null,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
 function talentSpent(){let s=0;for(const k in P.tal)s+=P.tal[k];return s}
 const talentPoints=()=>Math.max(0,P.lvl-1-talentSpent());
 function recalc(keep=true){
@@ -2101,10 +2102,16 @@ function matItem(f,g,q){return{id:P.nid++,slot:'mat',fam:f,g,qty:q,rar:g-1,ilvl:
 function haveMat(f,g){let n=0;for(const it of P.bag)if(it.slot==='mat'&&it.fam===f&&it.g===g)n+=it.qty;return n}
 function addMat(f,g,q){let left=q;for(const it of P.bag)if(left&&it.slot==='mat'&&it.fam===f&&it.g===g&&it.qty<MATSTACK){const a=Math.min(left,MATSTACK-it.qty);it.qty+=a;left-=a}
  while(left>0&&P.bag.length<bagCap()){const a=Math.min(left,MATSTACK);P.bag.push(matItem(f,g,a));left-=a}return q-left}
-function canForge(g){const r=FORGE[g];return haveMat('ore',g)>=r.ore&&haveMat('herb',g)>=r.herb&&haveMat('gem',g)>=r.gem}
+/* ---- Professions decide which armor family a hero forges. Weapons, charms and cloaks stay open to all until trading exists (decided 4 Nov 2026). ---- */
+const PROFS={metal:{n:'Metal',at:'plate',d:'Forge plate armor, the heaviest protection.'},leather:{n:'Leather',at:'leather',d:'Forge leather armor, balanced and rich in Agility.'},cloth:{n:'Cloth',at:'cloth',d:'Forge cloth armor, light and rich in Intelligence.'}};
+const FORGEGOLD=[0,10,30,80,200,500],PROFFEE={base:50,perLvl:20};
+const profKnown=k=>Object.prototype.hasOwnProperty.call(PROFS,k),profBest=()=>Object.keys(PROFS).find(k=>PROFS[k].at===ARMT[P.cls]),profFee=()=>PROFFEE.base+PROFFEE.perLvl*P.lvl;
+function profChoose(k){if(!profKnown(k)||P.prof)return false;P.prof=k;return true}
+function profSwitch(k){if(!profKnown(k)||!P.prof||P.prof===k||P.gold<profFee())return false;P.gold-=profFee();P.prof=k;return true}
+function canForge(g){const r=FORGE[g];return !!P.prof&&P.gold>=FORGEGOLD[g]&&haveMat('ore',g)>=r.ore&&haveMat('herb',g)>=r.herb&&haveMat('gem',g)>=r.gem}
 function useMat(f,g,n){for(let i=P.bag.length-1;i>=0&&n>0;i--){const it=P.bag[i];if(it.slot==='mat'&&it.fam===f&&it.g===g){const a=Math.min(n,it.qty);it.qty-=a;n-=a;if(!it.qty)P.bag.splice(i,1)}}}
 function forge(g,slot){if(!canForge(g))return;const r=FORGE[g];useMat('ore',g,r.ore);useMat('herb',g,r.herb);if(r.gem)useMat('gem',g,r.gem);if(P.bag.length>=bagCap()){addMat('ore',g,r.ore);addMat('herb',g,r.herb);if(r.gem)addMat('gem',g,r.gem);msg('Your bag is full.');return}
- const rar=g===5&&R()<.08?4:r.rar,it=rollItem(P.lvl,0,slot,rar);addToBag(it);sfx('clang');toast(`Forged <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`,'lvl');save()}
+ P.gold-=FORGEGOLD[g];const rar=g===5&&R()<.08?4:r.rar,it=rollItem(P.lvl,0,slot,rar,PROFS[P.prof].at);addToBag(it);sfx('clang');toast(`Forged <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`,'lvl');save()}
 function herbTotal(){let n=0;for(let g=1;g<=5;g++)n+=haveMat('herb',g);return n}
 function brew(){if(herbTotal()<3)return;let need=3;for(let g=1;g<=5&&need;g++){const h=Math.min(need,haveMat('herb',g));if(h){useMat('herb',g,h);need-=h}}giveCons('tonic',null,2);sfx('heal');toast('Brewed <b>2 Marsh Tonics</b>.');save()}
 function matIcon(f,g){const c=RESF[f].c[g-1],id='mi'+(++ICN);
@@ -2114,11 +2121,13 @@ function matIcon(f,g){const c=RESF[f].c[g-1],id='mi'+(++ICN);
  return`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${c}"/><stop offset="1" stop-color="${RAR[g-1].c}"/></radialGradient></defs>${art}</svg>`}
 function repairHTML(){const L=repairables();if(!L.length)return'<p class="gemnote">All your gear is in good condition.</p>';const t=L.reduce((a,x)=>a+repairCost(x.it),0);
  return`<div class="replist">${L.map(x=>{const c=repairCost(x.it);return`<div class="reprow"><div class="islot has" style="--rc:${RAR[x.it.rar].c}">${itemIcon(x.it)}</div><div class="repn"><b style="color:${RAR[x.it.rar].c2}">${esc(x.it.name)}</b><span>${x.src==='eq'?'Equipped':'In your bag'} · ${itemBroken(x.it)?'Broken':`Durability ${Math.ceil(itemDur(x.it))} / ${DUR.max}`}</span></div><button class="gbar" data-act="repair" data-src="${x.src}" data-k="${x.key}" ${P.gold<c?'disabled':''}><span>Repair</span><b>${c}<i class="coin"></i></b></button></div>`}).join('')}</div><button class="gbar repall" data-act="repairall" ${P.gold<t?'disabled':''}><span>Repair All</span><b>${t}<i class="coin"></i></b></button>`}
+function profHTML(){const best=profBest();if(!P.prof)return`<div class="profpick"><p class="profq">Choose your profession before you forge. You can make weapons, charms and cloaks with any of them, and your profession decides which armor you make. You can switch later for a fee.</p><div class="cgrid">${Object.keys(PROFS).map(k=>`<div class="ccard ${k===best?'best':''}"><div class="cc-t">${PROFS[k].n}${k===best?' · best for you':''}</div><div class="cc-d">${esc(PROFS[k].d)}${k===best?'':` Your class is at its best in ${ARMK[ARMT[P.cls]].n.toLowerCase()} armor.`}</div><button class="gbar" data-act="profpick" data-k="${k}"><span>Choose ${PROFS[k].n}</span></button></div>`).join('')}</div></div>`;
+ const fee=profFee();return`<div class="profhead"><b>Profession: ${PROFS[P.prof].n}</b><span>Armor you forge is ${ARMK[PROFS[P.prof].at].n.toLowerCase()}.</span>${Object.keys(PROFS).filter(k=>k!==P.prof).map(k=>`<button class="cbtn ${G.confirm==='prof:'+k?'warn':''}" data-act="profswitch" data-k="${k}" ${P.gold<fee?'disabled':''}>${G.confirm==='prof:'+k?'Press again':'Switch to '+PROFS[k].n} <span class="price">${fee}</span><i class="coin"></i></button>`).join('')}</div>`}
 function craftHTML(){const slots=['weapon','helm','chest','boots','cloak','charm'],full=false;
- let h=`<div class="cgrid"><div class="ccard"><div class="cc-t">Brew tonics</div><div class="cc-d">Any 3 herbs make 2 Marsh Tonics.</div><div class="cc-c">Herbs ${herbTotal()} / 3</div><button class="gbar" data-act="brew" ${herbTotal()<3?'disabled':''}><span>Brew</span><b>×2</b></button></div>`;
+ let h=`${profHTML()}<div class="cgrid"><div class="ccard"><div class="cc-t">Brew tonics</div><div class="cc-d">Any 3 herbs make 2 Marsh Tonics.</div><div class="cc-c">Herbs ${herbTotal()} / 3</div><button class="gbar" data-act="brew" ${herbTotal()<3?'disabled':''}><span>Brew</span><b>×2</b></button></div>`;
  for(let g=1;g<=5;g++){const r=FORGE[g],ok=canForge(g),c=RAR[g-1];
   h+=`<div class="ccard ${ok?'':'off'}" style="--rc:${c.c}"><div class="cc-t" style="color:${c.c2}">${c.n} forge</div><div class="cc-d">Makes ${g===5?'Epic gear, sometimes Legendary':(r.rar===1?'Uncommon':r.rar===2?'Rare':'Epic')+' gear'} at your level.</div>
-   <div class="cc-c"><span class="${haveMat('ore',g)>=r.ore?'':'lack'}">${esc(matName('ore',g))} ${haveMat('ore',g)}/${r.ore}</span> · <span class="${haveMat('herb',g)>=r.herb?'':'lack'}">${esc(matName('herb',g))} ${haveMat('herb',g)}/${r.herb}</span>${r.gem?` · <span class="${haveMat('gem',g)>=r.gem?'':'lack'}">${esc(matName('gem',g))} ${haveMat('gem',g)}/${r.gem}</span>`:''}</div>
+   <div class="cc-c"><span class="${haveMat('ore',g)>=r.ore?'':'lack'}">${esc(matName('ore',g))} ${haveMat('ore',g)}/${r.ore}</span> · <span class="${haveMat('herb',g)>=r.herb?'':'lack'}">${esc(matName('herb',g))} ${haveMat('herb',g)}/${r.herb}</span>${r.gem?` · <span class="${haveMat('gem',g)>=r.gem?'':'lack'}">${esc(matName('gem',g))} ${haveMat('gem',g)}/${r.gem}</span>`:''} · <span class="${P.gold>=FORGEGOLD[g]?'':'lack'}">${FORGEGOLD[g]} gold</span></div>
    <div class="cc-s">${slots.map(s=>`<button class="cbtn" data-act="forge" data-g="${g}" data-s="${s}" ${ok&&!full?'':'disabled'} title="Forge ${SLOTNAME[s].toLowerCase()}" aria-label="Forge ${SLOTNAME[s]}">${svg(SLOTICON[s])}</button>`).join('')}</div></div>`}
  return h+`</div>${full?'<p class="tnote" style="margin:8px 4px 0">Your bag is full. Make room to forge.</p>':''}`}
 
@@ -3162,6 +3171,11 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:22,date:'4 Nov 2026',title:'Crafting professions',items:[
+  'The first time you open a forge, choose a profession: Metal, Leather or Cloth. The one that suits your class is marked for you.',
+  'Your profession decides which armor you forge. Everyone can still forge weapons, charms and cloaks, and anyone can brew tonics.',
+  'You can switch profession for a fee at any shop\'s Craft tab.',
+  'Forging now costs gold as well as materials. Brewing tonics is still free.']},
  {id:21,date:'4 Nov 2026',title:'Durability and repairs',items:[
   'Gear now wears out slowly as you fight, and each time you fall it loses 10% durability. You can see durability on every item.',
   'A notice appears when your gear drops to 25%. Broken gear gives no stats, gems or effects until it is repaired, but it is never destroyed.',
@@ -3409,7 +3423,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='bpg')G.bagPage=(G.bagPage||0)+(+b.dataset.d);
  if(act==='bagx'){const pr=bagCost();if(P.gold>=pr&&bagCap()<BAGMAX){P.gold-=pr;P.bagMax=bagCap()+6;toast('Your bag grows by 6 slots.');save()}}
  if(act==='salvageCommon'){let g=0;P.bag=P.bag.filter(it=>{if(it.rar===0&&it.slot!=='mat'&&it.slot!=='use'){g+=itemValue(it);return false}return true});P.gold+=g;if(g)toast(`Sold common items for ${g} gold.`);save()}
- if(act==='ctab')G.charTab=b.dataset.t;if(act==='stab')G.spTab=b.dataset.t;if(act==='shtab'){G.shopTab=b.dataset.t;G.confirm=null}if(act==='brew')brew();if(act==='forge')forge(+b.dataset.g,b.dataset.s);
+ if(act==='ctab')G.charTab=b.dataset.t;if(act==='stab')G.spTab=b.dataset.t;if(act==='shtab'){G.shopTab=b.dataset.t;G.confirm=null}if(act==='brew')brew();if(act==='profpick'&&profChoose(b.dataset.k)){sfx('lvl',.5);toast(`You are now a <b>${PROFS[P.prof].n}</b> crafter.`,'lvl');save()}if(act==='profswitch'){const pk=b.dataset.k;if(G.confirm!=='prof:'+pk)G.confirm='prof:'+pk;else{G.confirm=null;if(profSwitch(pk)){sfx('lvl',.5);toast(`You are now a <b>${PROFS[P.prof].n}</b> crafter.`,'lvl');save()}}}if(act==='forge')forge(+b.dataset.g,b.dataset.s);
  if(act==='qpg')G.qPage=(G.qPage||0)+(+b.dataset.d);
  if(act==='spsel')G.spSel=+b.dataset.i;
  if(act==='qsel'){G.qsel=b.dataset.q;G.confirm=null}
@@ -3614,7 +3628,7 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,prof:P.prof||null,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
@@ -3632,7 +3646,7 @@ function freeSlot(){for(let i=0;i<HEROSLOTS;i++)if(!slotRaw(i))return i;return -
 function anySave(){for(let i=0;i<HEROSLOTS;i++)if(slotRaw(i))return true;return false}
 function useSlot(i){curSlot=i;try{localStorage.setItem(LASTKEY,String(i))}catch(_){}}
 /* ---- Hero files: export and import. The check catches damage and casual edits; it isn't anti-cheat. ---- */
-const HEROFIELDS=['v','gems','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
+const HEROFIELDS=['v','prof','gems','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
 function heroCheck(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)}
 function heroFileText(d){const hero={};for(const k of HEROFIELDS)if(d[k]!==undefined)hero[k]=d[k];return JSON.stringify({game:'wardens-of-veylmoor',format:1,exported:new Date().toISOString(),check:heroCheck(JSON.stringify(hero)),hero})}
 function heroSafe(o,depth=0){if(depth>8)return false;if(typeof o==='string')return o.length<=300&&!/[<>]/.test(o);if(typeof o==='number')return Number.isFinite(o);if(o===null||typeof o==='boolean')return true;if(typeof o!=='object')return false;for(const k of Object.keys(o)){if(k==='__proto__'||k==='constructor'||k==='prototype'||!heroSafe(k,depth+1)||!heroSafe(o[k],depth+1))return false}return true}
@@ -3641,7 +3655,7 @@ function parseHeroFile(text){const NOT="That file isn't a Wardens of Veylmoor he
  if(heroCheck(JSON.stringify(f.hero))!==f.check)return{err:BAD};if(!heroSafe(f.hero))return{err:BAD};if((f.hero.v||0)>SAVEV)return{err:"That hero comes from a newer version of the game. Reload the game to update it, then try again."};
  const h=f.hero,d={};for(const k of HEROFIELDS)if(h[k]!==undefined)d[k]=h[k];let m;try{m=migrateSave(d)}catch(_){return{err:BAD}}
  const num=(v,a,b)=>typeof v==='number'&&v>=a&&v<=b,obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
- if(!CLASSES[m.cls]||!Number.isInteger(m.lvl)||!num(m.lvl,1,MAXL)||!num(m.xp,0,1e12)||!num(m.gold,0,1e12)||!num(m.x,-1e7,1e7)||!num(m.y,-1e7,1e7)||typeof m.name!=='string'||!m.name||m.name.length>40||!Array.isArray(m.bag)||m.bag.length>200||!obj(m.eq)||!obj(m.q)||(m.tal&&!obj(m.tal))||(m.bosses&&!obj(m.bosses))||!gemsValid(m.gems)||!m.bag.every(socketsValid)||!Object.values(m.eq).every(socketsValid))return{err:BAD};return{d:m}}
+ if(!CLASSES[m.cls]||!Number.isInteger(m.lvl)||!num(m.lvl,1,MAXL)||!num(m.xp,0,1e12)||!num(m.gold,0,1e12)||!num(m.x,-1e7,1e7)||!num(m.y,-1e7,1e7)||typeof m.name!=='string'||!m.name||m.name.length>40||!Array.isArray(m.bag)||m.bag.length>200||!obj(m.eq)||!obj(m.q)||(m.tal&&!obj(m.tal))||(m.bosses&&!obj(m.bosses))||(m.prof!=null&&!profKnown(m.prof))||!gemsValid(m.gems)||!m.bag.every(socketsValid)||!Object.values(m.eq).every(socketsValid))return{err:BAD};return{d:m}}
 function importHeroText(text){const r=parseHeroFile(text);if(r.err)return r;const i=freeSlot();if(i<0)return{err:"All five hero slots are full. Delete a hero to make room, then import again."};try{localStorage.setItem(slotKey(i),JSON.stringify(r.d))}catch(_){return{err:"Your browser's storage is full or blocked, so the hero couldn't be imported."}}return{slot:i,name:r.d.name}}
 function exportHero(i){const d=readSlot(i);if(!d)return;const u=URL.createObjectURL(new Blob([heroFileText(d)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download=`${String(d.name).replace(/[^a-zA-Z0-9_-]+/g,'') || 'hero'}-level-${d.lvl}.veylmoor.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
 function pickHeroFile(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.addEventListener('change',async()=>{const f=inp.files&&inp.files[0];if(!f)return;let r;if(f.size>2e6)r={err:"That file isn't a Wardens of Veylmoor hero."};else{try{r=importHeroText(await f.text())}catch(_){r={err:"That file couldn't be read."}}}
@@ -3726,7 +3740,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
