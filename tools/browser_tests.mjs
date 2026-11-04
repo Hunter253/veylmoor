@@ -48,7 +48,7 @@ const ev = async (fn, arg) => {
 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const load = async () => { await send('Page.navigate', { url }); await sleep(3000); };
-const reset = async () => { await load(); await ev(`()=>{localStorage.clear()}`); await load(); logs = []; };
+const reset = async () => { await load(); await ev(`()=>{localStorage.clear()}`); logs = []; await load(); };
 await send('Runtime.enable'); await send('Page.enable');
 
 const results = [];
@@ -61,7 +61,10 @@ const test = async (name, fn) => {
 };
 
 await reset();
-await test('The game loads with no errors or warnings', async () => [...logs]);
+await test('The game loads with no errors or warnings', async () => {
+  const ready = await ev(`()=>!!window.__veyl&&!document.querySelector('#title').hidden`);
+  return [...logs, ...(ready ? [] : ['the game did not reach the title screen'])];
+});
 
 await test('Quest data is sound', () => ev(`()=>{const V=window.__veyl,{QUESTS:Q,AREAS:A,EN}=V,ids=new Set(Q.map(q=>q.id)),bad=[];
   if(Q.length!==ids.size)bad.push('duplicate quest ids');
@@ -100,7 +103,7 @@ for (const cls of ['bulwark', 'reaver', 'ashcaller', 'thornstalker', 'lumen']) {
 }
 
 await reset();
-await test('A hero survives saving, reloading and an old-version save', () => ev(`()=>{const V=window.__veyl,K='veylmoor-save-v1',bad=[];V.startNew('lumen','Saver');V.gainXP(500);dispatchEvent(new Event('pagehide'));
+await test('A hero survives saving, reloading and an old-version save', () => ev(`()=>{const V=window.__veyl,K='veylmoor-hero-0',bad=[];V.startNew('lumen','Saver');V.gainXP(500);dispatchEvent(new Event('pagehide'));
   const s=JSON.parse(localStorage.getItem(K)),a=JSON.stringify([V.P.lvl,V.P.xp,V.P.gold,V.P.bag.length]);V.loadSave(JSON.parse(JSON.stringify(s)));if(a!==JSON.stringify([V.P.lvl,V.P.xp,V.P.gold,V.P.bag.length]))bad.push('save and reload changed the hero');
   const old={...s,v:3,lvl:20,xp:100};localStorage.setItem(K,JSON.stringify(old));const m=V.readSave();if(!m||m.v!==4||m.lvl!==39)bad.push('version 3 save upgraded to '+JSON.stringify(m&&[m.v,m.lvl]));
   localStorage.setItem(K,JSON.stringify(s));return bad}`));
@@ -111,8 +114,8 @@ await test('A failed save warns the player', () => ev(`async()=>{const V=window.
 
 await reset();
 await test('An unreadable save is kept, and a new hero does not erase it', async () => {
-  await ev(`()=>{localStorage.setItem('veylmoor-save-v1','{broken')}`); await load();
-  const bad = await ev(`()=>{const V=window.__veyl,bad=[];const n=document.querySelector('.sysnote');if(!n)bad.push('no notice on the title screen');else if(!n.innerText.includes('wardensofveylmoor@gmail.com'))bad.push('the notice does not say where to send the save');V.startNew('bulwark','New');dispatchEvent(new Event('pagehide'));if(localStorage.getItem('veylmoor-save-unreadable')!=='{broken')bad.push('copy of the unreadable save was lost');return bad}`);
+  await ev(`()=>{localStorage.setItem('veylmoor-hero-0','{broken')}`); await load();
+  const bad = await ev(`()=>{const V=window.__veyl,bad=[];const n=document.querySelector('.sysnote');if(!n)bad.push('no notice on the title screen');else if(!n.innerText.includes('wardensofveylmoor@gmail.com'))bad.push('the notice does not say where to send the save');V.startNew('bulwark','New');dispatchEvent(new Event('pagehide'));if(localStorage.getItem('veylmoor-save-unreadable')!=='{broken')bad.push('copy of the unreadable save was lost');if(localStorage.getItem('veylmoor-hero-0')!=='{broken')bad.push('the unreadable save was overwritten');if(!localStorage.getItem('veylmoor-hero-1'))bad.push('the new hero did not take the next slot');return bad}`);
   return bad;
 });
 
@@ -155,6 +158,66 @@ await test('The frame rate display is off by default and readable when turned on
   if (!(on.fps > 0)) bad.push('no frame rate measured');
   return bad;
 });
+
+await reset();
+await test('An old single save moves to slot 1, stays as a backup, and a delete sticks', async () => {
+  const raw = await ev(`()=>{window.__veyl.startNew('reaver','Oldtimer');dispatchEvent(new Event('pagehide'));window.__veyl.toTitle();return localStorage.getItem('veylmoor-hero-0')}`);
+  await ev(`(raw)=>{localStorage.clear();localStorage.setItem('veylmoor-save-v1',raw)}`, raw); await load();
+  const bad = [];
+  const a = await ev(`()=>{const h=window.__veyl.heroes();return{first:h[0].d&&h[0].d.name,count:h.filter(x=>x.raw).length,legacy:!!localStorage.getItem('veylmoor-save-v1'),shown:[...document.querySelectorAll('#title .tt-pn')].some(e=>e.textContent==='Oldtimer')}}`);
+  if (a.first !== 'Oldtimer' || a.count !== 1) bad.push('the old hero did not arrive in slot 1 alone');
+  if (!a.legacy) bad.push('the old save was not kept as a backup');
+  if (!a.shown) bad.push('the title screen does not show the old hero');
+  const b = await ev(`async()=>{const cl=t=>document.querySelector('#title [data-t="'+t+'"]').click();cl('del');const warned=/Press Delete again/.test(document.querySelector('#title').innerText);const still=!!localStorage.getItem('veylmoor-hero-0');cl('del');return{warned,still,gone:!localStorage.getItem('veylmoor-hero-0')}}`);
+  if (!b.warned || !b.still) bad.push('delete did not ask for confirmation first');
+  if (!b.gone) bad.push('delete did not remove the hero');
+  await load();
+  const c = await ev(`()=>window.__veyl.heroes().filter(x=>x.raw).length`);
+  if (c !== 0) bad.push('a deleted hero came back after a reload');
+  return bad;
+});
+
+await reset();
+await test('Five heroes stay separate on the title screen, and a sixth is refused', async () => {
+  const bad = [];
+  const cls = ['bulwark', 'reaver', 'ashcaller', 'thornstalker', 'lumen'];
+  for (const c of cls) {
+    const r = await ev(`async(c)=>{const V=window.__veyl;document.querySelector('#title [data-t="sel"][data-c="'+c+'"]').click();const n=document.getElementById('nameIn');n.value='H'+c;n.dispatchEvent(new Event('input'));document.querySelector('#title [data-t="play"]').click();V.P.gold=c.length*7;dispatchEvent(new Event('pagehide'));V.toTitle();return true}`, c);
+    if (r !== true) bad.push('could not create ' + c);
+  }
+  const s = await ev(`()=>{const V=window.__veyl,h=V.heroes();return{names:h.map(x=>x.d&&x.d.name),gold:h.map(x=>x.d&&x.d.gold),classesHidden:!document.querySelector('#title [data-t="sel"][data-c="bulwark"]'),refused:V.startNew('lumen','Sixth')===false,free:V.freeSlot()}}`);
+  if (s.names.join() !== cls.map(c => 'H' + c).join()) bad.push('slots hold: ' + s.names.join());
+  if (s.gold.join() !== cls.map(c => c.length * 7).join()) bad.push('heroes share progress: ' + s.gold.join());
+  if (!s.classesHidden) bad.push('new hero buttons still show with every slot full');
+  if (!s.refused || s.free !== -1) bad.push('a sixth hero was not refused');
+  const p = await ev(`()=>{const V=window.__veyl;document.querySelector('#title [data-t="sel"][data-c="slot:2"]').click();document.querySelector('#title [data-t="play"]').click();const a=[V.P.name,V.P.cls];V.P.gold=999;dispatchEvent(new Event('pagehide'));const h=V.heroes();return{a,g2:h[2].d.gold,g1:h[1].d.gold}}`);
+  if (p.a[0] !== 'Hashcaller' || p.a[1] !== 'ashcaller') bad.push('Play opened the wrong hero: ' + p.a.join());
+  if (p.g2 !== 999 || p.g1 !== 42) bad.push('saving wrote to the wrong slot');
+  await load();
+  const after = await ev(`()=>{const b=document.querySelector('#title .tt-card h1');return b&&b.textContent}`);
+  if (after !== 'Hashcaller') bad.push('the last played hero was not selected after a reload: ' + after);
+  return bad;
+});
+
+await reset();
+await test('Export and import return the same hero, gear and talents', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('thornstalker','Traveller');const P=V.P;P.lvl=30;P.gold=1234;V.recalc();const g=V.webGraph('thornstalker');for(let i=0;i<6;i++)for(const id in g.nodes)while(V.webCan(id)&&V.webLearn(id));
+  for(const s of ['weapon','helm','chest','boots','cloak','charm'])P.eq[s]=V.rollItem(30,0,s,4);for(let i=0;i<6;i++)P.bag.push(V.rollItem(30,0,null,i%5));dispatchEvent(new Event('pagehide'));
+  const d=V.readSlot(0),t=V.heroFileText(d),r=V.importHeroText(t);if(r.err){bad.push('import refused a real hero: '+r.err);return bad}if(r.slot!==1)bad.push('import went to slot '+r.slot);
+  const e=V.readSlot(r.slot);for(const k of ['name','cls','lvl','xp','gold','bag','eq','tal','q','bosses'])if(JSON.stringify(d[k])!==JSON.stringify(e[k]))bad.push('field changed: '+k);
+  if(JSON.stringify(V.readSlot(0))!==JSON.stringify(d))bad.push('the original hero changed');return bad}`));
+
+await reset();
+await test('Bad hero files are refused and leave existing heroes alone', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Keeper');dispatchEvent(new Event('pagehide'));const before=localStorage.getItem('veylmoor-hero-0'),d=V.readSlot(0),good=JSON.parse(V.heroFileText(d));
+  const signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});
+  const cases={'not JSON':'hello','some other JSON':'{"a":1}','another game':JSON.stringify({...good,game:'other'}),'newer file format':JSON.stringify({...good,format:2}),
+   'edited gold':JSON.stringify({...good,hero:{...good.hero,gold:999999}}),'bad checksum':JSON.stringify({...good,check:'0'}),
+   'script in the name':signed({...good.hero,name:'<img src=x onerror=alert(1)>'}),'script in an item':signed({...good.hero,bag:[{name:'<b>x</b>'}]}),
+   'unknown class':signed({...good.hero,cls:'wizard'}),'level too high':signed({...good.hero,lvl:999}),'negative gold':signed({...good.hero,gold:-5}),'newer hero':signed({...good.hero,v:99}),
+   'bag not a list':signed({...good.hero,bag:{}}),'missing position':(()=>{const h={...good.hero};delete h.x;return signed(h)})(),
+   'prototype key':JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck('{"__proto__":{"x":1},"cls":"lumen"}'),hero:JSON.parse('{"__proto__":{"x":1},"cls":"lumen"}')})};
+  for(const n in cases){const r=V.importHeroText(cases[n]);if(!r.err)bad.push('accepted: '+n)}
+  if(localStorage.getItem('veylmoor-hero-0')!==before)bad.push('the existing hero changed');if(V.heroes().filter(x=>x.raw).length!==1)bad.push('a bad file created a hero');
+  for(let i=1;i<5;i++)if(V.importHeroText(JSON.stringify(good)).err)bad.push('good file refused');const full=V.importHeroText(JSON.stringify(good));if(!/full/.test(full.err||''))bad.push('a full roster did not refuse the import');return bad}`));
 
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);

@@ -267,6 +267,9 @@ kbd{display:none}#app.kbm kbd{display:block}
 .tt-pn{font:400 13px var(--f-ui);text-shadow:0 1px 3px #000,0 0 6px #000;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tt-port .lvb{top:32px;right:-2px;width:26px;height:26px;font-size:12px;line-height:22px}
 .tt-port .plus{position:absolute;top:32px;right:-2px;width:24px;height:24px;border-radius:5px;background:linear-gradient(#5ab0ff,#1f5fb8);border:2px solid #cfe6ff;color:#fff;font:800 18px/18px var(--f-num)}
+.tt-left.many{grid-template-columns:repeat(3,auto)!important;gap:2px 4px}.tt-left.many .tt-port canvas,.tt-left.many .tt-mark{width:44px;height:44px}.tt-left.many .lvb,.tt-left.many .plus{top:24px}.tt-left.many .tt-pn{font-size:12px;max-width:74px}
+.tt-mark{display:grid;place-items:center;width:54px;height:54px;box-sizing:border-box;border-radius:50%;border:3px solid #6a5434;background:radial-gradient(circle at 50% 30%,#5a6c76,#141c22 75%);font:800 22px/1 var(--f-num);color:#ffd870}.tt-port.on .tt-mark{border-color:#ffd870}
+.tt-subs{display:flex;gap:6px}.tt-sub{flex:1;min-height:34px;padding:4px 8px;background:rgba(16,22,26,.85);border:1px solid #8a6420;border-radius:3px;color:#f0ead8;font:500 13px var(--f-body);cursor:pointer}
 .tt-card{grid-row:2/4;grid-column:3;align-self:center;padding:12px 14px;border-radius:10px;border:2px solid #8a5a24;display:grid;gap:6px;max-height:100%;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 .tt-card h1{margin:0;font:400 28px/1.05 var(--f-ui);color:#6a2e0e}
 .tt-role{font:800 11px/1 var(--f-num);letter-spacing:.14em;text-transform:uppercase;color:#a0581a}
@@ -3123,6 +3126,11 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:19,date:'4 Nov 2026',title:'Five hero slots',items:[
+  'You can now keep up to five heroes at once, each with their own progress. Your current hero is already in your first slot.',
+  'Starting a new hero no longer replaces an old one. It takes the next empty slot, and you choose who to play from the title screen.',
+  'Export a hero to a file as a backup, or to move them to another device, then use Import to bring them back.',
+  'Deleting a hero now asks you to confirm from the title screen, and only removes that one hero.']},
  {id:18,date:'4 Nov 2026',title:'Safer saves and fewer dead ends',items:[
   'If your browser can\'t save your progress, the game now tells you instead of failing silently.',
   'If a saved hero can\'t be read, a copy is kept. Starting a new hero won\'t erase it.',
@@ -3229,7 +3237,7 @@ let updSeen=null,updShown=UPDNOW;
 function storeSeen(v){try{localStorage.setItem(UPDKEY,v)}catch(_){}}
 /* A brand new player has nothing to catch up on. A returning player with no record gets just the latest entry flagged. */
 function seenUpdate(){if(updSeen!==null)return updSeen;let v=null;try{v=localStorage.getItem(UPDKEY)}catch(_){}
- if(v===null){updSeen=readSave()?UPDNOW-1:UPDNOW;storeSeen(updSeen)}else updSeen=+v||0;return updSeen}
+ if(v===null){updSeen=anySave()?UPDNOW-1:UPDNOW;storeSeen(updSeen)}else updSeen=+v||0;return updSeen}
 const hasNewUpdate=()=>seenUpdate()<UPDNOW;
 function markUpdatesSeen(){updShown=seenUpdate();updSeen=UPDNOW;storeSeen(UPDNOW);updateBadges()}
 const updDotHTML=()=>`<i class="updDot" role="img" aria-label="New update" ${hasNewUpdate()?'':'hidden'}></i>`;
@@ -3550,36 +3558,70 @@ document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.prev
 /* ================= Save & hero select ================= */
 function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:4,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
-function save(){if(G.mode!=='play')return;try{localStorage.setItem(SAVEKEY,JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
+function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
 function noteBadSave(){showNotice("We couldn't read your saved hero. A copy has been kept, and starting a new hero won't erase it. Copy it and email it to wardensofveylmoor@gmail.com if you'd like us to try to repair it.",[['Copy saved hero',()=>{let s='';try{s=localStorage.getItem(BADKEY)||''}catch(_){}copyText(s)}],['Dismiss',null]])}
-function readSave(){let s=null;try{s=localStorage.getItem(SAVEKEY);if(!s)return null;const d=migrateSave(JSON.parse(s));if(!d||!CLASSES[d.cls]){keepBadSave(s);return null}return d}catch(err){keepBadSave(s);logError(err,'load save',true);return null}}
+/* ---- Hero slots. Each hero has its own storage key, so damage to one can't touch the others.
+   The old single save is copied in once and left in place as a backup. ---- */
+const HEROSLOTS=5,SLOTFLAG='veylmoor-slots-v1',LASTKEY='veylmoor-last-slot',SAVEV=4;let curSlot=0,slotsDone=false;
+const slotKey=i=>'veylmoor-hero-'+i,slotOf=t=>typeof t==='string'&&t.startsWith('slot:')?+t.slice(5):-1;
+function ensureSlots(){if(slotsDone)return;slotsDone=true;try{if(!localStorage.getItem(SLOTFLAG)){const old=localStorage.getItem(SAVEKEY);if(old){let i=0;while(i<HEROSLOTS&&localStorage.getItem(slotKey(i)))i++;if(i<HEROSLOTS)localStorage.setItem(slotKey(i),old)}localStorage.setItem(SLOTFLAG,'1')}const l=+localStorage.getItem(LASTKEY);if(l>=0&&l<HEROSLOTS)curSlot=l}catch(_){}}
+function slotRaw(i){ensureSlots();try{return localStorage.getItem(slotKey(i))}catch(_){return null}}
+function readSlot(i){const s=slotRaw(i);if(!s)return null;try{const d=migrateSave(JSON.parse(s));if(!d||!CLASSES[d.cls]){keepBadSave(s);return null}return d}catch(err){keepBadSave(s);logError(err,'load save',true);return null}}
+function readSave(){ensureSlots();return readSlot(curSlot)}
+function heroes(){const a=[];for(let i=0;i<HEROSLOTS;i++){const raw=slotRaw(i);a.push({i,raw,d:raw?readSlot(i):null})}return a}
+function freeSlot(){for(let i=0;i<HEROSLOTS;i++)if(!slotRaw(i))return i;return -1}
+function anySave(){for(let i=0;i<HEROSLOTS;i++)if(slotRaw(i))return true;return false}
+function useSlot(i){curSlot=i;try{localStorage.setItem(LASTKEY,String(i))}catch(_){}}
+/* ---- Hero files: export and import. The check catches damage and casual edits; it isn't anti-cheat. ---- */
+const HEROFIELDS=['v','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
+function heroCheck(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)}
+function heroFileText(d){const hero={};for(const k of HEROFIELDS)if(d[k]!==undefined)hero[k]=d[k];return JSON.stringify({game:'wardens-of-veylmoor',format:1,exported:new Date().toISOString(),check:heroCheck(JSON.stringify(hero)),hero})}
+function heroSafe(o,depth=0){if(depth>8)return false;if(typeof o==='string')return o.length<=300&&!/[<>]/.test(o);if(typeof o==='number')return Number.isFinite(o);if(o===null||typeof o==='boolean')return true;if(typeof o!=='object')return false;for(const k of Object.keys(o)){if(k==='__proto__'||k==='constructor'||k==='prototype'||!heroSafe(k,depth+1)||!heroSafe(o[k],depth+1))return false}return true}
+function parseHeroFile(text){const NOT="That file isn't a Wardens of Veylmoor hero.",BAD="That hero file is damaged or has been edited, so it can't be imported.";let f;try{f=JSON.parse(text)}catch(_){return{err:NOT}}
+ if(!f||f.game!=='wardens-of-veylmoor'||!f.hero||typeof f.hero!=='object')return{err:NOT};if(f.format!==1)return{err:"That hero file comes from a newer version of the game. Reload the game to update it, then try again."};
+ if(heroCheck(JSON.stringify(f.hero))!==f.check)return{err:BAD};if(!heroSafe(f.hero))return{err:BAD};if((f.hero.v||0)>SAVEV)return{err:"That hero comes from a newer version of the game. Reload the game to update it, then try again."};
+ const h=f.hero,d={};for(const k of HEROFIELDS)if(h[k]!==undefined)d[k]=h[k];let m;try{m=migrateSave(d)}catch(_){return{err:BAD}}
+ const num=(v,a,b)=>typeof v==='number'&&v>=a&&v<=b,obj=v=>v&&typeof v==='object'&&!Array.isArray(v);
+ if(!CLASSES[m.cls]||!Number.isInteger(m.lvl)||!num(m.lvl,1,MAXL)||!num(m.xp,0,1e12)||!num(m.gold,0,1e12)||!num(m.x,-1e7,1e7)||!num(m.y,-1e7,1e7)||typeof m.name!=='string'||!m.name||m.name.length>40||!Array.isArray(m.bag)||m.bag.length>200||!obj(m.eq)||!obj(m.q)||(m.tal&&!obj(m.tal))||(m.bosses&&!obj(m.bosses)))return{err:BAD};return{d:m}}
+function importHeroText(text){const r=parseHeroFile(text);if(r.err)return r;const i=freeSlot();if(i<0)return{err:"All five hero slots are full. Delete a hero to make room, then import again."};try{localStorage.setItem(slotKey(i),JSON.stringify(r.d))}catch(_){return{err:"Your browser's storage is full or blocked, so the hero couldn't be imported."}}return{slot:i,name:r.d.name}}
+function exportHero(i){const d=readSlot(i);if(!d)return;const u=URL.createObjectURL(new Blob([heroFileText(d)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download=`${String(d.name).replace(/[^a-zA-Z0-9_-]+/g,'') || 'hero'}-level-${d.lvl}.veylmoor.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+function pickHeroFile(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';inp.addEventListener('change',async()=>{const f=inp.files&&inp.files[0];if(!f)return;let r;if(f.size>2e6)r={err:"That file isn't a Wardens of Veylmoor hero."};else{try{r=importHeroText(await f.text())}catch(_){r={err:"That file couldn't be read."}}}
+  if(r.err){showNotice(r.err,[['Dismiss',null]]);return}titleSel='slot:'+r.slot;titleConfirm=false;renderTitle();showNotice(`${r.name} joined your heroes.`,[['Dismiss',null]])});inp.click()}
 /* Saves before v4 used levels 1-25. Map each level to its new place on the 1-50 scale and keep progress through it. */
 function migrateSave(d){if(!d||(d.v||0)>=4)return d;const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);
  d.xp=L>=25?0:Math.round((d.xp||0)/old(L)*XPN(nl));d.lvl=nl;const up=it=>{if(it&&it.ilvl)it.ilvl=2*it.ilvl-1};(d.bag||[]).forEach(up);for(const k in d.eq||{})up(d.eq[k]);d.v=4;return d}
-function clearSave(){try{localStorage.removeItem(SAVEKEY)}catch(_){}}
+function clearSave(){try{localStorage.removeItem(slotKey(curSlot))}catch(_){}}
 addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 const NAMES={reaver:['Grimm','Brakka','Ulfar','Kestra'],bulwark:['Aldric','Brenna','Torvald','Hesketh'],ashcaller:['Embra','Corvin','Ysra','Kaelen'],thornstalker:['Wren','Fennick','Rook','Sable'],lumen:['Lumi','Aurel','Seraphine','Ione']};
 let titleSel=null,titleConfirm=false;const nameDraft={};
-function titleModelKey(){const sv=readSave();if(titleSel==='save'&&sv&&CLASSES[sv.cls])return sv.cls;return CLASSES[titleSel]?titleSel:'bulwark'}
-function renderTitle(){const sv=readSave(),hasSave=sv&&CLASSES[sv.cls];if(!titleSel||(titleSel==='save'&&!hasSave))titleSel=hasSave?'save':'bulwark';
- const k=titleModelKey(),c=CLASSES[k],isSave=titleSel==='save';if(!nameDraft[k])nameDraft[k]=pick(NAMES[k]);
+function titleModelKey(){const si=slotOf(titleSel);if(si>=0){const d=readSlot(si);return d?d.cls:'bulwark'}return CLASSES[titleSel]?titleSel:'bulwark'}
+function renderTitle(){const hs=heroes(),used=hs.filter(x=>x.raw),full=used.length>=HEROSLOTS,was=slotOf(titleSel);
+ if(!titleSel||(was>=0&&!hs[was].raw)||(was<0&&full)){let l=-1;try{const t=localStorage.getItem(LASTKEY);if(t!==null)l=+t}catch(_){}titleSel=hs[l]&&hs[l].raw?'slot:'+l:used.length?'slot:'+used[0].i:'bulwark'}
+ const si=slotOf(titleSel),isSave=si>=0,sv=isSave?hs[si].d:null,isBad=isSave&&!sv;
+ const k=titleModelKey(),c=CLASSES[k];if(!nameDraft[k])nameDraft[k]=pick(NAMES[k]);
  let h=`<div class="tt-top"><div class="tt-ribbon"><span>The</span> Wardens of Veylmoor</div></div><button class="tt-news" data-t="news">${svg('news')}<span><b>Updates</b><small>Latest: ${esc(UPDATES[0].title)}</small></span>${updDotHTML()}</button>`;
  if(!gl)h+=`<div class="nogl">This browser can't draw 3D graphics (WebGL is turned off or unsupported). Try a recent version of Chrome, Safari or Firefox.</div>`;
- h+=`<div class="tt-left">${hasSave?`<button class="tt-port ${isSave?'on':''}" data-t="sel" data-c="save" aria-pressed="${isSave}"><canvas class="ttc" data-c="${sv.cls}"></canvas><span class="lvb">${sv.lvl}</span><span class="tt-pn">${esc(sv.name||CLASSES[sv.cls].name)}</span></button>`:''}
-  ${Object.keys(CLASSES).map(ck=>`<button class="tt-port ${titleSel===ck?'on':''}" data-t="sel" data-c="${ck}" aria-pressed="${titleSel===ck}"><canvas class="ttc" data-c="${ck}"></canvas><span class="plus">+</span><span class="tt-pn">${CLASSES[ck].name}</span></button>`).join('')}</div>`;
- h+=`<div class="tt-card parch"><div class="tt-role">${isSave?`Your hero · ${c.role}`:`New hero · ${c.role}`}</div><h1>${isSave?esc(sv.name||c.name):c.name}</h1>`;
- if(isSave){const pct=sv.lvl>=MAXL?100:Math.round(sv.xp/XPN(sv.lvl)*100);h+=`<div class="tt-xp"><span class="lvb">${sv.lvl}</span><div class="tt-bar"><i style="width:${pct}%"></i></div></div><p>Level ${sv.lvl} ${c.name}. ${Object.values(sv.q||{}).filter(q=>q.s==='done').length} of ${QUESTS.length} Hollowmere quests done.</p>`}
+ h+=`<div class="tt-left ${used.length?'many':''}">${used.map(x=>x.d?`<button class="tt-port ${si===x.i?'on':''}" data-t="sel" data-c="slot:${x.i}" aria-pressed="${si===x.i}"><canvas class="ttc" data-c="${x.d.cls}"></canvas><span class="lvb">${x.d.lvl}</span><span class="tt-pn">${esc(x.d.name||CLASSES[x.d.cls].name)}</span></button>`:`<button class="tt-port ${si===x.i?'on':''}" data-t="sel" data-c="slot:${x.i}" aria-pressed="${si===x.i}"><span class="tt-mark">!</span><span class="tt-pn">Damaged</span></button>`).join('')}
+  ${full?'':Object.keys(CLASSES).map(ck=>`<button class="tt-port ${titleSel===ck?'on':''}" data-t="sel" data-c="${ck}" aria-pressed="${titleSel===ck}"><canvas class="ttc" data-c="${ck}"></canvas><span class="plus">+</span><span class="tt-pn">${CLASSES[ck].name}</span></button>`).join('')+`<button class="tt-port" data-t="imp"><span class="tt-mark">⇩</span><span class="tt-pn">Import</span></button>`}</div>`;
+ h+=`<div class="tt-card parch"><div class="tt-role">${isBad?'Damaged save':isSave?`Your hero · ${c.role}`:`New hero · ${c.role}`}</div><h1>${isBad?'Unreadable hero':isSave?esc(sv.name||c.name):c.name}</h1>`;
+ if(isBad)h+=`<p>We couldn't read this hero, so it has been left here untouched. Copy it and email it to wardensofveylmoor@gmail.com if you'd like us to try to repair it.</p>`;
+ else if(isSave){const pct=sv.lvl>=MAXL?100:Math.round(sv.xp/XPN(sv.lvl)*100);h+=`<div class="tt-xp"><span class="lvb">${sv.lvl}</span><div class="tt-bar"><i style="width:${pct}%"></i></div></div><p>Level ${sv.lvl} ${c.name}. ${Object.values(sv.q||{}).filter(q=>q.s==='done').length} of ${QUESTS.length} quests done.${full?' All five hero slots are in use.':''}</p>`}
  else h+=`<p>${esc(c.blurb)}</p><label class="tt-name">Hero name<input id="nameIn" maxlength="14" value="${esc(nameDraft[k])}" autocomplete="off" spellcheck="false"></label>`;
- h+=`<div class="tt-abs">${c.ab.map(ab=>`<span class="sk mini" style="--c:${ab.c}" title="${esc(ab.name)}"><span class="ic">${svg(ab.icon)}</span></span>`).join('')}</div><dl class="tt-stats"><div><dt>Main</dt><dd style="font-size:15px">${ATTRN[c.main]}</dd></div><div><dt>Health</dt><dd>${c.hp}</dd></div><div><dt>Armor</dt><dd>${c.arm}</dd></div></dl>`;
- h+=`<div class="tt-bottom">${!isSave&&hasSave&&titleConfirm?'<span class="tt-warn">This replaces your saved hero. Press Create again to confirm.</span>':''}<button class="gbtn" data-t="play">${isSave?'Play':'Create'}</button></div></div>`;
+ if(!isBad)h+=`<div class="tt-abs">${c.ab.map(ab=>`<span class="sk mini" style="--c:${ab.c}" title="${esc(ab.name)}"><span class="ic">${svg(ab.icon)}</span></span>`).join('')}</div><dl class="tt-stats"><div><dt>Main</dt><dd style="font-size:15px">${ATTRN[c.main]}</dd></div><div><dt>Health</dt><dd>${c.hp}</dd></div><div><dt>Armor</dt><dd>${c.arm}</dd></div></dl>`;
+ h+=`<div class="tt-bottom">${isSave&&titleConfirm?`<span class="tt-warn">This can't be undone. Press Delete again to confirm.</span>`:''}${isBad?'':`<button class="gbtn" data-t="play">${isSave?'Play':'Create'}</button>`}${isSave?`<div class="tt-subs">${isBad?'<button class="tt-sub" data-t="copybad">Copy save</button>':'<button class="tt-sub" data-t="exp">Export hero</button>'}<button class="tt-sub" data-t="del">Delete</button></div>`:''}</div></div>`;
  h+=`<p class="tt-hint pd"><b>Controller:</b> left stick moves · right stick looks · ${gpg('a')} jump or talk · ${gpg('x')} attack · ${gpg('lb')} ${gpg('rb')} ${gpg('lt')} ${gpg('rt')} ${gpg('y')} skills · ${gpg('b')} dodge · ${gpg('menu')} menu. In menus: D-pad moves, ${gpg('a')} selects, ${gpg('b')} goes back.</p><p class="tt-hint kb"><b>WASD</b> move · <b>Shift</b> sprint · <b>Space</b> jump · <b>V</b> dodge · <b>Hold mouse + drag</b> look · <b>Wheel</b> zoom · <b>Click a foe</b> or <b>F</b> attack · <b>1–5</b> skills · <b>Tab</b> target · <b>E</b> talk · <b>Q</b> tonic · <b>R</b> mount · <b>Esc</b> menu</p><p class="tt-hint tch"><b>The game always plays sideways</b>, so turn your phone on its side. Left thumb moves (push past the ring to sprint), drag elsewhere to turn the camera. Tap a monster to target it. Three skills sit by the jump diamond; the glowing tab slides out the full skill bar. Tap your portrait for your bag; the map button shows or hides the minimap, and tapping the minimap opens the world map.</p>`;
  const el=$('#title');el.innerHTML=h;el.hidden=false;liftTitle();const ni=$h('nameIn');if(ni)ni.addEventListener('input',()=>{nameDraft[k]=ni.value});
  requestAnimationFrame(()=>{if(!gl)return;for(const cv2 of el.querySelectorAll('canvas.ttc')){if(sizeCanvas(cv2)){const m=MODELS[cv2.dataset.c];renderPortrait(cv2,m,FR.hum,idleAnim(m.weapon),.35)}}})}
 $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b&&b.dataset.t==='news'){if(e.detail>0)b.blur();openPanel('updates');return}if(!b||!gl)return;
  if(b.dataset.t==='sel'){titleSel=b.dataset.c;titleConfirm=false;renderTitle()}
- if(b.dataset.t==='play'){const sv=readSave();if(titleSel==='save'&&sv)return loadSave(sv);if(sv&&CLASSES[sv.cls]&&!titleConfirm){titleConfirm=true;renderTitle();return}const k=titleModelKey();clearSave();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
-function startNew(cls,name){P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);migratePotions();addCons('food','loaf',2);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q')}
+ const si=slotOf(titleSel);
+ if(b.dataset.t==='imp'){pickHeroFile();return}
+ if(b.dataset.t==='exp'&&si>=0){exportHero(si);return}
+ if(b.dataset.t==='copybad'&&si>=0){copyText(slotRaw(si)||'');return}
+ if(b.dataset.t==='del'&&si>=0){if(!titleConfirm){titleConfirm=true;renderTitle();return}try{localStorage.removeItem(slotKey(si))}catch(_){}titleSel=null;titleConfirm=false;renderTitle();return}
+ if(b.dataset.t==='play'){if(si>=0){const sv=readSlot(si);if(sv){useSlot(si);loadSave(sv)}return}const k=titleModelKey();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
+function startNew(cls,name){const free=freeSlot();if(free<0)return false;useSlot(free);P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);migratePotions();addCons('food','loaf',2);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q')}
 function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);if(!webValid(P.cls,P.tal)){const had=Object.keys(P.tal||{}).length;P.tal={};if(had)later(1.5,()=>toast('The talent web is new. Your talent points are back to spend in Spells.','lvl'))}P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;migratePotions();P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
 function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').hidden=true;$h('hud').hidden=false;setupButtons();restStick();CAM.zoom=OPT.camD||1;CAM.pitchAdj=0;titleConfirm=false;
  if(!G.maps[mid])G.maps[mid]=BUILD[mid]();const mm=G.maps[mid];let p=pos||mm.start;if(mm.solidAt(p.x,p.y))p=mm.start;enterMap(mid,p);save();$h('camHint').classList.remove('off');setTimeout(()=>$h('camHint').classList.add('off'),6000)}
@@ -3626,7 +3668,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

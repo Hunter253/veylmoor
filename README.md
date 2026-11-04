@@ -10,7 +10,7 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
 ## Play on PC
-Open the play link in Chrome, Edge or Firefox. Your save stays in that browser, on that PC.
+Open the play link in Chrome, Edge or Firefox. You can keep up to five heroes. They stay in that browser, on that PC, and you can export a hero to a file to back it up or move it to another device.
 
 | Action | Control |
 | --- | --- |
