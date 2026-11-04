@@ -644,6 +644,34 @@ await test('The ?moon= link holds a phase at night, and the moon draws in every 
   return [...problems, ...logs];
 });
 
+// Achievements and titles (11.a).
+await reset();
+await test('Achievement data is sound and every achievement can be earned', () => ev(`()=>{const V=window.__veyl,bad=[],ids=new Set(),groups=new Set(V.ACHG.map(g=>g[0]));V.startNew('bulwark','Tester');
+  for(const d of V.ACH){if(ids.has(d.id))bad.push('duplicate '+d.id);ids.add(d.id);if(!groups.has(d.g))bad.push(d.id+': unknown group '+d.g);if(!d.n||!d.d)bad.push(d.id+': no name or text');const g=typeof d.goal==='function'?d.goal():d.goal;if(!(g>=1))bad.push(d.id+': goal '+g);const v=d.v();if(!(v>=0))bad.push(d.id+': value '+v)}
+  if(V.ACH.length<25)bad.push('only '+V.ACH.length+' achievements');const ts=V.ACH.filter(d=>d.t).map(d=>d.t);if(new Set(ts).size!==ts.length)bad.push('two achievements give the same title');if(ts.length<6)bad.push('only '+ts.length+' titles');
+  if(V.achCheck(false).length)bad.push('a new hero earned something already');return bad}`));
+
+await test('Kills, gathering, forging, fusing, places, quests and bosses all count, and a title can be worn', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('thornstalker','Tester');const P=V.P,A=V.achS(),got=id=>!!V.achS().got[id];
+  for(let i=0;i<100;i++){const e=V.mkEnemy('rat',1,P.x+40,P.y);G.enemies.push(e);V.killEnemy(e)}if(A.c.kills!==100)bad.push('counted '+A.c.kills+' kills');V.achCheck(true);if(!got('kill100'))bad.push('100 kills not earned');if(got('kill500'))bad.push('500 kills earned early');
+  const k0=A.c.kills,e=V.mkEnemy('rat',1,P.x+40,P.y);G.enemies.push(e);V.killEnemy(e);V.killEnemy(e);if(A.c.kills!==k0+1)bad.push('a monster killed twice counted twice');
+  const me=V.mkEnemy('wolf',5,P.x+40,P.y);G.enemies.push(me);V.moonElite(me);V.killEnemy(me);if(A.c.moonElites!==1)bad.push('moonlit elite not counted');
+  P.bosses.vale=true;P.bosses.dunes=true;V.achCheck(true);if(!got('b_vale')||!got('b_dunes'))bad.push('bosses not earned');if(got('b_all'))bad.push('all bosses earned with two');
+  for(const q of V.QUESTS.slice(0,10))P.q[q.id]={s:'done',n:q.n};V.achCheck(true);if(!got('q10'))bad.push('10 quests not earned');
+  V.enterMap('vale');const m=G.map;for(const z of m.zones)V.achSeen(m,z.n);V.achCheck(true);if(!got('x_vale'))bad.push('all Veylmoor places visited but not earned');if(got('x_dunes'))bad.push('Dunes earned without visiting');
+  V.achSeen(m,m.zones[0].n);if(A.seen.vale.length!==m.zones.length)bad.push('a place counted twice');
+  A.c.kills=2000;const out=V.achCheck(false);if(!out.some(d=>d.id==='kill2000'))bad.push('2000 kills did not unlock');if(!/Monster Slayer/.test(document.getElementById('toasts').innerText))bad.push('no unlock toast');
+  V.openPanel('char');document.querySelector('#book [data-act="ctab"][data-t="ach"]').click();const bk=()=>document.querySelector('#book').innerText;if(!/achievements earned/.test(bk()))bad.push('no Achievements tab');
+  const tb=document.querySelector('#book [data-act="achtitle"][data-k="kill2000"]');if(!tb)bad.push('no title button');else{tb.click();if(V.achTitle()!=='Monster Slayer')bad.push('title not worn: '+V.achTitle())}
+  if(document.querySelector('#book [data-act="achtitle"][data-k="huntall"]'))bad.push('an unearned title can be chosen');document.querySelector('#book [data-act="ctab"][data-t="eq"]').click();if(!/Monster Slayer/.test(bk()))bad.push('title not under the name');
+  document.querySelector('#book [data-act="ctab"][data-t="ach"]').click();document.querySelector('#book [data-act="achtitle"][data-k=""]').click();if(V.achTitle())bad.push('title not removed');V.closePanel();
+  const g0=P.gold,x0=P.xp;V.achCheck(false);if(P.gold!==g0||P.xp!==x0)bad.push('an achievement gave gold or XP');return bad}`));
+
+await test('Achievements survive saving, and an old hero gets credit at once without toasts', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('ashcaller','Saver');const P=V.P,A=V.achS();A.c.kills=150;A.c.gathered=7;V.achCheck(true);A.title=null;
+  const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);const B=V.achS();if(B.c.kills!==150||B.c.gathered!==7)bad.push('counters lost: '+JSON.stringify(B.c));if(!B.got.kill100)bad.push('earned achievement lost');
+  const old=JSON.parse(JSON.stringify(d));delete old.ach;old.bosses={vale:true,dunes:true,frost:true,gloam:true,ember:true};const qs=V.QUESTS;old.q={};for(const q of qs)old.q[q.id]={s:'done',n:q.n};document.getElementById('toasts').innerHTML='';V.loadSave(old);const C=V.achS();
+  for(const id of ['b_all','qall','q25','qzone','huntall'])if(!C.got[id])bad.push('old hero not credited with '+id);if(C.c.kills)bad.push('old hero has kills '+C.c.kills);if(/Achievement/.test(document.getElementById('toasts').innerText))bad.push('loading showed achievement toasts');
+  const forged=JSON.parse(JSON.stringify(d));forged.ach={title:'kill2000',got:{},c:'x'};V.loadSave(forged);if(V.achTitle())bad.push('an unearned title loaded');if(typeof V.achS().c!=='object')bad.push('bad counters were kept');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
