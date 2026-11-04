@@ -464,6 +464,8 @@ kbd{display:none}#app.kbm kbd{display:block}
 
 .hbar.hp i.sh{width:0;background:repeating-linear-gradient(115deg,rgba(255,240,200,.85) 0 4px,rgba(255,220,140,.55) 4px 8px);box-shadow:0 0 6px rgba(255,230,160,.8)}
 .hbar.st{height:6px}.hbar.st i{background:linear-gradient(#c8ff9a,#4aa632)}
+.hbar.res{height:6px}.hbar.res.fury i{background:linear-gradient(#ffb04a,#c8321e)}.hbar.res.light i{background:linear-gradient(#fff6c8,#e0b040)}.hbar.res.full i{filter:brightness(1.35)}
+.spres{font-size:12px;color:#f0d890}
 #rollBtn{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 14px + var(--bR,0px)/var(--hz,1));right:calc(max(6px,env(safe-area-inset-right,0px)) + 156px + var(--xBR,0px)/var(--hz,1));width:52px;height:52px;padding:0;border:0;clip-path:var(--dia);background:linear-gradient(160deg,var(--brass2),var(--brassD) 50%,var(--brass));color:#c8ffb0;display:grid;place-items:center;zoom:var(--hz,1);touch-action:none}
 #rollBtn::before{content:"";position:absolute;inset:3px;clip-path:var(--dia);background:radial-gradient(circle at 50% 40%,#2a5530,#0e1a12 75%)}
 #rollBtn svg{position:relative;z-index:1;width:24px;height:24px}#rollBtn:active{transform:scale(.92)}#rollBtn.nost{filter:saturate(.2) brightness(.7)}#rollBtn.blocking{filter:brightness(1.5) sepia(.6)}
@@ -598,7 +600,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 
 <div id="hud" class="hud" hidden>
   <div id="pf" role="button" tabindex="0" aria-label="Open your bag"><div class="hexp"><canvas id="pfCan" class="por"></canvas><span id="menuDot" hidden></span><span class="lvb" id="pfLv">1</span></div>
-    <div class="pbars"><div class="pname" id="pfName"></div><div class="hbar hp"><i id="pfHp"></i><i id="pfSh" class="sh"></i><b id="pfNum"></b></div><div class="hbar mp"><i id="pfMp"></i></div><div class="hbar st"><i id="pfSt"></i></div></div></div>
+    <div class="pbars"><div class="pname" id="pfName"></div><div class="hbar hp"><i id="pfHp"></i><i id="pfSh" class="sh"></i><b id="pfNum"></b></div><div class="hbar mp"><i id="pfMp"></i></div><div class="hbar st"><i id="pfSt"></i></div><div class="hbar res" id="pfResW" hidden><i id="pfRes"></i></div></div></div>
   <div id="tf" hidden><div class="hexp sm"><canvas id="tfCan" class="por"></canvas><span class="lvb" id="tfLv">1</span></div><div class="pbars"><div id="tname" hidden></div><div class="hbar hp"><i id="tfHp"></i></div></div></div>
   <div id="buffs"></div>
   <div id="tracker"></div>
@@ -728,7 +730,7 @@ const CLASSES={
   blurb:'A greataxe, a war-cry and no patience. Hits harder than anyone and heals by drawing blood.',weapons:['Greataxe','Cleaver','War Axe'],
   ab:[{key:'hew',c:'#a8402a',name:'Hew',icon:'s_hew',cd:0.9,mp:0,base:17,range:58,tags:['Melee','Arc','Bleed'],desc:'Hack through every foe in front of you. Each hit opens a wound that bleeds, stacking up to 3 times.'},
       {key:'rend',c:'#c02838',needT:true,name:'Rending Strike',icon:'s_rend',cd:6,mp:15,base:24,range:70,tags:['Bleed','Lifesteal'],desc:'Tear into your target, leaving it bleeding heavily for 5 seconds. Bleeds you cause heal you for 25% of their damage.'},
-      {key:'roar',c:'#d0802a',name:'Battle Roar',icon:'s_roar',cd:18,mp:20,range:0,tags:['Buff','Haste','Weaken'],desc:'Roar for 8 seconds of fury: +25% damage, +15% movement speed and 8% lifesteal. Nearby foes are Shaken and deal 25% less damage for 5 seconds.'},
+      {key:'roar',c:'#d0802a',name:'Battle Roar',icon:'s_roar',cd:18,mp:20,range:0,tags:['Buff','Haste','Weaken'],desc:'Roar for 8 seconds of rage: +25% damage, +15% movement speed and 8% lifesteal. Nearby foes are Shaken and deal 25% less damage for 5 seconds.'},
       {key:'leap',c:'#8a5a2a',name:'Leap Slam',icon:'s_leap',cd:10,mp:28,base:42,range:220,tags:['Gap closer','Stun','Knockback'],desc:'Leap onto your target and slam the ground. Everything nearby is stunned, thrown back and slowed by 40% for 3 seconds.'},
       {key:'exec',c:'#7a1e1e',needT:true,name:'Execute',icon:'s_exec',cd:9,mp:20,base:32,range:70,lvl:5,tags:['Finisher','Reset'],desc:'A brutal finisher that deals two and a half times damage to foes under 35% health. If it kills, its cooldown resets and you heal 10%.'},
       {key:'bstorm',c:'#c06a2a',name:'Bladestorm',icon:'s_bstorm',cd:18,mp:40,base:15,range:90,lvl:11,per:'per hit',tags:['Area','Pull','Damage reduction'],desc:'Spin for 2.4 seconds, striking everything around you eight times and dragging foes inward. You take 30% less damage and can move while spinning.'}]},
@@ -1592,7 +1594,7 @@ let P=null,CLS=null,S=null;
 const G={mode:'title',map:null,maps:{},enemies:[],projs:[],fx:[],tele:[],areas:[],loot:[],texts:[],parts:[],timers:[],time:0,panel:null,zone:'',boss:null,near:null,tgt:null,shake:0,sel:null,saveT:0};
 const input={up:0,down:0,left:0,right:0,atk:false,sx:0,sy:0};
 const CAM={yaw:Math.PI,pitch:.5,zoom:1,lastDrag:-99,x:0,y:0,z:0,tx:0,ty:0,tz:0};
-function newPlayer(cls){return{cls,prof:null,profXp:0,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
+function newPlayer(cls){return{cls,prof:null,profXp:0,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],res:0,resB:[0,0,0,0,0,0],resLast:-99,bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
 function talentSpent(){let s=0;for(const k in P.tal)s+=P.tal[k];return s}
 const talentPoints=()=>Math.max(0,P.lvl-1-talentSpent());
 function recalc(keep=true){
@@ -1709,7 +1711,19 @@ let lastMsg=0;function msg(s){if(G.time-lastMsg<1.2)return;lastMsg=G.time;toast(
 
 /* ================= Combat ================= */
 const live=()=>G.enemies.filter(e=>!e.dead&&e.fade<=0);
-function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit+S.m.critA[i];if(crit)a*=S.critD/100;a*=talentSelf();return{a:Math.max(1,Math.round(a)),crit,i}}
+/* Class resources: only the Reaver and Lumen have one, and everyone keeps mana. dmg and heal list the skills (by slot) that spend the bar. */
+const RES={reaver:{name:'Fury',bar:'fury',col:'#ff8a4a',hit:8,hurt:5,dmg:[1,3,4,5],heal:[]},lumen:{name:'Light',bar:'light',col:'#fff1b8',hit:8,hurt:0,dmg:[3],heal:[1,2,4,5]}};
+const RESN={max:100,bonus:.5,fadeAfter:5,fadePerSec:20,noteFrom:.1};
+function resGain(n){const d=RES[P.cls];if(!d||!n||P.dead)return;const was=P.res;P.res=Math.min(RESN.max,P.res+n);P.resLast=G.time;if(was<RESN.max&&P.res>=RESN.max)txt(P.x,P.y,2.4,d.name+' full',d.col,15)}
+const resHit=()=>{const d=RES[P.cls];if(d)resGain(d.hit)};
+const resHurt=()=>{const d=RES[P.cls];if(d)resGain(d.hurt)};
+function resTick(dt){if(P.res>0&&G.time-P.resLast>RESN.fadeAfter)P.res=Math.max(0,P.res-RESN.fadePerSec*dt)}
+const resUses=i=>{const d=RES[P.cls];return!!d&&(d.dmg.includes(i)||d.heal.includes(i))};
+const resDmg=i=>{const d=RES[P.cls];return d&&d.dmg.includes(i)?1+(P.resB[i]||0):1};
+const resHeal=i=>{const d=RES[P.cls];return d&&d.heal.includes(i)?1+(P.resB[i]||0):1};
+function resSpent(i){const d=RES[P.cls],f=P.resB[i]||0;if(P.res<=0)return;P.res=0;if(f>=RESN.noteFrom*RESN.bonus)txt(P.x,P.y,2.4,`+${Math.round(f*100)}% ${d.dmg.includes(i)?'damage':'healing'}`,d.col,15)}
+function resNote(i){const d=RES[P.cls];if(!d)return'';if(i===0)return`<div class="spres">Each hit builds ${d.name}.${d.hurt?' So does taking a hit.':''}</div>`;if(!resUses(i))return'';return`<div class="spres">Spends all your ${d.name} for up to ${Math.round(RESN.bonus*100)}% more ${d.dmg.includes(i)?'damage':'healing'}.</div>`}
+function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*resDmg(i)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit+S.m.critA[i];if(crit)a*=S.critD/100;a*=talentSelf();return{a:Math.max(1,Math.round(a)),crit,i}}
 function healP(a,quiet){if(P.dead)return;a=Math.round(a*(1+S.amp/200));if(a<=0)return;const b=P.hp;P.hp=Math.min(S.maxHp,P.hp+a);const got=Math.round(P.hp-b);if(S.m.k.overheal&&a-got>0){P.shield=Math.min(S.maxHp*.3,(P.shield||0)+(a-got));P.shieldT=Math.max(P.shieldT||0,6)}if(!quiet&&got>0)txt(P.x,P.y,1.9,'+'+got,'#6aff5a',19)}
 function hitEnemy(e,r,o={}){
  if(e.dead)return;let a=r.a;const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
@@ -1746,7 +1760,7 @@ function gainXP(x){if(P.lvl>=MAXL)return;P.xp+=x;txt(P.x,P.y,2.2,'+'+x+' xp','#c
  if(up){sfx('lvl');recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;ring(P.x,P.y,70,'#f0c860',1.2,4,true);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#ffd870',t:0,max:1.6});burst(P.x,P.y,'#f0d58a',30,140,1.1,3,0.3);toast(`Level ${P.lvl}. You have a talent point to spend.`,'lvl');updateBadges()}}
 function hurtPlayer(raw,src,o={}){
  if(P.dead)return;if(o.dot){let a=Math.max(1,Math.round(raw*(1-Math.min(.5,S.drArm*.5))*rr(.9,1.1)));if(P.shield>0){const ab=Math.min(P.shield,a);P.shield-=ab;a-=ab;if(a<=0)return}P.hp-=a;P.lastHurt=G.time;txt(P.x,P.y,1.5,'-'+a,DEBN[o.dot][1],15);if(P.hp<=0){if(cheatDeath())return;P.hp=0;die()}return}if(P.iframes>0||R()*100<S.dodge+buffSum('dodge')){txt(P.x,P.y,1.7,'Dodge','#bff8ff',17);sfx('dodge');return}if(P.mounted)dismount();if(P.cast&&P.cast.i===-1)P.cast=null;if(src&&!src.dead&&(!G.tgt||G.tgt.dead)){G.tgt=src;P.auto=true}
- if(src&&src.weakT>0)raw*=1-src.weakA;
+ resHurt();if(src&&src.weakT>0)raw*=1-src.weakA;
  if(P.blocking&&blockFacing(src)){raw*=1-BLOCK.dr;P.st=Math.max(0,P.st-BLOCK.stPerHit);P.stLast=G.time;txt(P.x,P.y,2.2,'Blocked','#ffe6a0',15);sfx('absorb');ring(P.x,P.y,36,'#ffe6a0',.3,4)}
  let dr=S.drArm+S.m.dr+buffSum('dr')+(P.shield>0?S.m.shieldDr:0)+(P.hp<S.maxHp*.35?S.m.lowDr:0)+((P.unbrT||0)>G.time?.35:0);for(const w of G.areas)if(w.ward&&dist(P.x,P.y,w.x,w.y)<w.r)dr+=w.ward;dr=Math.min(0.8,dr);
  let a=Math.max(1,Math.round(raw*(1-dr)*rr(0.9,1.1)));
@@ -1755,7 +1769,7 @@ function hurtPlayer(raw,src,o={}){
  P.hp-=a;P.lastHurt=G.time;P.hurtFlash=0.18;if(P.buffs.some(b=>b.id==='eat')){P.buffs=P.buffs.filter(b=>b.id!=='eat');txt(P.x,P.y,2.3,'Meal interrupted','#ffb080',13)}
  txt(P.x,P.y,1.7,'-'+a,'#ff4030',21);sfx('hurt');if(OPT.vib!==false&&a>S.maxHp*.08){if(PAD)padRumble(a>S.maxHp*.2?.85:.45);else if(navigator.vibrate)try{navigator.vibrate(a>S.maxHp*.2?70:30)}catch(_){}}shake(a>S.maxHp*0.2?7:2);if(P.hp<=0){if(cheatDeath())return;P.hp=0;die()}}
 function cheatDeath(){if(!S.m.k.phoenix||G.time<(P.phxCd||0))return false;P.phxCd=G.time+60;P.hp=Math.round(S.maxHp*.3);P.iframes=Math.max(P.iframes,1);txt(P.x,P.y,2.5,'Phoenix Heart','#ffb050',17);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#ff8a3a',t:0,max:1.2});ABFX.ring(CLS.ab[1],null,1);return true}
-function die(){blockEnd();P.dead=true;P.deb=[];P.mounted=false;P.cast=null;P.auto=false;const lost=Math.floor(P.gold*0.1);P.gold-=lost;wearNote(wearAll(DUR.deathLoss));burst(P.x,P.y,'#c9463c',24,120,0.9,3);for(const e of G.enemies)if(e.state==='chase')e.state='return';later(1.3,()=>openPanel('dead',{lost}))}
+function die(){blockEnd();P.dead=true;P.res=0;P.deb=[];P.mounted=false;P.cast=null;P.auto=false;const lost=Math.floor(P.gold*0.1);P.gold-=lost;wearNote(wearAll(DUR.deathLoss));burst(P.x,P.y,'#c9463c',24,120,0.9,3);for(const e of G.enemies)if(e.state==='chase')e.state='return';later(1.3,()=>openPanel('dead',{lost}))}
 function respawn(){closePanel(true);const rm=G.map&&G.map.id!=='abbey'?G.map.id:'vale';P.dead=false;P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;P.buffs=[];P.deb=[];G.harm=[];P.cds=[0,0,0,0,0,0];enterMap(rm,G.maps[rm].start)}
 
 /* ================= Abilities ================= */
@@ -1780,7 +1794,7 @@ function useAbility(i){
  return execAbility(i,t)}
 function execAbility(i,t){const ab=CLS.ab[i],cost=abCost(i);if(P.mp<cost){notReady('Not enough mana');return false}
  if(t&&t.dead)t=null;if(t)faceTo(t.x,t.y);
- const sc=P.sureCrit;if(ABFX[ab.key](ab,t,i)===false)return false;if(sc&&ab.key!=='vault')P.sureCrit=Math.max(0,(+sc)-1);
+ const uses=resUses(i),oldB=P.resB[i];if(uses)P.resB[i]=P.res/RESN.max*RESN.bonus;const sc=P.sureCrit;if(ABFX[ab.key](ab,t,i)===false){P.resB[i]=oldB;return false}if(uses)resSpent(i);if(sc&&ab.key!=='vault')P.sureCrit=Math.max(0,(+sc)-1);
  P.mp-=cost;P.cdMax[i]=cdFor(i);P.cds[i]=P.cdMax[i];talentCast(i);if(i>0)P.castAnim=0.35;
  if(i>0){P.abCount++;if(S.uq.bell&&P.abCount%4===0)later(0.1,()=>{ring(P.x,P.y,120,'#9fd3e0',0.5,5);for(const e of live())if(dist(P.x,P.y,e.x,e.y)<120+e.d.r)hitEnemy(e,roll(0,30),{col:'#9fd3e0'})})}
  return true}
@@ -1834,7 +1848,7 @@ const ABFX={
 
  /* ---------- Reaver: bleeds, lifesteal, finishers ---------- */
  hew(ab,t,i){const K=S.m.k,rg=ab.range*(K.wideHew?1.25:1),wd=K.wideHew?1.5:1.1,n=frontArc(rg,wd,e=>{const r=roll(i,ab.base);hitEnemy(e,r,{col:'#ffb080'});if(!e.dead)addDot(e,'bleed',r.a*.15,3,3);echo(e,i,ab.base)});
-  slashFx(Math.atan2(P.fy,P.fx),rg+8,wd,'#ff7a5a','#ffd0b0');if(n&&K.frenzy){let b=P.buffs.find(b=>b.id==='frenzy');if(!b){b={id:'frenzy',t:5,st:0,dmgB:0};P.buffs.push(b)}b.st=Math.min(5,b.st+1);b.dmgB=.04*b.st;b.t=5}sfx(n?'heavy':'swing');P.atkAnim=0.3},
+  if(n)resHit();slashFx(Math.atan2(P.fy,P.fx),rg+8,wd,'#ff7a5a','#ffd0b0');if(n&&K.frenzy){let b=P.buffs.find(b=>b.id==='frenzy');if(!b){b={id:'frenzy',t:5,st:0,dmgB:0};P.buffs.push(b)}b.st=Math.min(5,b.st+1);b.dmgB=.04*b.st;b.t=5}sfx(n?'heavy':'swing');P.atkAnim=0.3},
  rend(ab,t,i){if(!inReach(t,ab))return false;const r=roll(i,ab.base);if(S.m.k.exsang&&t.dots){const b=t.dots.find(d=>d.k==='bleed');if(b){const all=Math.round(b.dps*b.t*(b.st||1));t.dots=t.dots.filter(d=>d!==b);txt(t.x,t.y,t.d.h+.8,'Exsanguinate','#ff4040',15);hitEnemy(t,{a:Math.max(1,all),crit:false},{col:'#ff2020',quiet:true});if(t.dead){sfx('execute');return}}}hitEnemy(t,r,{col:'#ff5050'});if(!t.dead){addDot(t,'bleed',r.a*.22,5,3);t.dots.find(d=>d.k==='bleed').st=3}
   const a=Math.atan2(t.y-P.y,t.x-P.x);for(let k=-1;k<=1;k++)G.fx.push({k:'line',x1:t.x-Math.cos(a+k*.5+1.2)*26,y1:t.y-Math.sin(a+k*.5+1.2)*26,x2:t.x+Math.cos(a+k*.5+1.2)*26,y2:t.y+Math.sin(a+k*.5+1.2)*26,c:'#ff3030',w:6,t:0,max:.4});
   spark(t.x,t.y,'#c01818',18,t.d.h*.6,110);sfx('execute',.6);sfx('bleed');shake(3);P.atkAnim=0.3},
@@ -1886,19 +1900,19 @@ const ABFX={
   const a=Math.atan2(P.fy,P.fx);G.fx.push({k:'line',x1:P.x,y1:P.y,x2:P.x+Math.cos(a)*300,y2:P.y+Math.sin(a)*300,c:'#c8ff9a',w:10,t:0,max:.35});ring(P.x,P.y,50,'#c8ff9a',.3,5);sfx('deadeye');shake(4)},
 
  /* ---------- Lumen: healing, light, protection ---------- */
- mote(ab,t,i){const K=S.m.k,a=Math.atan2(P.fy,P.fx),hit=(e,p)=>{healP(p.dmg.a*.15*S.m.heal,true);if(K.bounce){const f=live().filter(f=>f!==e&&dist(f.x,f.y,e.x,e.y)<170).sort((u,v)=>dist(u.x,u.y,e.x,e.y)-dist(v.x,v.y,e.x,e.y))[0];if(f)later(.12,()=>{if(f.dead)return;G.fx.push({k:'chain',pts:[[e.x,e.y,e.d.h*.6],[f.x,f.y,f.d.h*.6]],c:'#fff1b8',t:0,max:.3});hitEnemy(f,{a:Math.max(1,Math.round(p.dmg.a*.6)),crit:p.dmg.crit},{col:'#fff1b8',quiet:true});spark(f.x,f.y,'#fff6c8',6,f.d.h*.6,70)})}};for(const o of(K.twin?[-.09,.09]:[0]))shoot(i,ab,{ang:a+o,spd:380,col:'#fff1b8',r:6,kind:'mote',onHit:hit});sfx('holy');P.castAnim=0.25},
- mend(){healP(S.maxHp*.22*S.m.heal);pCleanse(true);P.buffs.push({id:'mend',t:6,hot:.03*S.m.heal*(1+(S.m.k.mendHot||0))});ring(P.x,P.y,46,'#9be08a',.6,5,true);rise(P.x,P.y,'#c9f0a8',22,26,1.1,3);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9be08a',t:0,max:.7});sfx('heal')},
+ mote(ab,t,i){const K=S.m.k,a=Math.atan2(P.fy,P.fx),hit=(e,p)=>{resHit();healP(p.dmg.a*.15*S.m.heal,true);if(K.bounce){const f=live().filter(f=>f!==e&&dist(f.x,f.y,e.x,e.y)<170).sort((u,v)=>dist(u.x,u.y,e.x,e.y)-dist(v.x,v.y,e.x,e.y))[0];if(f)later(.12,()=>{if(f.dead)return;G.fx.push({k:'chain',pts:[[e.x,e.y,e.d.h*.6],[f.x,f.y,f.d.h*.6]],c:'#fff1b8',t:0,max:.3});hitEnemy(f,{a:Math.max(1,Math.round(p.dmg.a*.6)),crit:p.dmg.crit},{col:'#fff1b8',quiet:true});spark(f.x,f.y,'#fff6c8',6,f.d.h*.6,70)})}};for(const o of(K.twin?[-.09,.09]:[0]))shoot(i,ab,{ang:a+o,spd:380,col:'#fff1b8',r:6,kind:'mote',onHit:hit});sfx('holy');P.castAnim=0.25},
+ mend(ab,t,i){healP(S.maxHp*.22*S.m.heal*resHeal(i));pCleanse(true);P.buffs.push({id:'mend',t:6,hot:.03*S.m.heal*(1+(S.m.k.mendHot||0))*resHeal(i)});ring(P.x,P.y,46,'#9be08a',.6,5,true);rise(P.x,P.y,'#c9f0a8',22,26,1.1,3);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9be08a',t:0,max:.7});sfx('heal')},
  halo(ab,t,i){const K=S.m.k,pulse=(mult,heal)=>{let n=0;for(const e of live())if(dist(P.x,P.y,e.x,e.y)<ab.range+e.d.r){const r=roll(i,ab.base);r.a=Math.max(1,Math.round(r.a*mult));hitEnemy(e,r,{col:'#fff1b8',quiet:n>0});if(!e.dead)weaken(e,.3+(K.dazzle||0),4);n++}
-  if(n&&heal)healP(S.maxHp*.06*Math.min(3,n)*S.m.heal*(1+(K.haloHeal||0)));nova(P.x,P.y,ab.range,'#fff1b8','#ffffff');for(let k=0;k<16;k++){const a=k/16*TAU;spark(P.x+Math.cos(a)*ab.range*.8,P.y+Math.sin(a)*ab.range*.8,'#fff6c8',1,1,30)}sfx('halo')};
+  if(n&&heal)healP(S.maxHp*.06*Math.min(3,n)*S.m.heal*(1+(K.haloHeal||0))*resHeal(i));nova(P.x,P.y,ab.range,'#fff1b8','#ffffff');for(let k=0;k<16;k++){const a=k/16*TAU;spark(P.x+Math.cos(a)*ab.range*.8,P.y+Math.sin(a)*ab.range*.8,'#fff6c8',1,1,30)}sfx('halo')};
   pulse(1,true);if(K.pulse)later(1,()=>{if(!P.dead)pulse(.7,false)});if(K.crown)G.areas.push({x:P.x,y:P.y,r:ab.range*.8,t:6,max:6,next:1,int:1,i,base:ab.base*.3,c:'#fff1b8',kind:'holy',follow:true})},
  judge(ab,t,i){if(!t||t.dead||dist(P.x,P.y,t.x,t.y)>ab.range+t.d.r+12){msg('No foe in range');return false}const r=roll(i,ab.base);if(t.weakT>0){r.a=Math.round(r.a*1.6);txt(t.x,t.y,t.d.h+.6,'Smite!','#fff1b8',16)}
   hitEnemy(t,r,{stun:1.2,col:'#fff1b8',quiet:true});G.fx.push({k:'beam',x:t.x,y:t.y,c:'#fff1b8',t:0,max:.6,w:.9});ring(t.x,t.y,50,'#fff1b8',.45,6,true);spark(t.x,t.y,'#ffffff',16,.3,120);sfx('judge');shake(5);if(S.m.k.retrib)later(.5,()=>{if(t.dead)return;hitEnemy(t,roll(i,ab.base*.6),{col:'#fff1b8',quiet:true});G.fx.push({k:'beam',x:t.x,y:t.y,c:'#fff1b8',t:0,max:.5,w:.7});ring(t.x,t.y,40,'#fff1b8',.35,5,true);sfx('judge',.6)})},
- sanct(ab,t,i){const K=S.m.k,sr=ab.range*(K.bigSanct?1.3:1),st=K.bigSanct?9:7;pCleanse(true);G.areas.push({x:P.x,y:P.y,r:sr,t:st,max:st,next:0,int:1,i,base:ab.base,slow:.4,ward:.35,hot:.035*(1+(K.sanctHot||0)),c:'#ffe6a0',kind:'holy',follow:!!K.sanctFollow});P.buffs.push({id:'sanct',t:st});
+ sanct(ab,t,i){const K=S.m.k,sr=ab.range*(K.bigSanct?1.3:1),st=K.bigSanct?9:7;pCleanse(true);G.areas.push({x:P.x,y:P.y,r:sr,t:st,max:st,next:0,int:1,i,base:ab.base,slow:.4,ward:.35,hot:.035*(1+(K.sanctHot||0))*resHeal(i),c:'#ffe6a0',kind:'holy',follow:!!K.sanctFollow});P.buffs.push({id:'sanct',t:st});
   nova(P.x,P.y,sr,'#ffe6a0','#ffffff');rise(P.x,P.y,'#fff0b0',24,ab.range*.8,1.2,3);sfx('sanct')},
  dawn(ab,t,i){const p=pointAhead(t,120),r=roll(i,ab.base);G.tele.push({x:p.x,y:p.y,r:130,t:0,max:.45,team:'p',rgb:[1,.92,.6],cb(){let n=0;
   for(const e of live())if(dist(p.x,p.y,e.x,e.y)<130+e.d.r){hitEnemy(e,{a:r.a,crit:r.crit,i},{col:'#fff1b8',stun:1.5,quiet:n>0});n++}
-  healP(S.maxHp*Math.min(.4,.08*n)*S.m.heal);addShield(S.maxHp*.15*(S.m.k.dawnShield?2:1),8);G.fx.push({k:'beam',x:p.x,y:p.y,c:'#fff1b8',t:0,max:.8,w:3.2,hgt:12});nova(p.x,p.y,130,'#ffe6a0','#ffffff');
-  rise(p.x,p.y,'#fff6c8',30,110,1.2,4);burst(p.x,p.y,'#fff1b8',30,240,.8,3.5,.3);sfx('dawn');shake(7);if(S.m.k.flare)G.areas.push({x:p.x,y:p.y,r:110,t:5,max:5,next:.5,int:1,i,base:ab.base*.2,hot:.02,c:'#fff1b8',kind:'holy'})}})}
+  healP(S.maxHp*Math.min(.4,.08*n)*S.m.heal*resHeal(i));addShield(S.maxHp*.15*(S.m.k.dawnShield?2:1),8);G.fx.push({k:'beam',x:p.x,y:p.y,c:'#fff1b8',t:0,max:.8,w:3.2,hgt:12});nova(p.x,p.y,130,'#ffe6a0','#ffffff');
+  rise(p.x,p.y,'#fff6c8',30,110,1.2,4);burst(p.x,p.y,'#fff1b8',30,240,.8,3.5,.3);sfx('dawn');shake(7);if(S.m.k.flare)G.areas.push({x:p.x,y:p.y,r:110,t:5,max:5,next:.5,int:1,i,base:ab.base*.2,hot:.02*resHeal(i),c:'#fff1b8',kind:'holy'})}})}
 };
 
 function usePotion(){if(P.dead||P.potCd>0)return;if(tonicCount()<=0){msg('No tonics left. Any shop sells them.');return}takeCons('tonic',null);P.potCd=10;sfx('heal');pCleanse(false);healP(S.maxHp*0.45);P.mp=Math.min(S.maxMp,P.mp+S.maxMp*0.45);burst(P.x,P.y,'#e07a6a',14,50,0.8,2.5,0.5)}
@@ -1988,7 +2002,7 @@ function updatePlayer(dt){
  P.potCd=Math.max(0,P.potCd-dt);P.faceLock=Math.max(0,P.faceLock-dt);P.atkAnim=Math.max(0,P.atkAnim-dt);P.castAnim=Math.max(0,P.castAnim-dt);P.spin=Math.max(0,(P.spin||0)-dt);
  for(const b of P.buffs){b.t-=dt;if(b.hot)P.hp=Math.min(S.maxHp,P.hp+S.maxHp*b.hot*dt);if(b.mpHot)P.mp=Math.min(S.maxMp,P.mp+S.maxMp*b.mpHot*dt)}P.buffs=P.buffs.filter(b=>b.t>0);if(P.shieldT>0){P.shieldT-=dt;if(P.shieldT<=0)P.shield=0}
  if(buffSum('dmgB')&&R()<dt*10)rise(P.x,P.y,'#ff6a2a',1,12,.6,2.5);
- P.mp=Math.min(S.maxMp,P.mp+S.mpReg*dt);P.hp=Math.min(S.maxHp,P.hp+S.hpReg*dt);P.iframes=Math.max(0,P.iframes-dt);P.rollAnim=Math.max(0,P.rollAnim-dt);
+ resTick(dt);P.mp=Math.min(S.maxMp,P.mp+S.mpReg*dt);P.hp=Math.min(S.maxHp,P.hp+S.hpReg*dt);P.iframes=Math.max(0,P.iframes-dt);P.rollAnim=Math.max(0,P.rollAnim-dt);
  if(G.time-P.stLast>.8)P.st=Math.min(S.maxSt,P.st+S.stReg*dt);
  if(G.time-P.lastHurt>5)P.hp=Math.min(S.maxHp,P.hp+S.maxHp*0.025*dt);
  updateWade(dt);updateDebuffs(dt);
@@ -3116,7 +3130,7 @@ function portraits(){
 /* ================= HUD ================= */
 const $h=id=>document.getElementById(id);
 const EL={};
-function cacheEls(){for(const id of['pfHp','pfMp','pfLv','pfNum','pfCan','tf','tfHp','tfLv','tfCan','tname','buffs','tracker','carrow','castbar','castI','castT','skillbar','quick','jumpBtn','mmap','compass','pfSt','pfSh','rollBtn','btnAct','lootwin','xpI','menuDot'])EL[id]=$h(id)}
+function cacheEls(){for(const id of['pfHp','pfMp','pfLv','pfNum','pfCan','tf','tfHp','tfLv','tfCan','tname','buffs','tracker','carrow','castbar','castI','castT','skillbar','quick','jumpBtn','mmap','compass','pfSt','pfRes','pfResW','pfSh','rollBtn','btnAct','lootwin','xpI','menuDot'])EL[id]=$h(id)}
 const SK=[0,1,2,3,4,5,'pot','tgt','mnt'],QK=[0,1,2];
 function setupButtons(){
  const skHTML=(s,cls)=>{let ic,c,lbl,key;if(s==='pot'){ic='potion';c='#c0402a';lbl='Marsh Tonic';key='Q'}else if(s==='tgt'){ic='target';c='#8a6a3a';lbl='Next target';key='Tab'}else if(s==='mnt'){ic='horse';c='#9a7a4a';lbl='Summon or dismiss your mount';key='R'}else{const ab=CLS.ab[s];ic=ab.icon;c=ab.c;lbl=ab.name;key=s===0?'F':String(s)}
@@ -3127,7 +3141,7 @@ let hudF=0,lastTgt=null,lastNear,lastLootKey='~',lootHide='';
 const arc=(el,f)=>{el.style.width=(clamp(f,0,1)*100).toFixed(1)+'%'};
 const BUFFI={eat:'food',fed:'food',frenzy:'s_hew',massacre:'s_exec',oath:'s_oath',vault:'s_vault',sanct:'s_sanct',roar:'s_roar',bastion:'s_bastion',bstorm:'s_bstorm',mend:'s_mend',blink:'s_blink'};
 function hud(){hudF++;
- arc(EL.pfHp,P.hp/S.maxHp);arc(EL.pfSh,(P.shield||0)/S.maxHp);arc(EL.pfMp,P.mp/S.maxMp);arc(EL.pfSt,P.st/S.maxSt);EL.rollBtn.classList.toggle('nost',P.st<25);EL.pfLv.textContent=P.lvl;EL.pfNum.textContent=`${Math.ceil(P.hp)} / ${S.maxHp}`;
+ arc(EL.pfHp,P.hp/S.maxHp);arc(EL.pfSh,(P.shield||0)/S.maxHp);arc(EL.pfMp,P.mp/S.maxMp);arc(EL.pfSt,P.st/S.maxSt);{const rd=RES[P.cls];EL.pfResW.hidden=!rd;if(rd){arc(EL.pfRes,P.res/RESN.max);const c='hbar res '+rd.bar+(P.res>=RESN.max?' full':'');if(EL.pfResW.className!==c)EL.pfResW.className=c}}EL.rollBtn.classList.toggle('nost',P.st<25);EL.pfLv.textContent=P.lvl;EL.pfNum.textContent=`${Math.ceil(P.hp)} / ${S.maxHp}`;
  EL.xpI.style.width=(P.lvl>=MAXL?100:P.xp/XPN(P.lvl)*100)+'%';
  const t=G.tgt&&!G.tgt.dead?G.tgt:null;EL.tf.hidden=!t;EL.tname.hidden=!t;
  if(t){arc(EL.tfHp,t.hp/t.max);EL.tfLv.textContent=t.lvl;if(t!==lastTgt){EL.tname.textContent=t.d.name;EL.tname.classList.toggle('hard',t.lvl>=P.lvl+3);lastTgt=t;tgtDirty=true}}else lastTgt=null;
@@ -3180,6 +3194,10 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:24,date:'4 Nov 2026',title:'Fury and Light',items:[
+  'Reavers now build Fury with each Hew that connects and each hit they take. Lumens build Light with each Light Mote that hits. Each has a new bar under stamina, and it fades soon after a fight.',
+  'Using a skill spends the whole bar, and a fuller bar gives a bigger boost, up to 50%. Reaver skills hit harder, except Battle Roar, which leaves Fury alone. Lumen healing skills heal more, and Judgement hits harder.',
+  'Mana works as before. Fire a skill right away, or wait a moment for a stronger one.']},
  {id:23,date:'4 Nov 2026',title:'The Bulwark can block',items:[
   'Bulwarks can now raise their shield. Tap dodge to roll as before, or hold it to block.',
   'Blocking stops most of the damage from attacks in front of you. You move slowly, you can\'t attack, and it drains your stamina, faster with each hit you take.',
@@ -3377,7 +3395,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   h+=`</div>`}
  else if(k==='spells'){title='Spells';const tab=G.spTab||'sk';const pts=talentPoints();h=`<div class="tabs"><button class="tab ${tab==='sk'?'on':''}" data-act="stab" data-t="sk">${svg('book')}Skills</button><button class="tab ${tab==='tal'?'on':''}" data-act="stab" data-t="tal">${svg('target')}Talents${pts?` (${pts})`:''}</button></div><div class="pad">`;
   if(tab==='sk'){const si=clamp(G.spSel||0,0,CLS.ab.length-1),sa=CLS.ab[si],sl=P.lvl<(sa.lvl||1);h+=`<div class="spwrap"><div class="splist">${CLS.ab.map((ab,i)=>{const lock=P.lvl<(ab.lvl||1);return`<button class="spbtn ${i===si?'sel':''} ${lock?'locked':''}" data-act="spsel" data-i="${i}"><span class="sk" style="--c:${ab.c}"><span class="ic">${svg(ab.icon)}</span></span><span><b>${esc(ab.name)}</b><small>${lock?'Level '+ab.lvl:i===0?'Basic attack':ab.mp+' mana'}</small></span></button>`}).join('')}</div>
-   <div class="qdet"><div style="display:flex;gap:12px;align-items:center"><div class="sk big" style="--c:${sa.c}"><span class="ic">${svg(sa.icon)}</span></div><h3>${esc(sa.name)}</h3></div><div class="muted">${si===0?'Basic attack · repeats while you have a target':`${sa.mp} mana · ${sa.cd}s cooldown · ${sa.cast?sa.cast+'s cast':'instant'}`}</div>${sa.tags?`<div class="sptags">${sa.tags.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}<div>${esc(sa.desc)}</div>${sa.base?`<div class="spdmg">About <b>${estDmg(si)}</b> damage${sa.per?' '+sa.per:''} at your level</div>`:''}${sl?`<span class="obar">Learned at level ${sa.lvl}</span>`:`<div class="muted">On your skill bar: ${si===0?'Space':'key '+si}</div>`}</div></div>`}
+   <div class="qdet"><div style="display:flex;gap:12px;align-items:center"><div class="sk big" style="--c:${sa.c}"><span class="ic">${svg(sa.icon)}</span></div><h3>${esc(sa.name)}</h3></div><div class="muted">${si===0?'Basic attack · repeats while you have a target':`${sa.mp} mana · ${sa.cd}s cooldown · ${sa.cast?sa.cast+'s cast':'instant'}`}</div>${sa.tags?`<div class="sptags">${sa.tags.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}<div>${esc(sa.desc)}</div>${sa.base?`<div class="spdmg">About <b>${estDmg(si)}</b> damage${sa.per?' '+sa.per:''} at your level</div>`:''}${resNote(si)}${sl?`<span class="obar">Learned at level ${sa.lvl}</span>`:`<div class="muted">On your skill bar: ${si===0?'Space':'key '+si}</div>`}</div></div>`}
   else h+=webHTML();
   h+='</div>'}
  else if(k==='map'){title=G.map.id==='abbey'?'The Sunken Abbey':(AREAS[G.map.id]?AREAS[G.map.id].name:'Map');h=`<div class="mapwrap"><canvas id="mapCan" aria-label="World map"></canvas></div>`}
@@ -3767,7 +3785,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

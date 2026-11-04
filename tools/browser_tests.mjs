@@ -364,6 +364,40 @@ await test('The dodge key and the phone button both tap and hold', () => ev(`()=
   const b=document.getElementById('rollBtn'),pt=(el,t)=>el.dispatchEvent(new PointerEvent(t,{pointerId:7,bubbles:true,cancelable:true}));P.st=100;pt(b,'pointerdown');step(8);if(!P.blocking)bad.push('holding the phone button did not block');dispatchEvent(new PointerEvent('pointerup',{pointerId:99}));if(!P.blocking)bad.push('another finger ended the block');dispatchEvent(new PointerEvent('pointerup',{pointerId:7}));if(P.blocking)bad.push('lifting the finger did not end it');P.st=100;pt(b,'pointerdown');step(1);dispatchEvent(new PointerEvent('pointerup',{pointerId:7}));if(!P.dash)bad.push('tapping the phone button did not dodge');step(20);
   P.st=100;key('keydown');step(8);dispatchEvent(new Event('blur'));if(P.blocking||P.blkDown!=null)bad.push('losing window focus left the block on');key('keyup');return bad}`));
 
+await reset();
+await test('Fury builds from Hew and from being hit, and fades after a fight', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G;G.enemies=[];const R=V.RES.reaver,N=V.RESN,step=n=>{for(let i=0;i<n;i++)V.update(1/30)};
+  if(P.res!==0)bad.push('a new hero started with Fury');P.cds[0]=0;V.execAbility(0,null);if(P.res!==0)bad.push('a swing at nothing built Fury');
+  const e=V.mkEnemy('wolf',1,P.x,P.y-20);e.hp=e.max=1e7;G.enemies=[e];P.fx=0;P.fy=-1;P.cds[0]=0;V.execAbility(0,e);if(P.res!==R.hit)bad.push('Hew built '+P.res);
+  G.enemies=[];const r0=P.res;V.S.dodge=0;P.iframes=0;P.hp=1e7;V.hurtPlayer(10,null);if(P.res!==r0+R.hurt)bad.push('a hit built '+(P.res-r0));V.hurtPlayer(10,null,{dot:'burn'});if(P.res!==r0+R.hurt)bad.push('damage over time built Fury');
+  V.resGain(500);if(P.res!==N.max)bad.push('Fury went over the cap: '+P.res);step(Math.floor(N.fadeAfter*30)-15);if(P.res!==N.max)bad.push('Fury faded too soon: '+P.res);step(45);if(!(P.res<N.max))bad.push('Fury did not start fading');step(30*8);if(P.res!==0)bad.push('Fury did not fade away: '+P.res);return bad}`));
+
+await reset();
+await test('Spending Fury boosts damage by how full the bar is', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G;G.enemies=[];P.lvl=20;V.recalc(false);V.S.maxMp=1e6;V.S.crit=0;
+  const e=V.mkEnemy('wolf',1,P.x,P.y-30);G.enemies=[e];const hit=(res)=>{e.hp=e.max=1e8;e.dots=[];e.vulnT=0;P.cds[1]=0;P.mp=1e6;P.res=res;const b=e.hp;V.execAbility(1,e);return b-e.hp};
+  const med=(res)=>{const a=[];for(let i=0;i<41;i++)a.push(hit(res));a.sort((x,y)=>x-y);return a[20]},none=med(0),half=med(50),full=med(100);
+  if(!(full/none>1.38&&full/none<1.62))bad.push('a full bar gave '+(full/none).toFixed(2));if(!(half/none>1.14&&half/none<1.36))bad.push('half a bar gave '+(half/none).toFixed(2));if(P.res!==0)bad.push('the bar was not emptied');
+  P.cds[2]=0;P.mp=1e6;P.res=60;V.execAbility(2,null);if(P.res!==60)bad.push('Battle Roar spent Fury');
+  P.res=60;P.cds[1]=0;P.mp=1e6;const bb=P.resB[1];e.x=P.x+5000;if(V.execAbility(1,e)!==false)bad.push('a skill out of reach went through');if(P.res!==60)bad.push('a failed skill spent Fury');if(P.resB[1]!==bb)bad.push('a failed skill changed the bonus');return bad}`));
+
+await reset();
+await test('A long skill keeps the bonus it started with', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G;G.enemies=[];P.lvl=20;V.recalc(false);P.mp=1e6;V.S.maxMp=1e6;P.res=100;P.cds[5]=0;V.execAbility(5,null);if(P.res!==0)bad.push('Bladestorm did not spend Fury');if(Math.abs(V.resDmg(5)-1.5)>.001)bad.push('bonus at the start was '+V.resDmg(5));
+  P.res=100;for(let i=0;i<30;i++)V.update(1/30);if(Math.abs(V.resDmg(5)-1.5)>.001)bad.push('building Fury changed the bonus mid-spin');P.cds[5]=0;P.res=0;P.mp=1e6;V.execAbility(5,null);if(V.resDmg(5)!==1)bad.push('an empty bar kept the old bonus');if(V.resDmg(0)!==1||V.resDmg(2)!==1)bad.push('Hew or Battle Roar got a bonus');return bad}`));
+
+await reset();
+await test('Light builds from Light Mote and boosts healing and Judgement', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P,G=V.G;G.enemies=[];P.lvl=20;V.recalc(false);V.S.maxMp=1e6;V.S.crit=0;
+  const mend=(res)=>{P.buffs=[];P.res=res;P.cds[1]=0;P.mp=1e6;P.hp=1;V.execAbility(1,null);const b=P.buffs.find(x=>x.id==='mend');return{got:P.hp-1,hot:b&&b.hot}};const m0=mend(0),m1=mend(100);if(!(Math.abs(m1.got/m0.got-1.5)<.02))bad.push('Mend healed '+(m1.got/m0.got).toFixed(2));if(!(Math.abs(m1.hot/m0.hot-1.5)<.001))bad.push('Mend over time was '+(m1.hot/m0.hot).toFixed(2));if(P.res!==0)bad.push('Mend did not spend Light');
+  const sanct=(res)=>{G.areas=[];P.res=res;P.cds[4]=0;P.mp=1e6;V.execAbility(4,null);return G.areas[G.areas.length-1].hot};const s0=sanct(0),s1=sanct(100);G.areas=[];P.buffs=[];if(!(Math.abs(s1/s0-1.5)<.001))bad.push('Sanctuary healed '+(s1/s0).toFixed(2));
+  P.res=100;P.cds[2]=0;P.mp=1e6;V.execAbility(2,null);if(P.res!==0)bad.push('Halo did not spend Light');if(V.resDmg(2)!==1)bad.push('Halo damage was boosted');if(Math.abs(V.resHeal(2)-1.5)>.001)bad.push('Halo healing was not boosted');
+  const e=V.mkEnemy('wolf',1,P.x,P.y-30);G.enemies=[e];const judge=(res)=>{const a=[];for(let i=0;i<41;i++){e.hp=e.max=1e8;e.weakT=0;e.vulnT=0;P.cds[3]=0;P.mp=1e6;P.res=res;const b=e.hp;V.execAbility(3,e);a.push(b-e.hp)}a.sort((x,y)=>x-y);return a[20]};const j0=judge(0),j1=judge(100);if(!(j1/j0>1.38&&j1/j0<1.62))bad.push('Judgement hit '+(j1/j0).toFixed(2));if(V.resHeal(3)!==1)bad.push('Judgement counted as healing');
+  const dawn=(res)=>{e.hp=e.max=1e8;e.stun=9;P.iframes=9;V.S.hpReg=0;P.buffs=[];P.res=res;P.cds[5]=0;P.mp=1e6;P.hp=1;V.execAbility(5,e);for(let i=0;i<24;i++)V.update(1/30);return P.hp-1};const d0=dawn(0),d1=dawn(100);if(!(d0>0&&Math.abs(d1/d0-1.5)<.12))bad.push('Dawnbreak healed '+(d1/d0).toFixed(2));
+  e.hp=e.max=1e8;V.S.dodge=0;P.res=0;P.iframes=0;P.hp=1e6;V.hurtPlayer(10,null);if(P.res!==0)bad.push('being hit built Light');
+  e.x=P.x;e.y=P.y-40;e.stun=9;P.cds[0]=0;P.res=0;V.execAbility(0,e);for(let i=0;i<20&&P.res===0;i++)V.update(1/30);if(P.res!==V.RES.lumen.hit)bad.push('a Light Mote hit built '+P.res);return bad}`));
+
+await reset();
+await test('Only the Reaver and Lumen have a bar, and it is not saved', () => ev(`()=>{const V=window.__veyl,bad=[];const w=document.getElementById('pfResW');
+  for(const c of['bulwark','ashcaller','thornstalker']){V.startNew(c,'Tester');V.hud();if(!w.hidden)bad.push(c+' shows a bar');V.P.iframes=0;V.P.hp=1e6;V.hurtPlayer(10,null);V.resGain(50);if(V.P.res!==0)bad.push(c+' built a resource');for(let i=1;i<6;i++)if(V.resDmg(i)!==1||V.resHeal(i)!==1)bad.push(c+' got a bonus');if(V.resNote(1)!=='')bad.push(c+' has resource text');localStorage.clear()}
+  for(const [c,cl] of [['reaver','fury'],['lumen','light']]){V.startNew(c,'Tester');V.P.res=100;V.hud();if(w.hidden||!w.classList.contains(cl)||!w.classList.contains('full'))bad.push(c+' bar looks wrong: '+w.className);if(parseFloat(document.getElementById('pfRes').style.width)!==100)bad.push(c+' bar width '+document.getElementById('pfRes').style.width);const d=V.serialize();if('res' in d||'resB' in d)bad.push(c+' bar went into the save');V.loadSave(JSON.parse(JSON.stringify(d)));if(V.P.res!==0)bad.push(c+' reloaded with a full bar');if(!V.P.resB||V.P.resB.length!==6)bad.push(c+' reloaded with no bonus list');if(!/Spends all your/.test(V.resNote(1)))bad.push(c+' has no skill text');V.P.res=80;V.P.hp=1;V.die();if(V.P.res!==0)bad.push(c+' kept the bar through death');V.P.dead=false;V.closePanel(true);localStorage.clear()}return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
