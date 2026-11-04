@@ -129,7 +129,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #zone .z1{font:600 12px/1 var(--f-body);letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px #000}
 #zone .z2{font:400 clamp(24px,calc(6*var(--vw)),38px)/1.1 var(--f-ui);color:#8be06a;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);margin-top:6px}
 #zone .z2::before{content:"- "}#zone .z2::after{content:" -"}
-.sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
+.sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
 .toast{background:rgba(20,12,6,.88);border:1px solid #8a6420;border-radius:6px;padding:7px 12px;font:500 14px/1.3 var(--f-body);text-align:center;animation:tin .25s ease-out}
 .toast.lvl{color:#ffd870;border-color:#ffd870}.toast.q{border-color:#5a8a3a}.toast.warn{border-color:#a0381e}
@@ -646,7 +646,7 @@ function logError(err,where,quiet){const m=String((err&&err.message)||err||'Unkn
  const now=Date.now();if(m===errLastM&&now-errLastT<5000)return;errLastM=m;errLastT=now;
  const log=readErrors(),l=log[log.length-1];if(l&&l.m===m&&l.w===where){l.n=(l.n||1)+1;l.t=now}else{let v=0;try{v=UPDATES[0].id}catch(_){}log.push({t:now,v,w:where,m,s:String((err&&err.stack)||'').slice(0,800),n:1})}
  try{localStorage.setItem(ERRKEY,JSON.stringify(log.slice(-ERRMAX)))}catch(_){}
- if(!quiet&&!errNoted){errNoted=true;showNotice("Something went wrong. Reload the game to carry on from your last save. If it keeps happening, copy this report and send it to us.",[['Reload',()=>location.reload()],['Copy report',()=>copyText(JSON.stringify(readErrors(),null,1))],['Dismiss',null]])}}
+ if(!quiet&&!errNoted){errNoted=true;showNotice("Something went wrong. Reload the game to carry on from your last save. If it keeps happening, copy this report and email it to wardensofveylmoor@gmail.com.",[['Reload',()=>location.reload()],['Copy report',()=>copyText(JSON.stringify(readErrors(),null,1))],['Dismiss',null]])}}
 function copyText(t){const old=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()};
  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(old);else old()}
 function showNotice(text,btns){const b=document.body;if(!b)return null;const d=document.createElement('div');d.className='sysnote';d.setAttribute('role','alert');const p=document.createElement('p');p.textContent=text;d.appendChild(p);const r=document.createElement('div');r.className='sysbtns';
@@ -3126,7 +3126,7 @@ const UPDATES=[
   'If your browser can\'t save your progress, the game now tells you instead of failing silently.',
   'If a saved hero can\'t be read, a copy is kept. Starting a new hero won\'t erase it.',
   'If the graphics are interrupted, the game pauses, saves your hero and reloads when they return.',
-  'If something goes wrong, you now see a message with a Reload button and a report you can copy and send to us.',
+  'If something goes wrong, you now see a message with a Reload button and a report you can copy and email to us.',
   'Fixed: the final quest, Heart of Cinders, now says it rewards a Legendary item. It always did, but it was labelled Uncommon.',
   'Vorgath and the Molten Throne are now level 50, matching the level cap, so he is very slightly less tough.']},
  {id:17,date:'3 Nov 2026',title:'A bigger bag, tonics and food',items:[
@@ -3550,7 +3550,7 @@ function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUI
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;try{localStorage.setItem(SAVEKEY,JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
-function noteBadSave(){showNotice("We couldn't read your saved hero. A copy has been kept, and starting a new hero won't erase it. Copy it and send it to us if you'd like us to try to repair it.",[['Copy saved hero',()=>{let s='';try{s=localStorage.getItem(BADKEY)||''}catch(_){}copyText(s)}],['Dismiss',null]])}
+function noteBadSave(){showNotice("We couldn't read your saved hero. A copy has been kept, and starting a new hero won't erase it. Copy it and email it to wardensofveylmoor@gmail.com if you'd like us to try to repair it.",[['Copy saved hero',()=>{let s='';try{s=localStorage.getItem(BADKEY)||''}catch(_){}copyText(s)}],['Dismiss',null]])}
 function readSave(){let s=null;try{s=localStorage.getItem(SAVEKEY);if(!s)return null;const d=migrateSave(JSON.parse(s));if(!d||!CLASSES[d.cls]){keepBadSave(s);return null}return d}catch(err){keepBadSave(s);logError(err,'load save',true);return null}}
 /* Saves before v4 used levels 1-25. Map each level to its new place on the 1-50 scale and keep progress through it. */
 function migrateSave(d){if(!d||(d.v||0)>=4)return d;const old=l=>Math.round(240*(12+1.1*l)*l*(.4+.185*l)/10)*10,L=Math.max(1,d.lvl||1),nl=Math.min(MAXL,2*L-1);

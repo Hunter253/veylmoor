@@ -112,19 +112,20 @@ await test('A failed save warns the player', () => ev(`async()=>{const V=window.
 await reset();
 await test('An unreadable save is kept, and a new hero does not erase it', async () => {
   await ev(`()=>{localStorage.setItem('veylmoor-save-v1','{broken')}`); await load();
-  const bad = await ev(`()=>{const V=window.__veyl,bad=[];if(!document.querySelector('.sysnote'))bad.push('no notice on the title screen');V.startNew('bulwark','New');dispatchEvent(new Event('pagehide'));if(localStorage.getItem('veylmoor-save-unreadable')!=='{broken')bad.push('copy of the unreadable save was lost');return bad}`);
+  const bad = await ev(`()=>{const V=window.__veyl,bad=[];const n=document.querySelector('.sysnote');if(!n)bad.push('no notice on the title screen');else if(!n.innerText.includes('wardensofveylmoor@gmail.com'))bad.push('the notice does not say where to send the save');V.startNew('bulwark','New');dispatchEvent(new Event('pagehide'));if(localStorage.getItem('veylmoor-save-unreadable')!=='{broken')bad.push('copy of the unreadable save was lost');return bad}`);
   return bad;
 });
 
 await reset();
 await test('A forced error is logged and shows a message; rejected promises are logged quietly', async () => {
   const quiet = await ev(`async()=>{Promise.reject(new Error('forced-rejection'));await new Promise(r=>setTimeout(r,300));return{note:!!document.querySelector('.sysnote'),logged:window.__veyl.readErrors().some(e=>e.m==='forced-rejection')}}`);
-  const loud = await ev(`async()=>{setTimeout(()=>{throw new Error('forced-error')});await new Promise(r=>setTimeout(r,300));return{note:!!document.querySelector('.sysnote'),buttons:[...document.querySelectorAll('.sysnote button')].map(b=>b.textContent),logged:window.__veyl.readErrors().some(e=>e.m==='forced-error')}}`);
+  const loud = await ev(`async()=>{setTimeout(()=>{throw new Error('forced-error')});await new Promise(r=>setTimeout(r,300));return{note:!!document.querySelector('.sysnote'),text:(document.querySelector('.sysnote')||{}).innerText||'',buttons:[...document.querySelectorAll('.sysnote button')].map(b=>b.textContent),logged:window.__veyl.readErrors().some(e=>e.m==='forced-error')}}`);
   const bad = [];
   if (quiet.note) bad.push('a rejected promise showed a message');
   if (!quiet.logged) bad.push('a rejected promise was not logged');
   if (!loud.logged) bad.push('a forced error was not logged');
   if (!loud.note || !loud.buttons.includes('Reload')) bad.push('a forced error did not show a message with Reload');
+  if (!loud.text.includes('wardensofveylmoor@gmail.com')) bad.push('the error message does not say where to send the report');
   return bad;
 });
 
