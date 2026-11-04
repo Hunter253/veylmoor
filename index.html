@@ -85,6 +85,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #tracker .qo.ready{color:#8be06a}
 #menuBtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:max(10px,env(safe-area-inset-right,0px));width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6a5434,#1e150a 70%);border:3px solid #b08a46;color:var(--gold2);font:300 36px/1 var(--f-num);display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.2);padding:0 0 4px}
 #menuDot{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:#e8402a;border:2px solid #fff}
+#dayIcon{position:absolute;left:-14px;top:-2px;font-weight:400;font-size:16px;color:#ffe9b0}
 #compass{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(max(10px,env(safe-area-inset-right,0px)) + 66px);width:92px;height:80px;pointer-events:none;font:400 15px/1 var(--f-ui);color:#f4ecd8;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.9)}
 #compass span{position:absolute}
 #compass .n{top:0;left:50%;transform:translateX(-50%)}#compass .s{bottom:0;left:50%;transform:translateX(-50%)}#compass .w{left:0;top:50%;transform:translateY(-50%)}#compass .e{right:0;top:50%;transform:translateY(-50%)}
@@ -604,7 +605,7 @@ kbd{display:none}#app.kbm kbd{display:block}
   <div id="tf" hidden><div class="hexp sm"><canvas id="tfCan" class="por"></canvas><span class="lvb" id="tfLv">1</span></div><div class="pbars"><div id="tname" hidden></div><div class="hbar hp"><i id="tfHp"></i></div></div></div>
   <div id="buffs"></div>
   <div id="tracker"></div>
-  <div id="compass" aria-label="Minimap. Opens the world map." title="World map (M)" role="button"><canvas id="mmap" width="252" height="252"></canvas><span class="n">N</span><span class="w">W</span><span class="e">E</span><span class="s">S</span><i id="carrow"></i></div>
+  <div id="compass" aria-label="Minimap. Opens the world map." title="World map (M)" role="button"><canvas id="mmap" width="252" height="252"></canvas><span class="n">N</span><span class="w">W</span><span class="e">E</span><span class="s">S</span><i id="carrow"></i><b id="dayIcon"></b></div>
   <button id="menuBtn" aria-label="Show or hide the minimap" title="Minimap (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg></button>
   <div id="zone"><div class="z1" id="zone1"></div><div class="z2" id="zone2"></div></div>
   <div id="toasts" aria-live="polite"></div>
@@ -2518,12 +2519,13 @@ void main(){vec2 p=vW.xz;float t=uTime;float a=vn(p*2.2+vec2(t*.35,t*.2)),b=vn(p
  col=mix(col,vec3(.9,.95,.93)*(.45+.35*uSunCol.g),clamp(foam,0.,1.)*.8);float al=uFoam>.5?uAlpha*clamp(dep*4.+.25,0.,1.)+foam*.35:uAlpha;
  gl_FragColor=vec4(finish(col,vW),clamp(al,0.,1.));}`;
 const VS_Q=`attribute vec2 aQ;varying vec2 vQ;void main(){vQ=aQ;gl_Position=vec4(aQ,.9999,1.);}`;
-const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay;
+const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 void main(){vec3 d=normalize(uF+vQ.x*uTan.x*uR+vQ.y*uTan.y*uU);float y=d.y;vec3 c=mix(uHor,uTop,pow(clamp(y,0.,1.),.5));float sd=max(dot(d,uSun),0.);
  c+=uSunC*(pow(sd,900.)*40.+pow(sd,30.)*.7+pow(sd,5.)*.2)*uDay;
+ if(uNight>0.&&y>0.){float st=fract(sin(dot(floor(d*190.),vec3(12.9898,78.233,37.719)))*43758.5453);c+=vec3(.85,.9,1.)*step(.9965,st)*(.5+.5*sin(uTime*2.+st*90.))*uNight*smoothstep(.04,.25,y);}
  if(uDay>.5&&y>0.){vec2 p=d.xz/(y+.07)*1.2+vec2(uTime*.018,uTime*.008);float n=fbm(p)*.62+fbm(p*2.7+3.)*.38;float cl=smoothstep(.46,.76,n)*smoothstep(.0,.22,y);
-  float lit=clamp(fbm(p+uSun.xz*.3)-n+.62,0.,1.);vec3 cc=mix(vec3(.62,.66,.76),vec3(1.12,1.06,.98),lit)+uSunC*pow(sd,6.)*.8;c=mix(c,cc,cl*.9);}
+  float lit=clamp(fbm(p+uSun.xz*.3)-n+.62,0.,1.);vec3 cc=mix(vec3(.62,.66,.76),vec3(1.12,1.06,.98),lit)+uSunC*pow(sd,6.)*.8;cc*=1.-uNight*.8;c=mix(c,cc,cl*.9);}
  float az=atan(d.x,d.z);float mh=.03+.075*fbm(vec2(az*2.,1.3))+.035*fbm(vec2(az*6.5,4.));float mh2=.02+.045*fbm(vec2(az*3.3,8.));
  if(y<mh)c=mix(uMtn,uHor,.35+.25*smoothstep(mh-.08,mh,y));if(y<mh2)c=mix(uMtn*.8,uHor,.18);
  c=mix(uFog,c,smoothstep(-.03,.05,y));gl_FragColor=vec4(pow(aces(c),vec3(1./2.2)),1.);}`;
@@ -2968,7 +2970,45 @@ function wingsMesh(){return mk(g=>{for(const s of[-1,1])for(let k=0;k<9;k++){con
 /* ================= Rendering ================= */
 let VPm=null,VIEW=null,PROJ=null,CAMPOS=[0,0,0];
 const LIGHTS={pos:new Float32Array(32),col:new Float32Array(24),n:0};
-function sceneEnv(){const ab=G.map&&G.map.id==='abbey',th=G.map&&G.map.theme;
+/* ================= Time of day (25.b) =================
+   One in-game day is one real hour: 45 minutes of day, including dawn and dusk, and 15 of night. look holds each zone's night, by map theme.
+   Adding ?time=day, dawn, dusk or night to the address holds that time for playtesting. */
+const WORLDTIME={cycle:3600,night:900,fade:180,presets:{day:1500,dawn:90,dusk:2610,night:3100},glow:{col:'#ff9860',hor:.55,sun:.35},names:{day:'Day',dawn:'Dawn',dusk:'Dusk',night:'Night'},icons:{day:'☀︎',dawn:'☀︎',dusk:'☾︎',night:'☾︎'},
+ look:{0:{sun:['#9fb4e0',.75],sky:['#5a6a9a',.5],gnd:['#2a3040',.4],fog:'#1c2638',fogN:12,fogF:48,fogMax:.9,exp:1.1,top:'#070b1c',hor:'#202c48',sunC:['#cfdcf4',.55],mtn:'#141c2c',rimC:'#b0c4f0',water:.35},
+  1:{sun:['#a8bce8',.85],sky:['#5a70a8',.55],gnd:['#4a4660',.4],fog:'#1e2640',fogN:20,fogF:72,fogMax:.82,exp:1.05,top:'#050a20',hor:'#2a3a60',sunC:['#dce4f8',.6],mtn:'#1c2238',rimC:'#c0d0f0',water:.4},
+  2:{sun:['#a8c8ff',1],sky:['#6a8ac8',.7],gnd:['#48608a',.5],fog:'#22324e',fogN:16,fogF:60,fogMax:.88,exp:1.05,top:'#060e26',hor:'#2a4470',sunC:['#d8e8ff',.65],mtn:'#1c2c48',rimC:'#c0dcff',water:.4},
+  3:{sun:['#8878c8',1.1],sky:['#4a4488',.85],gnd:['#241c34',.45],fog:'#141226',fogN:10,fogF:46,fogMax:.92,exp:1.15,top:'#05041a',hor:'#1e1a3c',sunC:['#c8b8f0',.45],mtn:'#100e20',rimC:'#b098f0',water:.5},
+  4:{sun:['#a86848',1.5],sky:['#5a3040',1.25],gnd:['#6a2410',.6],fog:'#2a1410',fogN:14,fogF:60,fogMax:.86,exp:1.05,top:'#0a0406',hor:'#6a2410',sunC:['#e08050',.5],mtn:'#1c0c08',rimC:'#ff9060',water:1}}};
+/* Weather (25.b). Each zone has one spell in every period, share of it long, at a time set by the clock, so every player gets the same weather.
+   kinds: fog sets the colour and how close the haze comes (fogF multiplies, but never below minFogF), dim dulls the light (much less at night), exp darkens the whole scene by day, parts are the falling specks, n for PC and for phones.
+   It only changes how things look for now. ?weather=rain and so on holds one for playtesting, and ?weather=clear holds it off. */
+const WX={period:1200,share:1/3,fade:60,minFogF:28,skyMix:.6,groundMix:.25,lowN:.5,
+ zones:{vale:['rain','fog'],dunes:['sand'],frost:['snow'],gloam:['mist'],ember:['ash']},
+ kinds:{rain:{fog:'#8c9aa8',fogF:.7,dim:.4,exp:.6,parts:{n:220,c:'#b8d0ea',s:.075,vy:-10,vx:-1,a:.75}},
+  fog:{fog:'#c4cdd2',fogF:.5,dim:.55,exp:.8},
+  sand:{fog:'#d8b888',fogF:.55,dim:.45,exp:.72,parts:{n:220,c:'#e8c890',s:.08,vy:-.6,vx:7,a:.7}},
+  snow:{fog:'#e4ecf4',fogF:.6,dim:.7,exp:.92,parts:{n:200,c:'#ffffff',s:.085,vy:-1.3,vx:.7,a:.85}},
+  mist:{fog:'#6a6090',fogF:.65,dim:.75,exp:.88},
+  ash:{fog:'#7a4a3a',fogF:.65,dim:.85,exp:.85,parts:{n:170,c:'#d8b8a8',s:.08,vy:-.8,vx:.5,a:.8}}}};
+const TIMEO={time:null,weather:null};
+try{const q=new URLSearchParams(location.search),t=q.get('time'),w=q.get('weather');if(t&&WORLDTIME.presets[t]!=null)TIMEO.time=t;if(w&&(w==='clear'||WX.kinds[w]))TIMEO.weather=w}catch(_){}
+const wxRand=(i,j)=>rng(Math.imul(i,73856093)^Math.imul(j,19349663))();
+function weatherAt(id,ms){const Z=WX.zones[id];if(!Z)return null;const sec=ms/1000,i=Math.floor(sec/WX.period),j=[...id].reduce((a,c)=>a*31+c.charCodeAt(0),7),len=WX.period*WX.share,start=wxRand(i,j)*(WX.period-len),at=sec-i*WX.period-start;if(at<0||at>=len)return null;return{k:Z[Math.floor(wxRand(i,j+1)*Z.length)%Z.length],s:Math.min(1,at/WX.fade,(len-at)/WX.fade)}}
+function weatherNow(){const m=G.map;if(!m||!WX.zones[m.id])return null;if(TIMEO.weather==='clear')return null;if(TIMEO.weather)return{k:TIMEO.weather,s:1};return weatherAt(m.id,Date.now())}
+function worldClock(ms){const T=WORLDTIME,t=((ms/1000)%T.cycle+T.cycle)%T.cycle,dl=T.cycle-T.night;let night=0,glow=0,phase='day';
+ if(t>=dl){night=1;phase='night'}else if(t>=dl-T.fade){night=(t-dl+T.fade)/T.fade;glow=Math.sin(night*Math.PI);phase='dusk'}else if(t<T.fade){const f=t/T.fade;night=1-f;glow=Math.sin(f*Math.PI);phase='dawn'}return{t,night,glow,phase}}
+const clockMs=()=>TIMEO.time?WORLDTIME.presets[TIMEO.time]*1000:Date.now();
+const worldNow=()=>worldClock(clockMs());
+const mix3=(a,b,f)=>[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f];
+const NIGHTENV={};
+function nightEnv(th){if(NIGHTENV[th])return NIGHTENV[th];const L=WORLDTIME.look[th]||WORLDTIME.look[0],c=k=>{const v=L[k];return Array.isArray(v)?lin(v[0]).map(x=>x*v[1]):lin(v)};return NIGHTENV[th]={sun:c('sun'),sky:c('sky'),gnd:c('gnd'),fog:c('fog'),top:c('top'),hor:c('hor'),sunC:c('sunC'),mtn:c('mtn'),rimC:c('rimC'),fogN:L.fogN,fogF:L.fogF,fogMax:L.fogMax,exp:L.exp,water:L.water}}
+/* The sun stays put, because shadows are baked once per map. Shadows fade at night because the light that casts them dims. */
+function sceneEnv(){const b=baseEnv();b.night=0;b.waterK=1;if(!G.map||G.map.id==='abbey')return b;const c=worldNow(),n=c.night;
+ if(n>0){const N=nightEnv(G.map.theme||0);for(const k of['sun','sky','gnd','fog','top','hor','sunC','mtn','rimC'])b[k]=mix3(b[k],N[k],n);for(const k of['fogN','fogF','fogMax','exp'])b[k]+=(N[k]-b[k])*n;b.night=n;b.waterK=1+(N.water-1)*n}
+ if(c.glow>0){const G0=WORLDTIME.glow,w=lin(G0.col);b.hor=mix3(b.hor,w,c.glow*G0.hor);b.sun=mix3(b.sun,w.map(x=>x*2),c.glow*G0.sun)}
+ const W=weatherNow();b.wx=W;if(W&&W.s>0&&WX.kinds[W.k]){const K=WX.kinds[W.k],f=W.s,tint=lin(K.fog).map(v=>v*(1-.8*n)),d=1+(K.dim-1)*f*(1-.7*n);b.fog=mix3(b.fog,tint,f);b.top=mix3(b.top,tint,f*WX.skyMix);b.hor=mix3(b.hor,tint,f*WX.skyMix);b.sun=b.sun.map(v=>v*d);b.sunC=b.sunC.map(v=>v*d);b.sky=mix3(b.sky,tint,f*WX.groundMix).map(v=>v*(1+(K.dim-1)*f*.6*(1-.7*n)));b.exp*=1+((K.exp||1)-1)*f*(1-.7*n);b.fogF=Math.max(Math.min(b.fogF,WX.minFogF),b.fogF*(1+(K.fogF-1)*f));b.fogN=Math.min(b.fogN,b.fogF*.4)}return b}
+function dayIcon(){const el=$h('dayIcon');if(!el)return;const out=G.map&&G.map.id==='abbey';el.hidden=!!out;if(out)return;const p=worldNow().phase;if(el.dataset.p!==p){el.dataset.p=p;el.textContent=WORLDTIME.icons[p];el.title=WORLDTIME.names[p]}}
+function baseEnv(){const ab=G.map&&G.map.id==='abbey',th=G.map&&G.map.theme;
  if(th===3)return{sun:lin('#dccfff').map(v=>v*1.7),sky:lin('#7a72a8').map(v=>v*.62),gnd:lin('#3a3046').map(v=>v*.5),fog:lin('#3e3858'),fogN:12,fogF:58,fogMax:.9,exp:1.12,top:lin('#141430'),hor:lin('#5a4e78'),sunC:lin('#e8d8ff'),mtn:lin('#262440'),rimC:lin('#c8b0ff')};
  if(th===4)return{sun:lin('#ffb878').map(v=>v*2.2),sky:lin('#8a5a50').map(v=>v*.6),gnd:lin('#5a2010').map(v=>v*.55),fog:lin('#6a3a2c'),fogN:16,fogF:70,fogMax:.86,exp:1.0,top:lin('#2a0e0a'),hor:lin('#b0502a'),sunC:lin('#ffc070'),mtn:lin('#3a1c14'),rimC:lin('#ffa060')};
  if(th===1)return{sun:lin('#fff0c8').map(v=>v*3),sky:lin('#c0d8f0').map(v=>v*.7),gnd:lin('#c09060').map(v=>v*.5),fog:lin('#ecd8b4'),fogN:24,fogF:90,fogMax:.82,exp:.95,top:lin('#2f78d0'),hor:lin('#f4e2c0'),sunC:lin('#fff4d0'),mtn:lin('#c89a70'),rimC:lin('#fff0d0')};
@@ -3051,11 +3091,15 @@ function drawEnemy(e){if(e.ghostT>0)return;const d=e.d,x=e.x*U,z=e.y*U;const fl=
  const cast=e.castT>0?.3:0;drawHum(mdl,x,z,e.rot,e.ph,e.mv,wind>0?1-wind:0,cast,fl,scale,0,d.tint);
  if(d.shape==='prior'){sprite(x,groundH(x,z)+1.4*scale,z,1.6*scale/1.75,1.6*scale/1.75,e.enr?'#ff8a6a':(d.glow||'#6fd8ea'),.18)}if(d.boss&&d.shape!=='prior')sprite(x,groundH(x,z)+d.h*.8,z,2.4,2.4,e.enr?'#ff8a6a':(d.glow||'#ffd27a'),.12);if(d.elite)decal(x,z,groundH(x,z)+.05,d.r*U*1.8,d.r*U*1.8,G.time,5,[1,.75,.3],.5,.6);
  decal(x,z,groundH(x,z)+.04,.45*scale,.45*scale,0,0,[0,0,0],.5)}
+const WXP=[],WXLOW=matchMedia('(pointer:coarse)').matches;
 const AMB=[],SMOKE=[],SPL=[];let smokeT=0,ambMap=null;
 function newMote(m,init){const x=CAM.tx+rr(-13,13),z=CAM.tz+rr(-13,13),v=m.get(Math.floor(x),Math.floor(z));let c,sz,y=groundH(x,z),fly=false;
- if(m.theme===3){c=R()<.5?'#c8a0ff':'#a0ffd8';sz=.07;y+=rr(.3,2.2);fly=true}else if(m.theme===4){c=R()<.6?'#ff9a3a':'#ffd060';sz=.05;y+=rr(.1,3);fly=true}else if(m.theme===2){c='#ffffff';sz=.07;y+=rr(1,4);var petal=true}else if(m.theme===1){c='#f0d8a0';sz=.035;y+=rr(.2,1.5)}else if(m.id==='abbey'){c=R()<.5?'#9fd8e8':'#e0c890';sz=.035;y+=rr(.2,2.6)}else if(v===T.BOG||v===T.WATER){c='#c8ff90';sz=.1;y+=rr(.3,1.6);fly=true}else if(m.id==='vale'&&x>2&&x<27&&z>15&&z<35&&R()<.6){c='#ffb6d2';sz=.065;y+=rr(1.2,3.4);var petal=true}else if(v===T.TREE){c='#eaf2a8';sz=.05;y+=rr(.8,3)}else{c='#fff4c0';sz=.04;y+=rr(.2,1.8)}
+ if(m.theme===3){c=worldNow().night>.5?'#e4ff8a':R()<.5?'#c8a0ff':'#a0ffd8';sz=.07;y+=rr(.3,2.2);fly=true}else if(m.theme===4){c=R()<.6?'#ff9a3a':'#ffd060';sz=.05;y+=rr(.1,3);fly=true}else if(m.theme===2){c='#ffffff';sz=.07;y+=rr(1,4);var petal=true}else if(m.theme===1){c='#f0d8a0';sz=.035;y+=rr(.2,1.5)}else if(m.id==='abbey'){c=R()<.5?'#9fd8e8':'#e0c890';sz=.035;y+=rr(.2,2.6)}else if(v===T.BOG||v===T.WATER){c='#c8ff90';sz=.1;y+=rr(.3,1.6);fly=true}else if(m.id==='vale'&&x>2&&x<27&&z>15&&z<35&&R()<.6){c='#ffb6d2';sz=.065;y+=rr(1.2,3.4);var petal=true}else if(v===T.TREE){c='#eaf2a8';sz=.05;y+=rr(.8,3)}else{c='#fff4c0';sz=.04;y+=rr(.2,1.8)}
  return{x,y,z,vx:rr(-.35,.35),vz:rr(-.35,.35),t:init?R()*6:0,max:rr(5,9),c,s:sz,ph:R()*6,fly,petal:!!petal}}
-function updAmbient(dt){const m=G.map;if(!m||!m.gfx)return;if(ambMap!==m){AMB.length=0;SMOKE.length=0;SPL.length=0;ambMap=m}const N=m.id!=='abbey'?70:45;
+function newSpeck(p,any){return{x:CAM.tx+rr(-14,14),y:groundH(CAM.tx,CAM.tz)+(any?rr(0,7):rr(5,8)),z:CAM.tz+rr(-14,14),ph:R()*6,vy:p.vy*rr(.8,1.2),vx:p.vx*rr(.8,1.2)}}
+function updWeather(dt){const W=weatherNow(),K=W&&WX.kinds[W.k],p=K&&K.parts;if(!p){WXP.length=0;return}const want=Math.round(p.n*(WXLOW?WX.lowN:1)*W.s);while(WXP.length>want)WXP.pop();while(WXP.length<want)WXP.push(newSpeck(p,true));
+ for(let i=0;i<WXP.length;i++){const q=WXP[i];q.x+=q.vx*dt;q.z+=Math.sin(q.ph+G.time)*.3*dt;q.y+=q.vy*dt;if(q.y<groundH(q.x,q.z)||Math.hypot(q.x-CAM.tx,q.z-CAM.tz)>16)WXP[i]=newSpeck(p,q.y>=groundH(q.x,q.z))}}
+function updAmbient(dt){const m=G.map;if(!m||!m.gfx)return;updWeather(dt);if(ambMap!==m){AMB.length=0;SMOKE.length=0;SPL.length=0;WXP.length=0;ambMap=m}const N=m.id!=='abbey'?70:45;
  while(AMB.length<N)AMB.push(newMote(m,true));
  for(let i=0;i<AMB.length;i++){const a=AMB[i];a.t+=dt;a.x+=a.vx*dt;a.z+=a.vz*dt;if(a.petal){a.y-=.32*dt;a.x+=Math.sin(a.t*2+a.ph)*.3*dt;if(a.y<groundH(a.x,a.z))a.t=a.max}if(Math.hypot(a.x-CAM.tx,a.z-CAM.tz)>15||a.t>a.max)AMB[i]=newMote(m,false)}
  if(m.chimneys){smokeT-=dt;if(smokeT<=0){smokeT=.5;for(const c of m.chimneys)if(Math.hypot(c[0]-CAM.tx,c[2]-CAM.tz)<45)SMOKE.push({x:c[0],y:c[1],z:c[2],t:0,max:5+R()*2})}}
@@ -3070,7 +3114,7 @@ function renderWorld(dt){
  // sky
  {const pr=useProg(PR.sky);gl.depthMask(false);gl.disable(gl.DEPTH_TEST);bindQuad();const V=VIEW;
   gl.uniform3f(pr.U.uR,V[0],V[4],V[8]);gl.uniform3f(pr.U.uU,V[1],V[5],V[9]);gl.uniform3f(pr.U.uF,-V[2],-V[6],-V[10]);gl.uniform2f(pr.U.uTan,1/PROJ[0],1/PROJ[5]);
-  gl.uniform3fv(pr.U.uTop,env.top);gl.uniform3fv(pr.U.uHor,env.hor);gl.uniform3fv(pr.U.uFog,env.fog);gl.uniform3fv(pr.U.uSun,SUN);gl.uniform3fv(pr.U.uSunC,env.sunC);gl.uniform3fv(pr.U.uMtn,env.mtn);gl.uniform1f(pr.U.uTime,G.time);gl.uniform1f(pr.U.uDay,m.id!=='abbey'?1:0);
+  gl.uniform3fv(pr.U.uTop,env.top);gl.uniform3fv(pr.U.uHor,env.hor);gl.uniform3fv(pr.U.uFog,env.fog);gl.uniform3fv(pr.U.uSun,SUN);gl.uniform3fv(pr.U.uSunC,env.sunC);gl.uniform3fv(pr.U.uMtn,env.mtn);gl.uniform1f(pr.U.uTime,G.time);gl.uniform1f(pr.U.uDay,m.id!=='abbey'?1:0);gl.uniform1f(pr.U.uNight,env.night);
   gl.drawArrays(gl.TRIANGLES,0,6);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
  const mapSize=[m.w,m.h];
  // terrain
@@ -3164,7 +3208,7 @@ function renderWorld(dt){
  gl.enable(gl.BLEND);gl.depthMask(false);
  // water
  {const pr=useProg(PR.water);setLit(pr,env);gl.uniform1f(pr.U.uTime,G.time);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.gfx.shadow);gl.uniform1i(pr.U.uShadow,1);gl.uniform2fv(pr.U.uMapSize,mapSize);
-  gl.uniform3fv(pr.U.uDeep,lin(m.id==='abbey'?'#0a1416':m.theme===4?'#ff4a08':m.theme===3?'#10141c':m.theme===1?'#1a6a6a':m.theme===2?'#6a8ea0':'#18302c'));gl.uniform3fv(pr.U.uSkyRef,lin(m.id==='abbey'?'#10181a':m.theme===4?'#ffb040':m.theme===3?'#3a3650':m.theme===1?'#a8dce8':m.theme===2?'#eef4fa':'#7e98a8'));gl.uniform1f(pr.U.uAlpha,m.id==='abbey'?.8:.9);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,m.gfx.hmap);gl.uniform1i(pr.U.uHMap,2);gl.uniform2f(pr.U.uHOff,MG+.5,MG+.5);gl.uniform2f(pr.U.uHSz,m.hw,m.hh);gl.uniform1f(pr.U.uWy,m.id!=='abbey'?-0.11:-0.025);gl.uniform1f(pr.U.uFoam,m.id!=='abbey'?1:0);gl.activeTexture(gl.TEXTURE0);
+  gl.uniform3fv(pr.U.uDeep,lin(m.id==='abbey'?'#0a1416':m.theme===4?'#ff4a08':m.theme===3?'#10141c':m.theme===1?'#1a6a6a':m.theme===2?'#6a8ea0':'#18302c').map(v=>v*env.waterK));gl.uniform3fv(pr.U.uSkyRef,lin(m.id==='abbey'?'#10181a':m.theme===4?'#ffb040':m.theme===3?'#3a3650':m.theme===1?'#a8dce8':m.theme===2?'#eef4fa':'#7e98a8').map(v=>v*env.waterK));gl.uniform1f(pr.U.uAlpha,m.id==='abbey'?.8:.9);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,m.gfx.hmap);gl.uniform1i(pr.U.uHMap,2);gl.uniform2f(pr.U.uHOff,MG+.5,MG+.5);gl.uniform2f(pr.U.uHSz,m.hw,m.hh);gl.uniform1f(pr.U.uWy,m.id!=='abbey'?-0.11:-0.025);gl.uniform1f(pr.U.uFoam,m.id!=='abbey'?1:0);gl.activeTexture(gl.TEXTURE0);
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.water.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.water.n);if(m.gfx.basin){gl.uniform1f(pr.U.uFoam,0);gl.uniform1f(pr.U.uAlpha,.82);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.basin.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.basin.n)}}
  // decals
  {const pr=useProg(PR.dec);gl.uniformMatrix4fv(pr.U.uVP,false,VPm);bindQuad();
@@ -3175,10 +3219,11 @@ function renderWorld(dt){
  {const pr=useProg(PR.spr);gl.uniformMatrix4fv(pr.U.uV,false,VIEW);gl.uniformMatrix4fv(pr.U.uP,false,PROJ);bindQuad();
   SPR.sort((a,b)=>b[8]-a[8]);let mode=-1;for(const s of SPR){if(s[8]!==mode){mode=s[8];gl.blendFunc(gl.SRC_ALPHA,mode?gl.ONE_MINUS_SRC_ALPHA:gl.ONE)}const c=hexC(s[5]);gl.uniform3f(pr.U.uC,s[0],s[1],s[2]);gl.uniform2f(pr.U.uS,s[3],s[4]);gl.uniform1f(pr.U.uCyl,s[7]);gl.uniform4f(pr.U.uCol,c[0]/255,c[1]/255,c[2]/255,s[6]);gl.drawArrays(gl.TRIANGLES,0,6)}}
  // particles + ambient motes
- {gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
+ {gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length+WXP.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
   for(const p of G.parts){const c=hexC(p.c);a[o]=p.x*U;a[o+2]=p.y*U;a[o+1]=groundH(p.x*U,p.y*U)+p.z;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=1-p.t/p.max;a[o+7]=p.s*.06;o+=8}
   for(const p of AMB){const c=hexC(p.c),f=Math.min(1,p.t,p.max-p.t);a[o]=p.x;a[o+2]=p.z;a[o+1]=p.y+Math.sin(p.t*1.7+p.ph)*.12;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=Math.max(0,f)*(p.fly?.45+.55*Math.sin(p.t*3+p.ph):.75);a[o+7]=p.s;o+=8}
   for(const p of SPL){a[o]=p.x;a[o+1]=p.y;a[o+2]=p.z;a[o+3]=.82;a[o+4]=.93;a[o+5]=1;a[o+6]=.5*(1-p.t/p.max);a[o+7]=.05;o+=8}
+  if(WXP.length&&env.wx){const q=WX.kinds[env.wx.k].parts;if(q){const c=hexC(q.c),al=q.a*(1-.6*env.night);for(const p of WXP){a[o]=p.x;a[o+1]=p.y;a[o+2]=p.z;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=al;a[o+7]=q.s;o+=8}}}
   if(n){gl.bindBuffer(gl.ARRAY_BUFFER,PTBUF);gl.bufferData(gl.ARRAY_BUFFER,a,gl.DYNAMIC_DRAW);gl.vertexAttribPointer(0,3,gl.FLOAT,false,32,0);gl.vertexAttribPointer(1,4,gl.FLOAT,false,32,12);gl.vertexAttribPointer(2,1,gl.FLOAT,false,32,28);
    gl.uniformMatrix4fv(pr.U.uVP,false,VPm);gl.uniform1f(pr.U.uPx,glc.height*PROJ[5]*.5);gl.drawArrays(gl.POINTS,0,n)}}
  gl.depthMask(true);gl.disable(gl.BLEND);post()}
@@ -3260,7 +3305,7 @@ function setupButtons(){
 let hudF=0,lastTgt=null,lastNear,lastLootKey='~',lootHide='';
 const arc=(el,f)=>{el.style.width=(clamp(f,0,1)*100).toFixed(1)+'%'};
 const BUFFI={eat:'food',fed:'food',frenzy:'s_hew',massacre:'s_exec',oath:'s_oath',vault:'s_vault',sanct:'s_sanct',roar:'s_roar',bastion:'s_bastion',bstorm:'s_bstorm',mend:'s_mend',blink:'s_blink'};
-function hud(){hudF++;
+function hud(){hudF++;if(hudF%30===1)dayIcon();
  arc(EL.pfHp,P.hp/S.maxHp);arc(EL.pfSh,(P.shield||0)/S.maxHp);arc(EL.pfMp,P.mp/S.maxMp);arc(EL.pfSt,P.st/S.maxSt);{const rd=RES[P.cls];EL.pfResW.hidden=!rd;if(rd){arc(EL.pfRes,P.res/RESN.max);const c='hbar res '+rd.bar+(P.res>=RESN.max?' full':'');if(EL.pfResW.className!==c)EL.pfResW.className=c}}EL.rollBtn.classList.toggle('nost',P.st<25);EL.pfLv.textContent=P.lvl;EL.pfNum.textContent=`${Math.ceil(P.hp)} / ${S.maxHp}`;
  EL.xpI.style.width=(P.lvl>=MAXL?100:P.xp/XPN(P.lvl)*100)+'%';
  const t=G.tgt&&!G.tgt.dead?G.tgt:null;EL.tf.hidden=!t;EL.tname.hidden=!t;
@@ -3314,6 +3359,11 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:28,date:'4 Nov 2026',title:'Day, night and weather',items:[
+  'The world now has a day and a night. One full day takes an hour: 45 minutes of daylight, then 15 of night, with a dawn and a dusk between them. Time keeps passing while you are away.',
+  'Each zone has its own night. Look for cold moonlight over Veylmoor, stars above the Dunes, blue light on the Frostfang snow, fireflies in Gloamwood and the glow of the lava in Emberfall.',
+  'A small sun or moon by the compass shows the time of day. The Sunken Abbey is the same at any hour.',
+  'Weather rolls in for a few minutes at a time: rain and fog in Veylmoor, sandstorms in the Dunes, snowfall in Frostfang, mist in Gloamwood and ashfall in Emberfall. For now it only changes how far you can see.']},
  {id:27,date:'4 Nov 2026',title:'Monsters use their senses',items:[
   'Monsters now have to see or hear you. They see in front of them, and trees, rocks and walls hide you, though water does not. Stand right beside one and it will know you are there.',
   'A "?" means a monster is suspicious. It stops, turns and comes to look. A "!" means it has spotted you. You can now walk quietly past a monster that is looking the other way.',
@@ -3924,7 +3974,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={WX,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

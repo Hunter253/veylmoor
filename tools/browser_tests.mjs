@@ -531,6 +531,67 @@ await test('Curious monsters stay out of town and off a dead hero', () => ev(`()
   G.enemies=[];const d=face(add('ghoul',100,0,idle));step(2);if(!d.aware)bad.push('did not grow suspicious');P.dead=true;step(3);if(d.aware)bad.push('stayed suspicious of a dead hero');P.dead=false;
   G.enemies=[];const h=add('wolf',120,0,{state:'hunt',huntT:30,hsx:0,hsy:0,lx:P.x,ly:P.y});P.dead=true;step(2);if(h.state==='hunt')bad.push('hunted a dead hero');P.dead=false;return done()}`));
 
+// Day and night (25.b).
+const ZONES = `['vale','dunes','frost','gloam','ember']`;
+const BRIGHT = `(e)=>{const k=[.2126,.7152,.0722];let v=0;for(let i=0;i<3;i++)v+=k[i]*(e.sky[i]+e.sun[i]*.667)*e.exp;return v}`;
+
+await reset();
+await test('A day is an hour: 45 minutes of daylight, 15 of night, with no sudden changes', () => ev(`()=>{const V=window.__veyl,bad=[],T=V.WORLDTIME,c=V.worldClock;let night=0,clear=0,jump=0,last=null;const seen={};for(let s=0;s<T.cycle;s++){const x=c(s*1000);seen[x.phase]=(seen[x.phase]||0)+1;if(x.night===1)night++;if(x.night===0)clear++;if(last!=null&&Math.abs(x.night-last)>.02)jump++;last=x.night}
+  if(T.cycle!==3600||T.night!==900)bad.push('the spec is one hour with 15 minutes of night');if(night<899||night>902)bad.push(night+' seconds of full night');if(clear<2700-2*T.fade-2||clear>2700-2*T.fade+2)bad.push(clear+' seconds of full day');if(jump)bad.push(jump+' sudden changes');for(const p of['day','dawn','dusk','night'])if(!seen[p])bad.push('no '+p);if(c(7200000+5000).t!==5)bad.push('the clock did not wrap');if(c(-1000).t!==3599)bad.push('a clock set before 1970 broke it');
+  for(const p of['day','dawn','dusk','night']){const x=c(T.presets[p]*1000);if(x.phase!==p)bad.push('the '+p+' preset gave '+x.phase)}return bad}`));
+
+await reset();
+await test('Daytime is unchanged, night is darker in every zone, and the Abbey never changes', () => ev(`()=>{const V=window.__veyl,bad=[],G=V.G,T=V.TIMEO,B=${BRIGHT};V.startNew('reaver','Tester');T.weather='clear';const same=(a,b,keys)=>keys.every(k=>JSON.stringify(a[k])===JSON.stringify(b[k])),keys=['sun','sky','gnd','fog','top','hor','sunC','mtn','rimC','fogN','fogF','fogMax','exp'];
+  for(const id of ${ZONES}){V.enterMap(id);T.time='day';const d=V.sceneEnv();if(!same(d,V.baseEnv(),keys))bad.push(id+' changed by day');T.time='night';const n=V.sceneEnv();if(n.night!==1)bad.push(id+' night is '+n.night);const bd=B(d),bn=B(n);if(bn>=bd)bad.push(id+' is no darker at night');if(bn<.25)bad.push(id+' night is too dark to read: '+bn.toFixed(2));if(bn>.85)bad.push(id+' night is too bright: '+bn.toFixed(2));T.time='dusk';const u=V.sceneEnv();if(!(u.night>0&&u.night<1))bad.push(id+' has no dusk');if(JSON.stringify(u.hor)===JSON.stringify(mix(d.hor,n.hor,u.night)))bad.push(id+' dusk has no warm glow');if(n.fogF<40)bad.push(id+' night fog closes in at '+n.fogF)}
+  function mix(a,b,f){return a.map((v,i)=>v+(b[i]-v)*f)}
+  V.enterMap('abbey');const a0=(T.time='day',V.sceneEnv());T.time='night';const a1=V.sceneEnv();if(!same(a0,a1,keys))bad.push('the Abbey changed at night');if(a1.night!==0)bad.push('the Abbey has a night value');T.time=null;T.weather=null;V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+await reset();
+await test('Saves are unchanged, and nothing about the time is stored', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');V.TIMEO.time='night';const d=V.serialize(),t=JSON.stringify(d);if(d.v!==5)bad.push('save version became '+d.v);if(/night|weather|clock|worldTime/i.test(Object.keys(d).join(',')))bad.push('time got saved');V.loadSave(JSON.parse(t));V.update(1/30);V.TIMEO.time=null;return bad}`));
+
+await reset();
+await test('The sun or moon by the compass follows the time, and hides in the Abbey', () => ev(`()=>{const V=window.__veyl,bad=[],T=V.TIMEO;V.startNew('reaver','Tester');const el=document.getElementById('dayIcon');if(!el){bad.push('no icon');return bad}for(const[p,name]of[['day','Day'],['dawn','Dawn'],['dusk','Dusk'],['night','Night']]){T.time=p;V.dayIcon();if(el.title!==name)bad.push(p+' showed '+el.title);if(!el.textContent)bad.push(p+' has no icon');if(el.hidden)bad.push(p+' hid the icon')}T.time='day';V.dayIcon();const d=el.textContent;T.time='night';V.dayIcon();if(el.textContent===d)bad.push('day and night share an icon');V.enterMap('abbey');V.dayIcon();if(!el.hidden)bad.push('showed in the Abbey');V.enterMap('vale',V.G.maps.vale.start);V.dayIcon();if(el.hidden)bad.push('stayed hidden');T.time=null;return bad}`));
+
+await reset();
+await test('Every zone draws without errors at every time of day', async () => {
+  const problems = await ev(`async()=>{const V=window.__veyl,bad=[],G=V.G,T=V.TIMEO;V.startNew('reaver','Tester');const before=V.readErrors().length;const wait=()=>new Promise(r=>setTimeout(r,260));for(const id of[...${ZONES},'abbey']){V.enterMap(id);for(const t of['day','dawn','dusk','night']){T.time=t;await wait()}}T.time=null;V.enterMap('vale',G.maps.vale.start);await wait();if(V.readErrors().length>before)bad.push(V.readErrors().slice(before).join(' | ').slice(0,300));return bad}`);
+  return [...problems, ...logs.filter(l => !/GPU stall|GroupMarker|swiftshader/i.test(l)).slice(0, 3)];
+});
+
+await test('A ?time= link holds the time, and a bad one is ignored', async () => {
+  const bad = [];
+  await send('Page.navigate', { url: url + '?time=night' }); await sleep(3000);
+  if ((await ev(`()=>window.__veyl.worldNow().phase`)) !== 'night') bad.push('?time=night did not hold night');
+  await send('Page.navigate', { url: url + '?time=banana' }); await sleep(3000);
+  if ((await ev(`()=>window.__veyl.TIMEO.time`)) !== null) bad.push('a bad value was accepted');
+  await send('Page.navigate', { url }); await sleep(3000);
+  if ((await ev(`()=>window.__veyl.TIMEO.time`)) !== null) bad.push('a plain link held a time');
+  return bad;
+});
+
+// Weather (25.b).
+await reset();
+await test('Weather comes about a third of the time, fades in and out, and is the same for everyone', () => ev(`()=>{const V=window.__veyl,bad=[],X=V.WX,base=1793000000000;for(const id of ${ZONES}){const w0=V.weatherAt(id,base);let on=0,big=0,last=w0?w0.s:0,total=0,rise=null,fastest=1e9;const kinds=new Set();for(let s=0;s<86400*3;s+=5){const w=V.weatherAt(id,base+s*1000),v=w?w.s:0;total++;if(w){on++;kinds.add(w.k);if(v<0||v>1)bad.push(id+' strength '+v)}if(Math.abs(v-last)>5/X.fade+.001)big++;if(last===0&&v>0)rise=s;if(rise!=null&&v>=1){fastest=Math.min(fastest,s-rise);rise=null}last=v}
+   const sh=on/total;if(sh<.3||sh>.37)bad.push(id+' has weather '+(sh*100).toFixed(0)+'% of the time');if(big)bad.push(id+' weather jumped '+big+' times');if(fastest<X.fade-10)bad.push(id+' faded in in '+fastest+' seconds');for(const k of X.zones[id])if(!kinds.has(k))bad.push(id+' never gets '+k);for(const k of kinds)if(!X.zones[id].includes(k))bad.push(id+' got '+k);const a=JSON.stringify(V.weatherAt(id,base+777000));if(a!==JSON.stringify(V.weatherAt(id,base+777000)))bad.push(id+' weather is not the same each time')}
+  if(V.weatherAt('abbey',base)!==null)bad.push('it rains in the Abbey');let differ=0;for(let s=0;s<86400;s+=300){const a=V.weatherAt('vale',base+s*1000),b=V.weatherAt('dunes',base+s*1000);if(!!a!==!!b)differ++}if(!differ)bad.push('every zone has the same weather at once');return bad}`));
+
+await reset();
+await test('Bad weather never hides the world, by day or night, and stays out of the Abbey', () => ev(`()=>{const V=window.__veyl,bad=[],G=V.G,T=V.TIMEO,X=V.WX,B=${BRIGHT};V.startNew('reaver','Tester');for(const id of ${ZONES}){V.enterMap(id);for(const k of X.zones[id])for(const t of['day','night']){T.time=t;T.weather='clear';const clear=V.sceneEnv();T.weather=k;const e=V.sceneEnv();if(e.fogF<X.minFogF&&clear.fogF>=X.minFogF)bad.push(id+' '+k+' '+t+' sees only '+e.fogF.toFixed(0));if(e.fogF>clear.fogF)bad.push(id+' '+k+' '+t+' sees further than clear weather');if(!(e.fogN<e.fogF))bad.push(id+' '+k+' '+t+' fog near '+e.fogN+' far '+e.fogF);if(t==='night'&&B(e)<.22)bad.push(id+' '+k+' at night is too dark: '+B(e).toFixed(2));if(B(e)>B(clear))bad.push(id+' '+k+' '+t+' is brighter than clear');for(const c of['fog','top','hor','sun'])if(e[c].some(v=>!isFinite(v)||v<0))bad.push(id+' '+k+' bad '+c)}}
+  V.enterMap('abbey');T.weather='rain';T.time='day';const a=JSON.stringify(V.sceneEnv().fog),b=JSON.stringify(V.baseEnv().fog);if(a!==b)bad.push('weather reached the Abbey');if(V.weatherNow()!==null)bad.push('the Abbey has weather');T.time=null;T.weather=null;V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+await reset();
+await test('Weather specks appear when they should, and every zone draws without errors', async () => {
+  const problems = await ev(`async()=>{const V=window.__veyl,bad=[],G=V.G,T=V.TIMEO,X=V.WX;V.startNew('reaver','Tester');const before=V.readErrors().length,wait=(n=350)=>new Promise(r=>setTimeout(r,n));for(const id of ${ZONES}){V.enterMap(id);for(const k of X.zones[id])for(const t of['day','night']){T.time=t;T.weather=k;await wait();const K=X.kinds[k];if(K.parts){for(let i=0;i<25&&!V.WXP.length;i++)await wait(200);const c=V.WXP.length;if(c<1)bad.push(id+' '+k+' has no specks');if(c>K.parts.n)bad.push(id+' '+k+' has '+c+' specks')}else{await wait(600);if(V.WXP.length)bad.push(id+' '+k+' should have no specks')}}}T.weather=null;T.time='day';V.enterMap('abbey');await wait(1500);if(V.WXP.length)bad.push('specks in the Abbey');T.time=null;V.enterMap('vale',G.maps.vale.start);await wait();const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`);
+  await send('Page.navigate', { url: url + '?weather=rain&time=night' }); await sleep(3000);
+  const held = await ev(`()=>[window.__veyl.TIMEO.weather,window.__veyl.TIMEO.time]`);
+  if (held[0] !== 'rain' || held[1] !== 'night') problems.push('the ?weather= link gave ' + held);
+  await send('Page.navigate', { url: url + '?weather=clear' }); await sleep(3000);
+  if ((await ev(`()=>window.__veyl.TIMEO.weather`)) !== 'clear') problems.push('?weather=clear did not hold');
+  await send('Page.navigate', { url: url + '?weather=frogs' }); await sleep(3000);
+  if ((await ev(`()=>window.__veyl.TIMEO.weather`)) !== null) problems.push('?weather=frogs was accepted');
+  return problems;
+});
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
