@@ -672,6 +672,32 @@ await test('Achievements survive saving, and an old hero gets credit at once wit
   for(const id of ['b_all','qall','q25','qzone','huntall'])if(!C.got[id])bad.push('old hero not credited with '+id);if(C.c.kills)bad.push('old hero has kills '+C.c.kills);if(/Achievement/.test(document.getElementById('toasts').innerText))bad.push('loading showed achievement toasts');
   const forged=JSON.parse(JSON.stringify(d));forged.ach={title:'kill2000',got:{},c:'x'};V.loadSave(forged);if(V.achTitle())bad.push('an unearned title loaded');if(typeof V.achS().c!=='object')bad.push('bad counters were kept');return bad}`));
 
+// Story part 1: Act I and the Keeper's letters (12 to 14).
+await reset();
+await test('Story data is sound: letters, the envoy, the clue quests and no spoilers', () => ev(`()=>{const V=window.__veyl,bad=[],Q=id=>V.QUESTS.find(q=>q.id===id);V.startNew('bulwark','Tester');
+  for(const L of V.LETTERS){if(!Q(L.after))bad.push(L.id+': unknown quest '+L.after);if(!L.body.length||!L.sign)bad.push(L.id+' is empty');if(/vorgath/i.test(JSON.stringify(L)))bad.push(L.id+' names Vorgath')}
+  if(new Set(V.LETTERS.map(l=>l.id)).size!==V.LETTERS.length)bad.push('duplicate letter ids');
+  V.enterMap('vale',V.G.maps.vale.start);const m=V.G.map,n=V.NPCS.envoy,v=m.get(Math.floor(n.x),Math.floor(n.y)),town=m.zones.find(z=>z.s==='Village');if(v<0||V.SOLID[v])bad.push('the envoy stands on blocked ground');if(!(n.x>=town.x0&&n.x<=town.x1&&n.y>=town.y0&&n.y<=town.y1))bad.push('the envoy is outside Hollowmere');
+  for(const o of Object.values(V.NPCS))if(o!==n&&Math.hypot(o.x-n.x,o.y-n.y)<1.5&&o.town===n.town)bad.push('the envoy stands on '+o.name);
+  for(const[id,r]of[['q4','v2'],['f9','f2'],['f4','f9'],['g8','g3'],['g4','g8']])if(JSON.stringify(Q(id).req)!==JSON.stringify([r]))bad.push(id+' needs '+Q(id).req);for(const id of ['v2','f9','g8','v7'])if(!Q(id).camp)bad.push(id+' is not on the main path');
+  const all=JSON.stringify(V.UPDATES);if(/vorgath|molten throne/i.test(all))bad.push('the update log names the final boss');if(/Warden Hassa/.test(JSON.stringify(V.QUESTS)+JSON.stringify(V.NPCS)))bad.push('Hassa is still called Warden');
+  if(V.NPCS.hassa.title!=='Mistress of the Well'||V.NPCS.corra.title!=='Ridge scout'||V.NPCS.imra.title!=='Lantern Bearer')bad.push('a rename is missing');return bad}`));
+
+await test('Act I plays through: the envoy comes and goes, and the Keeper writes twice', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[],tick=()=>{G.storyT=0;V.storyTick(1)};V.startNew('reaver','Tester');const P=V.P;V.enterMap('vale',G.maps.vale.start);G.enemies=[];V.closePanel(true);
+  tick();if(G.map.npcs.includes('envoy'))bad.push('the envoy is there before the abbey');if(V.G.panel)bad.push('a panel opened with no letter due');
+  P.q.q1={s:'done',n:6};P.q.q2={s:'done',n:6};tick();if(G.panel!=='letter'||G.panelArg!=='k1')bad.push('the first letter did not open: '+G.panel);if(!/blade of Hollowmere/.test(document.querySelector('#book').innerText))bad.push('the letter text is missing');
+  if(!V.storyS().letters.k1.read)bad.push('an opened letter is not marked read');V.closePanel(true);tick();if(G.panel)bad.push('the first letter opened twice');
+  P.lvl=17;P.q.q5={s:'done',n:1};tick();if(!G.map.npcs.includes('envoy'))bad.push('no envoy after the abbey');V.openPanel('npc','envoy');if(!/Masked Envoy/.test(document.querySelector('#book').innerText))bad.push('cannot talk to the envoy');const acc=document.querySelector('#book [data-act="accept"][data-q="v7"]');if(!acc)bad.push('the envoy offers no quest');else acc.click();
+  if(!P.q.v7||P.q.v7.s!=='ready')bad.push('v7 is '+JSON.stringify(P.q.v7));V.closePanel(true);tick();if(G.map.npcs.includes('envoy'))bad.push('the envoy stayed after you handed over the clapper');
+  const e=V.mkEnemy('rat',1,P.x+30,P.y);e.state='chase';G.enemies.push(e);P.q.v7={s:'done',n:1};tick();if(G.panel==='letter')bad.push('a letter opened mid-fight');if(!/A letter has arrived/.test(document.getElementById('toasts').innerText))bad.push('no letter notice in a fight');
+  G.enemies=[];tick();if(G.panel!=='letter'||G.panelArg!=='k2')bad.push('the second letter did not open after the fight');V.closePanel(true);
+  V.openPanel('quests');document.querySelector('#book [data-act="qtab"][data-t="letters"]').click();const rows=document.querySelectorAll('#book [data-act="letter"]').length;if(rows!==2)bad.push(rows+' letters listed');document.querySelector('#book [data-act="qtab"][data-t="log"]').click();if(!/QUEST LOG/.test(document.querySelector('#book').innerText))bad.push('the quest log tab is gone');V.closePanel(true);return bad}`));
+
+await test('Story records survive saving, and an old hero gets the letters it has earned', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[],tick=()=>{G.storyT=0;V.storyTick(1)};V.startNew('lumen','Saver');const P=V.P;G.enemies=[];V.closePanel(true);P.q.q2={s:'done',n:6};tick();V.closePanel(true);V.storyS().f.test=1;
+  const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);const S=V.storyS();if(!S.letters.k1||!S.letters.k1.read||S.f.test!==1)bad.push('story record lost: '+JSON.stringify(S));
+  const old=JSON.parse(JSON.stringify(d));delete old.story;V.loadSave(old);if(typeof V.storyS().letters!=='object')bad.push('an old save has no story record');G.enemies=[];V.closePanel(true);tick();if(!V.storyS().letters.k1)bad.push('an old hero did not get its letter');
+  const junk=JSON.parse(JSON.stringify(d));junk.story={letters:'x',f:[1]};V.loadSave(junk);const J=V.storyS();if(typeof J.letters!=='object'||Array.isArray(J.f))bad.push('a damaged story record was kept');V.closePanel(true);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
