@@ -742,6 +742,22 @@ await test('After the Mother, the Keeper appears, shows the sealed door, and wri
   document.querySelector('#book [data-act="close"]').click();if(G.panel)bad.push('the scene did not close');if(!V.storyS().f.f12)bad.push('the scene was not remembered');tick();if(G.map.npcs.includes('keeper'))bad.push('the Keeper stayed');
   if(!P.q.f12||P.q.f12.s!=='ready'||V.qTurn(V.QUESTS.find(q=>q.id==='f12'))!=='odette')bad.push('f12 is not ready for Odette');P.q.f12.s='done';tick();if(G.panelArg!=='k4')bad.push('no letter after the scene');V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
 
+// Story part 4: Act IV, The Hollow King.
+await reset();
+await test('Act IV data is sound: Warden stones, one source, the Hollow King names Vorgath, the letters stop', () => ev(`()=>{const V=window.__veyl,bad=[],Q=id=>V.QUESTS.find(q=>q.id===id);V.startNew('bulwark','Tester');
+  if(!/Wardens/.test(Q('g3').done))bad.push('Imra does not name the Warden stones');if(!/one source/.test(Q('g8').done))bad.push('Fennick does not find one source');if(!/Vorgath/.test(V.EN.hollowking.deathMsg))bad.push('the Hollow King does not name Vorgath');if(/lantern/i.test(Q('g6').offer))bad.push('Imra still sends her lantern with you');
+  const c=Q('g11');if(!c||!c.choice||c.nodes)bad.push('no lantern choice in conversation');else for(const[k,o]of Object.entries(c.choice.opts))if(!o.done||!o.result||!o.label)bad.push(k+' is incomplete');
+  const gl=new Set(V.QUESTS.filter(q=>q.map==='gloam'||q.map==='ember').map(q=>q.id));for(const L of V.LETTERS)if(gl.has(L.after))bad.push('a letter still comes in Act IV or V: '+L.id);
+  V.enterMap('gloam');const m=V.G.map,n=V.NPCS.envoy3,v=m.get(Math.floor(n.x),Math.floor(n.y)),town=m.zones.find(z=>z.s==='Town');if(v<0||V.SOLID[v])bad.push('the envoy stands on blocked ground');if(town&&!(n.x>=town.x0&&n.x<=town.x1&&n.y>=town.y0&&n.y<=town.y1))bad.push('the envoy is outside Duskhollow');
+  for(const o of Object.values(V.NPCS))if(o!==n&&o.town===n.town&&Math.hypot(o.x-n.x,o.y-n.y)<1.5)bad.push('the envoy stands on '+o.name);V.enterMap('vale',V.G.maps.vale.start);return bad}`));
+
+await test('The lantern choice is made by talking, can be put off, and is remembered', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[],tick=()=>{G.storyT=0;V.storyTick(1)};const run=k=>{V.startNew('reaver','T'+k);const P=V.P;P.lvl=39;for(const id of ['f6','g1','g2','g3','g10'])P.q[id]={s:'done',n:1};V.enterMap('gloam');V.closePanel(true);G.enemies=[];tick();
+   if(!G.map.npcs.includes('envoy3')){bad.push(k+': no envoy after the pilgrim lantern');return}const np=V.NPCS.envoy3;P.x=np.x*32;P.y=np.y*32;V.update(1/30);V.openPanel('npc','envoy3');const a=document.querySelector('#book [data-act="accept"][data-q="g11"]');if(!a){bad.push(k+': nothing offered');return}a.click();
+   if(G.panel!=='choice')bad.push(k+': no choice after accepting');V.closePanel(true);tick();if(!G.map.npcs.includes('envoy3'))bad.push(k+': the envoy left before you answered');V.openPanel('npc','envoy3');const ans=document.querySelector('#book [data-act="choiceopen"][data-q="g11"]');if(!ans){bad.push(k+': no way to answer later');return}ans.click();
+   const b=document.querySelector('#book [data-act="choose"][data-k="'+k+'"]');if(!b){bad.push(k+': no button');return}b.click();tick();if(G.map.npcs.includes('envoy3'))bad.push(k+': the envoy stayed after you answered');const q=V.QUESTS.find(x=>x.id==='g11');return{turn:V.qTurn(q),text:V.qDoneText(q),f:V.storyS().f.lantern,s:P.q.g11.s}};
+  const gv=run('give'),kp=run('keep');if(!gv||!kp)return bad;if(gv.turn!=='imra'||kp.turn!=='imra')bad.push('the lantern is not reported to Imra');if(gv.text===kp.text)bad.push('Imra says the same either way');if(gv.f!=='give'||kp.f!=='keep')bad.push('the choice was not kept');if(gv.s!=='ready'||kp.s!=='ready')bad.push('the quest is not ready to hand in');
+  V.closePanel(true);V.enterMap('vale',G.maps.vale.start);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
