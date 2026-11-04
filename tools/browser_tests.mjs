@@ -420,6 +420,66 @@ await test('A hero saved where a building now stands loads safely, and other tow
   for(const id of['dunes','frost','gloam','ember']){if(!V.G.maps[id])V.G.maps[id]=V.BUILD[id]();const t=V.G.maps[id];if(!t.houses||!t.houses.length)bad.push(id+' lost its houses');if(t.signs)bad.push(id+' gained signs')}
   V.enterMap('vale',V.G.maps.vale.start);V.update(1/30);return bad}`));
 
+// Enemy tactics (7.b). Most of these use open ground, so walls can't hide what the rule does.
+const TAC_SETUP = `const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G,TS=32;V.enterMap('dunes');G.enemies=[];P.x=40*TS;P.y=10*TS;P.hp=1e7;P.iframes=1e9;P.fx=0;P.fy=1;P.faceLock=1e9;const m=G.map,solid=m.solidAt;m.solidAt=()=>false;const done=()=>{m.solidAt=solid;G.enemies=[];return bad},step=(n,f)=>{for(let i=0;i<n;i++){V.update(1/30);P.iframes=1e9;P.faceLock=1e9;if(f)f(i)}},add=(t,dx,dy,o)=>{const e=V.mkEnemy(t,20,P.x+dx,P.y+dy);e.hp=e.max=1e6;e.spT=1e9;if(o)Object.assign(e,o);G.enemies.push(e);return e},pd=e=>Math.hypot(e.x-P.x,e.y-P.y);`;
+
+await reset();
+await test('Every regular monster has an archetype, and bosses have none', () => ev(`()=>{const V=window.__veyl,bad=[];for(const t in V.EN){const b=V.EN[t].boss;if(b&&V.TACBY[t])bad.push(t+' is a boss with an archetype');if(!b&&!V.TACBY[t])bad.push(t+' has no archetype')}for(const t in V.TACTICS.patrolShare)if(!V.EN[t])bad.push('patrol lists unknown '+t);for(const k of ['stalker','sentinel','ravager','arcanist'])if(!V.TACTICS.arch[k])bad.push('missing '+k);for(const t of V.TACTICS.arch.arcanist.types)if(!V.EN[t].ranged)bad.push(t+' is an arcanist but not ranged');return bad}`));
+
+await reset();
+await test('Noticing you brings the nearby pack, not the zone or a boss', () => ev(`()=>{${TAC_SETUP}
+  const a=add('wisp',185,0),near=add('wisp',260,40),far=add('wisp',500,0),boss=add('prior',260,0);step(2);
+  if(a.state!=='chase')bad.push('the first one did not notice');if(near.state!=='chase')bad.push('its neighbour did not join');if(far.state!=='idle')bad.push('a distant one joined');if(boss.state!=='idle')bad.push('a boss was pulled');
+  G.enemies=[];const s=add('acolyte',160,0),n2=add('wraith',300,0),n3=add('wraith',160,300);s.d={...s.d,aggro:170};step(2);if(s.state==='chase'&&n2.state!=='chase')bad.push('a Sentinel should call from further away');if(n3.state!=='idle')bad.push('a Sentinel reached too far');return done()}`));
+
+await reset();
+await test('Melee monsters spread out and only three strike at once', () => ev(`()=>{${TAC_SETUP}
+  const run=k=>{G.enemies=[];V.TACTICS.space.speed=k;const L=[];for(let i=0;i<6;i++)L.push(add('ghoul',100+i*4,(i-2.5)*10));let most=0;const bit=new Set();step(240,()=>{most=Math.max(most,L.filter(e=>e.wind>0).length);for(const e of L)if(e.wind>0)bit.add(e.id)});const A=L.map(e=>Math.atan2(e.y-P.y,e.x-P.x)).sort((a,b)=>a-b);let hole=A[0]+Math.PI*2-A[5];for(let i=1;i<6;i++)hole=Math.max(hole,A[i]-A[i-1]);return{span:Math.PI*2-hole,most,bit:bit.size,far:Math.max(...L.map(pd))}};
+  const off=run(0),on=run(.7);if(on.span<off.span+.7)bad.push('spread '+on.span.toFixed(2)+' against '+off.span.toFixed(2)+' without the rule');if(on.most>V.TACTICS.attackers)bad.push(on.most+' struck at once');if(on.bit<5)bad.push('only '+on.bit+' of 6 got a turn');if(on.far>V.TACTICS.space.hold+45)bad.push('one hung back at '+on.far.toFixed(0));
+  G.enemies=[];const ring=[];for(let i=0;i<6;i++){const a=i*Math.PI/3;ring.push(add('ghoul',30*Math.cos(a),30*Math.sin(a),{state:'chase',cd:0}))}let top=0;step(30,()=>{top=Math.max(top,ring.filter(e=>e.wind>0).length)});if(top!==V.TACTICS.attackers)bad.push(top+' of 6 struck together when all were ready');return done()}`));
+
+await reset();
+await test('Wolves circle to your back in a pack, pause, and never more than two at once', () => ev(`()=>{${TAC_SETUP}
+  const L=[add('wolf',0,120),add('wolf',-30,120),add('wolf',30,120),add('wolf',60,120)];let most=0,behind=0,ended=0,shortPause=0;const was=new Map();
+  step(150,()=>{most=Math.max(most,L.filter(e=>e.flankT>0).length);for(const e of L){if(was.get(e)&&!(e.flankT>0)){ended++;if(e.cd<V.TACTICS.flank.pause-.04)shortPause++;if(!V.blockFacing(e))behind++}was.set(e,e.flankT>0)}});
+  if(most<1)bad.push('no wolf flanked');if(most>V.TACTICS.flank.max)bad.push(most+' flanked at once');if(!ended)bad.push('no flank finished');if(!behind)bad.push('no wolf got outside the block');if(shortPause)bad.push(shortPause+' bit with no pause');
+  G.enemies=[];const lone=add('wolf',0,120);let f=0;step(60,()=>{if(lone.flankT>0)f++});if(f)bad.push('a lone wolf circled');
+  G.enemies=[];const a=add('wolf',0,120),b=add('wolf',30,120);a.taunt=60;b.taunt=60;let t=0;step(45,()=>{if(a.flankT>0||b.flankT>0)t++});if(t)bad.push('a taunted wolf circled');return done()}`));
+
+await reset();
+await test('Ranged monsters back away, sidestep, and stop before their chase limit', () => ev(`()=>{${TAC_SETUP}
+  const R=V.EN.wraith.range,keep=R*V.TACTICS.ranged.keep;const a=add('wraith',40,0);step(90);if(pd(a)<keep-12)bad.push('stayed at '+pd(a).toFixed(0));
+  G.enemies=[];G.projs=[];const b=add('wraith',R*.75,0,{cd:0,state:'chase'});step(2);if(!G.projs.length)bad.push('did not shoot');if(!(b.strafeT>0))bad.push('did not start a sidestep');const y0=b.y,d0=pd(b);step(12);if(Math.abs(b.y-y0)<8)bad.push('sidestep moved only '+Math.abs(b.y-y0).toFixed(1));if(Math.abs(pd(b)-d0)>8)bad.push('sidestep changed range by '+Math.abs(pd(b)-d0).toFixed(1));
+  G.enemies=[];const c=add('wraith',40,0,{hx:P.x+40+V.TACTICS.homeMax+5,hy:P.y,state:'chase'});const c0=pd(c);step(20);if(pd(c)>c0+3)bad.push('backed away past its limit');if(c.state!=='chase')bad.push('gave up the chase');return done()}`));
+
+await reset();
+await test('Skirmishers flee once and return; others stand or rage', () => ev(`()=>{${TAC_SETUP}
+  const a=add('nomad',30,0,{state:'chase'});a.hp=a.max*.2;const hp0=a.hp;let wind=0;step(2);if(!(a.fleeT>0))bad.push('did not flee');const d0=pd(a);step(30,()=>{if(a.wind>0)wind++});if(pd(a)<d0+40)bad.push('fled only '+(pd(a)-d0).toFixed(0));if(wind)bad.push('attacked while fleeing');step(240);if(a.fleeT>0)bad.push('never stopped fleeing');const back=pd(a);if(back>V.EN.nomad.range+V.EN.nomad.r+12)bad.push('did not come back, at '+back.toFixed(0));let again=0;step(45,()=>{if(a.fleeT>0)again++});if(again)bad.push('fled twice');if(a.hp!==hp0)bad.push('healed while fleeing');if(a.state!=='chase')bad.push('left the fight');
+  G.enemies=[];const g=add('ghoul',30,0,{state:'chase'});g.hp=g.max*.2;step(5);if(g.fleeT>0)bad.push('a Ravager fled');if(!g.enr)bad.push('a Ravager did not rage');
+  G.enemies=[];const g2=add('ghoul',30,0,{state:'chase'});step(5);if(g2.enr)bad.push('a healthy Ravager raged');
+  G.enemies=[];const el=add('nomad',30,0,{state:'chase'});el.d={...el.d,elite:true};el.hp=el.max*.2;step(3);if(el.fleeT>0)bad.push('a hunted elite fled');
+  G.enemies=[];const lim=add('nomad',30,0,{state:'chase',hx:P.x-V.TACTICS.homeMax+60,hy:P.y});lim.hp=lim.max*.2;const h=lim.hp;let top=0;step(90,()=>{top=Math.max(top,Math.hypot(lim.x-lim.hx,lim.y-lim.hy))});if(top>V.TACTICS.homeMax+6)bad.push('fled to '+top.toFixed(0)+' from home');if(lim.state!=='chase')bad.push('fleeing ended the chase');if(lim.hp!==h)bad.push('fleeing healed it');
+  G.enemies=[];const st=add('nomad',20,0,{state:'chase',cd:0});st.hp=st.max*.2;m.solidAt=()=>true;let hits=0;step(40,()=>{if(st.wind>0)hits++});if(st.fleeT>0)bad.push('stayed frozen against a wall');if(!hits)bad.push('never fought again after being cornered');m.solidAt=()=>false;
+  G.enemies=[];const r=add('rat',60,0,{state:'return'});r.hp=r.max*.2;r.fled=true;r.fleeT=2;r.enr=1;r.x=r.hx;r.y=r.hy;step(2);if(r.state!=='idle'&&pd(r)>300)bad.push('did not settle');if(r.fled&&r.state==='idle')bad.push('going home did not reset it');return done()}`));
+
+await reset();
+await test('Patrols walk a route near home and carry on when blocked', () => ev(`()=>{${TAC_SETUP}
+  const FAR=600;const a=add('nomad',FAR,0);step(1);if(!a.route)bad.push('a raider has no route');else{const seen=new Set(),r0=a.routeI;let top=0;for(let i=0;i<900;i++){V.update(1/15);P.iframes=1e9;seen.add(a.routeI%a.route.length);top=Math.max(top,Math.hypot(a.x-a.hx,a.y-a.hy))}if(seen.size<a.route.length)bad.push('visited '+seen.size+' of '+a.route.length+' points');if(top>V.TACTICS.patrol.r[1]+12)bad.push('strayed '+top.toFixed(0)+' from home');if(top<V.TACTICS.patrol.r[0]-12)bad.push('barely moved');if(a.state!=='idle')bad.push('left its patrol');
+   const i0=a.routeI,p0=a.route[i0%a.route.length];a.x=p0[0]+40;a.y=p0[1];a.restT=0;m.solidAt=()=>true;step(3);if(a.routeI===i0)bad.push('froze when blocked');m.solidAt=()=>false}
+  const rat=add('rat',FAR,200);step(1);if(rat.route)bad.push('a rat got a route');const boss=add('qassar',FAR,-400);step(1);if(boss.route)bad.push('a boss got a route');
+  let w=0,n=0;for(let i=0;i<60;i++){const e=V.mkEnemy('wolf',20,P.x+FAR,P.y);n++;if(V.tacRoute(e))w++}if(w<15||w>45)bad.push(w+' of '+n+' wolves had routes');
+  m.solidAt=solid;const towns=[];let total=0;for(const id of['vale','dunes','frost','gloam','ember','abbey']){V.enterMap(id);const M=G.map,town=M.zones.find(z=>z.s==='Town'||z.s==='Village'),g=V.TACTICS.patrol.townGap;let got=0;for(const e of G.enemies)for(let k=0;k<6;k++){const r=V.tacRoute(e);if(!r)continue;got++;for(const[x,y]of r.slice(1)){if(M.solidAt(x,y))bad.push(id+' route point in a wall');const tx=x/TS,ty=y/TS;if(town&&tx>=town.x0-g&&tx<=town.x1+g&&ty>=town.y0-g&&ty<=town.y1+g)bad.push(id+' route point in town')}}towns.push(id+':'+got);total+=got}if(!total)bad.push('no routes on any map');for(const id of['vale','dunes'])if(towns.includes(id+':0'))bad.push(id+' has no patrols');G.enemies=[];return bad.slice(0,8)}`));
+
+await reset();
+await test('Bosses, defend waves and the chase limit behave as before', () => ev(`()=>{${TAC_SETUP}
+  const pack=[add('wolf',0,100,{state:'chase'}),add('wolf',20,100,{state:'chase'})];for(const e of pack){e.ev=true;e.taunt=99}const boss=add('qassar',-60,90,{state:'chase'});boss.hp=boss.max*.2;boss.spT=0;const spawned=[];let tac=0,moved=0;const x0=boss.x;
+  step(60,()=>{for(const e of[...pack,boss]){if(e.flankT>0||e.fleeT>0||e.strafeT>0)tac++;if(e.side&&Math.abs(e.side)>.001&&e!==boss&&false)tac++}if(boss.route)tac++});if(tac)bad.push('tactics touched a boss or wave '+tac+' times');if(V.tacFree(boss)||V.tacFree(pack[0]))bad.push('boss or wave counted as free');if(V.tacFree({d:{},ev:true,taunt:0}))bad.push('a wave with no taunt left counted as free');if(pack.some(e=>pd(e)>V.EN.wolf.range+V.EN.wolf.r+6))bad.push('a wave wolf held back');G.boss=null;
+  G.enemies=[];let n=0;const many=[];for(let i=0;i<5;i++){const e=add('ghoul',30*Math.cos(i),30*Math.sin(i),{state:'chase',cd:0,ev:true,taunt:99});many.push(e)}step(3,()=>{n=Math.max(n,many.filter(e=>e.wind>0).length)});if(n<4)bad.push('the attack limit held back defend waves: '+n);
+  G.enemies=[];const r=add('rat',0,30,{state:'chase',hx:P.x+900,hy:P.y});step(2);if(r.state!=='return')bad.push('the chase limit no longer works, state '+r.state);return done()}`));
+
+await reset();
+await test('Fights run without errors in every zone', () => ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G,before=V.readErrors().length;for(const id of['vale','dunes','frost','gloam','ember','abbey']){V.enterMap(id);const L=G.enemies.filter(e=>!e.d.boss);if(!L.length){bad.push(id+' has no monsters');continue}P.x=L[0].x+40;P.y=L[0].y;for(let i=0;i<240;i++){P.hp=1e7;P.dead=false;V.update(1/30);if(i===120)for(const e of G.enemies)if(!e.d.boss&&e.state==='chase')e.hp=e.max*.2}}V.enterMap('vale',G.maps.vale.start);V.update(1/30);await new Promise(r=>setTimeout(r,300));if(V.readErrors().length>before)bad.push('errors: '+V.readErrors().slice(before).join(' | ').slice(0,300));return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

@@ -2039,36 +2039,103 @@ function updatePlayer(dt){
  for(const o of G.nodes||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'node',o}}}for(const o of G.res||[]){if(o.t>0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'res',o}}}if(!G.event)for(const o of G.beacons||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<72&&d<nd){nd=d;near={kind:'beacon',o}}}
  if((G.spotT=(G.spotT||0)-dt)<=0){G.spotT=.25;checkSpots()}
  G.near=near;checkZone()}
+/* ================= Enemy tactics (7.b) =================
+   Each regular monster has an archetype from the enemy behaviour guide. Bosses, defend-quest waves, summoned foes and anything taunted fight as before.
+   alertR: how far a monster's notice spreads. homeMax: fleeing and backing away stop here, inside the 440 where a chase gives up and heals.
+   attackers: melee monsters that may strike at a time, each for turn seconds; the rest hold at space.hold until their turn.
+   patrolShare: the share of each monster type that walks a route. */
+const TACTICS={alertR:110,homeMax:380,attackers:3,turn:3,lowHp:.25,
+ space:{r:150,gap:1,speed:.7,hold:70},
+ flank:{max:2,start:150,orbit:70,behind:2.2,time:2.5,speed:1.15,pause:.55,cd:[5,9],ally:200},
+ ranged:{keep:.5,back:.7,strafe:.8,speed:.8},
+ flee:{time:3,speed:1.1},
+ patrol:{r:[70,130],pts:2,speed:.5,rest:[.8,2.5],townGap:6,tries:12},
+ arch:{stalker:{flank:1,types:['wolf','frostwolf','gloomwolf','ashhound']},
+  sentinel:{alert:1.5,types:['acolyte']},
+  ravager:{rage:1,types:['ghoul','rimedead','blightghoul','cinderdead','scorp','magmascorp']},
+  arcanist:{types:['wisp','wraith','sandsh','rimewr','hexwisp','thornwitch','flameshade']},
+  skirmisher:{flee:1,types:['rat','nomad']}},
+ patrolShare:{nomad:1,acolyte:1,wolf:.5,frostwolf:.5,gloomwolf:.5,ashhound:.5}};
+const TACBY={};for(const k in TACTICS.arch)for(const t of TACTICS.arch[k].types)TACBY[t]=TACTICS.arch[k];
+const tacFree=e=>!e.d.boss&&!e.ev&&!e.summoned&&!(e.taunt>0);
+const tacBy=e=>TACBY[e.type]||{};
+function tacNote(e,s){txt(e.x,e.y,e.d.h+.8,s,'#ffd890',13)}
+function tacReset(e){e.fled=false;e.fleeT=0;e.flankT=0;e.strafeT=0;e.restT=0;e.routeI=0;e.side=0;if(!e.d.boss)e.enr=0}
+function tacFlankEnd(e){const T=TACTICS.flank;e.flankT=0;e.flankCd=rr(T.cd[0],T.cd[1]);e.cd=Math.max(e.cd,T.pause)}
+function tacTick(e,dt){if(e.fleeT>0)e.fleeT-=dt;if(e.strafeT>0)e.strafeT-=dt;if(e.flankCd>0)e.flankCd-=dt;if(e.flankT>0){e.flankT-=dt;if(e.flankT<=0||!tacFree(e))tacFlankEnd(e)}}
+function tacAlert(e){if(e.d.boss)return;const r=TACTICS.alertR*(tacBy(e).alert||1);for(const f of live())if(f!==e&&f.state==='idle'&&!f.d.boss&&dist(f.x,f.y,e.x,e.y)<r)f.state='chase'}
+function tacShot(e){if(tacFree(e)){e.strafeT=TACTICS.ranged.strafe;e.strafeS=R()<.5?1:-1}}
+const tacMayHit=e=>e.d.ranged||!tacFree(e)||e.mayBite;
+/* Each frame: melee monsters near the hero edge away from whoever stands at nearly the same angle, and a few of them hold the turn to strike, longest wait next. */
+function tacFrame(dt){const T=TACTICS.space,L=[];
+ for(const e of G.enemies){e.sideW=0;e.mayBite=false;if(!e.dead&&e.fade<=0&&e.state==='chase'&&!e.d.ranged&&tacFree(e)&&!(e.flankT>0)&&!(e.fleeT>0)){e.pd=dist(e.x,e.y,P.x,P.y);if(e.pd<T.r){e.ang=Math.atan2(e.y-P.y,e.x-P.x);L.push(e)}}}
+ for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){const A=L[i],B=L[j],dl=angDiff(A.ang,B.ang),ab=Math.abs(dl);if(ab>=T.gap)continue;const w=(T.gap-ab)/T.gap*(dl>0?1:dl<0?-1:A.id<B.id?1:-1);A.sideW+=w;B.sideW-=w}
+ for(const e of G.enemies)if(!e.dead)e.side=(e.side||0)+(clamp(e.sideW,-1,1)-(e.side||0))*Math.min(1,dt*6);
+ const ready=e=>e.stun<=0&&(e.root<=0||e.pd<=e.d.range+e.d.r),now=e=>ready(e)&&e.turnEnd>G.time;L.sort((a,b)=>(now(b)?1:0)-(now(a)?1:0)||(ready(a)?0:1)-(ready(b)?0:1)||(a.turnEnd||0)-(b.turnEnd||0)||a.pd-b.pd);
+ for(let i=0;i<L.length&&i<TACTICS.attackers;i++){const e=L[i];if(!now(e))e.turnEnd=G.time+TACTICS.turn;e.mayBite=true}}
+/* A wolf with a partner circles towards the hero's back, then waits a moment before biting so there is time to turn. */
+function tacFlank(e,d,sp){const T=TACTICS.flank,a=Math.atan2(e.y-P.y,e.x-P.x),fa=Math.atan2(P.fy,P.fx);
+ if(!(e.flankT>0)){if(!tacBy(e).flank||e.flankCd>0||d>T.start)return false;
+  const L=live().filter(f=>f.state==='chase');if(L.filter(f=>f.flankT>0).length>=T.max||!L.some(f=>f!==e&&dist(f.x,f.y,P.x,P.y)<T.ally))return false;
+  e.flankT=T.time;e.flankS=angDiff(a,fa)<0?-1:1}
+ const da=angDiff(fa+e.flankS*T.behind,a);if(Math.abs(da)<.35&&Math.abs(d-T.orbit)<30){tacFlankEnd(e);return false}
+ const na=a+clamp(da,-.6,.6),tx=P.x+Math.cos(na)*T.orbit,ty=P.y+Math.sin(na)*T.orbit,td=dist(e.x,e.y,tx,ty),q=sp*T.speed;if(td>1)moveEnt(e,(tx-e.x)/td*q,(ty-e.y)/td*q,e.d.r*.7);return true}
+/* One way to move in a fight. With no tactics in play this is the old straight-line chase. */
+function tacMove(e,d,sp,reach){if(e.root>0)return;const free=tacFree(e),ux=d>.01?(P.x-e.x)/d:0,uy=d>.01?(P.y-e.y)/d:0,r=e.d.r*.7;
+ if(free&&tacFlank(e,d,sp))return;
+ if(e.d.ranged){const T=TACTICS.ranged,keep=free?e.d.range*T.keep:80;
+  if(d<keep&&(!free||dist(e.x,e.y,e.hx,e.hy)<TACTICS.homeMax)){const k=sp*(free?T.back:.6);moveEnt(e,-ux*k,-uy*k,r)}
+  else if(free&&e.strafeT>0){const k=sp*T.speed*e.strafeS;moveEnt(e,uy*k,-ux*k,r)}
+  else if(d>reach*.85)moveEnt(e,ux*sp,uy*sp,r);return}
+ const s=free?clamp(e.side||0,-1,1)*TACTICS.space.speed:0,k=Math.sqrt(1-s*s),stop=free&&!e.mayBite?Math.max(reach*.85,TACTICS.space.hold):reach*.85;
+ if(d>stop)moveEnt(e,ux*sp*k,uy*sp*k,r);if(Math.abs(s)>.05)moveEnt(e,uy*sp*s,-ux*sp*s,r)}
+/* Skirmishers run once when nearly dead, then come back; ravagers rage instead. True while fleeing. */
+function tacFlee(e,d,dt){const T=TACTICS.flee,by=tacBy(e),low=e.hp<=e.max*TACTICS.lowHp,far=()=>dist(e.x,e.y,e.hx,e.hy)>=TACTICS.homeMax;
+ if(by.rage&&low&&!e.enr&&tacFree(e)){e.enr=1;tacNote(e,'Rages')}
+ if(!(e.fleeT>0)){if(e.fled||!by.flee||e.d.elite||!tacFree(e)||!low||far())return false;e.fled=true;e.fleeT=T.time;tacNote(e,'Flees')}
+ if(!tacFree(e)||far()){e.fleeT=0;return false}if(e.root>0)return true;
+ const sp=e.d.spd*T.speed*(e.slowT>0?1-e.slowA:1)*dt,ux=d>.01?(e.x-P.x)/d:1,uy=d>.01?(e.y-P.y)/d:0,ox=e.x,oy=e.y;moveEnt(e,ux*sp,uy*sp,e.d.r*.7);e.trot=Math.atan2(ux,uy);
+ if(sp>0&&Math.abs(e.x-ox)+Math.abs(e.y-oy)<sp*.1){e.fleeT=0;return false}return true}
+/* A patrol route: home, then points that can be walked to in straight lines and that keep clear of towns and boss arenas. */
+function tacRoute(e){const T=TACTICS.patrol,share=TACTICS.patrolShare[e.type],m=G.map;if(!share||e.d.elite||!tacFree(e)||R()>share)return null;const r=e.d.r*.7,town=m.zones&&m.zones.find(z=>z.s==='Town'||z.s==='Village'),g=T.townGap;
+ const okAt=(x,y)=>{const tx=x/TS,ty=y/TS;return!blocked(m,x,y,r)&&!(town&&tx>=town.x0-g&&tx<=town.x1+g&&ty>=town.y0-g&&ty<=town.y1+g)&&!(m.arena&&Math.hypot(tx-m.arena.x,ty-m.arena.y)<m.arena.r+g)};
+ const clear=(a,b)=>{const L=dist(a[0],a[1],b[0],b[1]),n=Math.ceil(L/16);for(let i=1;i<=n;i++)if(!okAt(a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n))return false;return true};
+ const route=[[e.hx,e.hy]];for(let k=0;k<T.tries&&route.length<=T.pts;k++){const a=R()*TAU,L=rr(T.r[0],T.r[1]),p=[e.hx+Math.cos(a)*L,e.hy+Math.sin(a)*L];if(clear(route[route.length-1],p)&&clear(p,route[0]))route.push(p)}
+ return route.length>T.pts?route:null}
+function tacPatrol(e,dt){if(e.route===undefined)e.route=tacRoute(e);if(!e.route)return false;if(e.stun>0||e.root>0)return true;if(e.restT>0){e.restT-=dt;return true}
+ const T=TACTICS.patrol,i=(e.routeI||0)%e.route.length,p=e.route[i],wd=dist(e.x,e.y,p[0],p[1]),sp=e.d.spd*T.speed*dt,ox=e.x,oy=e.y;
+ if(wd>6){moveEnt(e,(p[0]-e.x)/wd*sp,(p[1]-e.y)/wd*sp,e.d.r*.7);e.trot=Math.atan2(p[0]-e.x,p[1]-e.y)}
+ if(wd<=6||(sp>0&&Math.abs(e.x-ox)+Math.abs(e.y-oy)<sp*.1)){e.routeI=i+1;e.restT=rr(T.rest[0],T.rest[1])}return true}
 function updateEnemies(dt){
+ tacFrame(dt);
  for(const e of G.enemies){
-  if(e.dead){if(e.respawn>0){e.respawn-=dt;if(e.respawn<=0){if(dist(P.x,P.y,e.hx,e.hy)>340)Object.assign(e,{dead:false,hp:e.max,x:e.hx,y:e.hy,state:'idle',fade:0.6,stun:0,root:0});else e.respawn=3}}continue}
+  if(e.dead){if(e.respawn>0){e.respawn-=dt;if(e.respawn<=0){if(dist(P.x,P.y,e.hx,e.hy)>340){Object.assign(e,{dead:false,hp:e.max,x:e.hx,y:e.hy,state:'idle',fade:0.6,stun:0,root:0});tacReset(e)}else e.respawn=3}}continue}
   e.px=e.x;e.py=e.y;
   if(e.fade>0){e.fade-=dt;continue}
   e.hitFlash-=dt;e.anim+=dt;e.stun-=dt;e.root-=dt;e.cd-=dt;
-  if(e.hasteT>0)e.hasteT-=dt;if(e.ghostT>0)e.ghostT-=dt;if(e.slowT>0)e.slowT-=dt;if(e.vulnT>0)e.vulnT-=dt;if(e.weakT>0)e.weakT-=dt;if(e.markT>0)e.markT-=dt;if(e.taunt>0)e.taunt-=dt;
+  if(e.hasteT>0)e.hasteT-=dt;if(e.ghostT>0)e.ghostT-=dt;if(e.slowT>0)e.slowT-=dt;if(e.vulnT>0)e.vulnT-=dt;if(e.weakT>0)e.weakT-=dt;if(e.markT>0)e.markT-=dt;if(e.taunt>0)e.taunt-=dt;tacTick(e,dt);
   if(e.kb){moveEnt(e,e.kb.vx*dt,e.kb.vy*dt,e.d.r*.7);e.kb.vx*=.88;e.kb.vy*=.88;e.kb.t-=dt;if(R()<.5)burst(e.x,e.y,G.map.theme===2?'#ffffff':'#a89878',1,30,.35,2.5,.05);if(e.kb.t<=0)e.kb=null}
   if(e.bd){moveEnt(e,e.bd.vx*dt,e.bd.vy*dt,e.d.r*.5);e.bd.t-=dt;if(!e.bd.hit&&!P.dead&&dist(e.x,e.y,P.x,P.y)<e.d.r+24){e.bd.hit=true;hurtPlayer(e.bd.dmg||e.dmg*2.2*(e.enr?1.2:1),e);if(e.bd.fx==='stun')pDebuff('stun',.5);else if(e.bd.fx)pDebuff(e.bd.fx,e.bd.fx==='chill'?3:4,e.bd.fx==='bleed'?e.dmg*.14:0);sfx('bite',.7);shake(5)}if(R()<.7)burst(e.x,e.y,'#a89878',2,50,.4,3,.05);if(e.bd.t<=0)e.bd=null;continue}
   if(e.dots&&e.dots.length){for(const q of e.dots){q.t-=dt;q.n-=dt;if(q.n<=0){const iv=q.k==='burn'?.5:1;q.n+=iv;hitEnemy(e,{a:Math.max(1,Math.round(q.dps*iv*q.st)),crit:false},{dot:q.k});if(q.k==='bleed')sfx('bleed');else sfx('burn');if(e.dead)break}
     if(q.k==='burn'&&R()<dt*14)rise(e.x,e.y,R()<.5?'#ff8a3a':'#ffd060',1,e.d.r*.8,.6,3);if(q.k==='bleed'&&R()<dt*8)G.parts.push({x:e.x+rr(-6,6),y:e.y+rr(-6,6),z:e.d.h*.5,vx:0,vy:0,vz:0,t:0,max:.5,c:'#b01010',s:2.2})}
    if(e.dead)continue;e.dots=e.dots.filter(q=>q.t>0)}
   const d=dist(e.x,e.y,P.x,P.y);
-  if(e.state==='idle'){if(!P.dead&&d<e.d.aggro)e.state='chase';
-   else{e.wander-=dt;if(e.wander<=0){e.wander=rr(2,5);const a=R()*TAU,r=rr(10,70);e.tx=e.hx+Math.cos(a)*r;e.ty=e.hy+Math.sin(a)*r}
+  if(e.state==='idle'){if(!P.dead&&d<e.d.aggro){e.state='chase';tacAlert(e)}
+   else if(!tacPatrol(e,dt)){e.wander-=dt;if(e.wander<=0){e.wander=rr(2,5);const a=R()*TAU,r=rr(10,70);e.tx=e.hx+Math.cos(a)*r;e.ty=e.hy+Math.sin(a)*r}
     const wd=dist(e.x,e.y,e.tx,e.ty);if(wd>4&&e.stun<=0&&e.root<=0){const sp=e.d.spd*0.4*dt;moveEnt(e,(e.tx-e.x)/wd*sp,(e.ty-e.y)/wd*sp,e.d.r*.7);e.trot=Math.atan2(e.tx-e.x,e.ty-e.y)}}}
   if(e.state==='chase'&&(P.dead||(!e.d.boss&&!(e.taunt>0)&&dist(e.x,e.y,e.hx,e.hy)>440)||(e.d.boss&&e.leash&&dist(P.x,P.y,e.hx,e.hy)>e.leash))){e.state='return';if(e.d.boss)bossReset(e)}
   if(e.state==='return'){const hd=dist(e.x,e.y,e.hx,e.hy);e.hp=Math.min(e.max,e.hp+e.max*0.6*dt);e.wind=0;
-   if(hd<8){e.state='idle';e.hp=e.max}else{const sp=e.d.spd*1.6*dt,ox=e.x,oy=e.y;moveEnt(e,(e.hx-e.x)/hd*sp,(e.hy-e.y)/hd*sp,e.d.r*.7);e.trot=Math.atan2(e.hx-e.x,e.hy-e.y);if(Math.abs(e.x-ox)+Math.abs(e.y-oy)<0.01){e.x=e.hx;e.y=e.hy}}}
+   if(hd<8){e.state='idle';e.hp=e.max;tacReset(e)}else{const sp=e.d.spd*1.6*dt,ox=e.x,oy=e.y;moveEnt(e,(e.hx-e.x)/hd*sp,(e.hy-e.y)/hd*sp,e.d.r*.7);e.trot=Math.atan2(e.hx-e.x,e.hy-e.y);if(Math.abs(e.x-ox)+Math.abs(e.y-oy)<0.01){e.x=e.hx;e.y=e.hy}}}
   else if(e.stun<=0&&!e.kb){
    if(e.wind>0){e.wind-=dt;if(e.wind<=0&&!P.dead&&d<e.d.range+e.d.r+20){hurtPlayer(e.dmg*(e.enr?1.3:1),e);sfx({rat:'bite',wolf:'bite',scorp:'sting',prior:'clang'}[e.d.shape]||'claw',.55)}}
-   else if(e.state==='chase'&&!P.dead){
+   else if(e.state==='chase'&&!P.dead&&!tacFlee(e,d,dt)){
     e.trot=Math.atan2(P.x-e.x,P.y-e.y);
-    if(FOESP[e.type]&&!e.d.boss){const SL=FOESP[e.type],k2=e.d.elite?1.4:1;e.spc=e.spc||{};for(const s0 of SL)e.spc[s0.k]=(e.spc[s0.k]==null?(s0.open?rr(0,.4):rr(1.5,5)):e.spc[s0.k])-dt*k2;e.spT=(e.spT||0)-dt;
+    if(FOESP[e.type]&&!e.d.boss&&!(e.flankT>0)){const SL=FOESP[e.type],k2=e.d.elite?1.4:1;e.spc=e.spc||{};for(const s0 of SL)e.spc[s0.k]=(e.spc[s0.k]==null?(s0.open?rr(0,.4):rr(1.5,5)):e.spc[s0.k])-dt*k2;e.spT=(e.spT||0)-dt;
      if(e.spT<=0&&e.root<=0){e.spT=.35;for(const s0 of SL){if(e.spc[s0.k]>0||d>s0.range+e.d.r||(s0.min&&d<s0.min))continue;if(enemySpecial(e,s0)!==false){e.spc[s0.k]=s0.cd*rr(.8,1.2);e.spI=(e.spI||0)+1;e.spT=1.6;e.cd=Math.max(e.cd,.6)}break}}}
     const reach=e.d.ranged?e.d.range:e.d.range+e.d.r,sp=e.d.spd*(e.enr?1.3:1)*(e.hasteT>0?1.35:1)*(e.slowT>0?1-e.slowA:1)*dt;
-    if(d>reach*0.85&&e.root<=0)moveEnt(e,(P.x-e.x)/d*sp,(P.y-e.y)/d*sp,e.d.r*.7);
-    else if(e.d.ranged&&d<80&&e.root<=0)moveEnt(e,-(P.x-e.x)/d*sp*.6,-(P.y-e.y)/d*sp*.6,e.d.r*.7);
-    if(d<=reach&&e.cd<=0){e.cd=e.d.cd*(e.enr?0.8:1);
-     if(e.d.ranged){const a=Math.atan2(P.y-e.y,P.x-e.x);G.projs.push({x:e.x,y:e.y,z:e.d.h*.75,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:6,team:'e',raw:e.dmg,col:e.d.proj,life:1.6,src:e});e.castT=0.4;sfx('eshot')}
+    tacMove(e,d,sp,reach);
+    if(d<=reach&&e.cd<=0&&!(e.flankT>0)&&tacMayHit(e)){e.cd=e.d.cd*(e.enr?0.8:1);
+     if(e.d.ranged){const a=Math.atan2(P.y-e.y,P.x-e.x);G.projs.push({x:e.x,y:e.y,z:e.d.h*.75,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:6,team:'e',raw:e.dmg,col:e.d.proj,life:1.6,src:e});e.castT=0.4;sfx('eshot');tacShot(e)}
      else e.wind=e.d.boss?0.45:0.32}
     if(e.d.boss)bossLogic(e,dt)}}
   if(e.trot!=null)e.rot+=angDiff(e.trot,e.rot)*Math.min(1,dt*8);
@@ -3215,6 +3282,13 @@ function takeLoot(l){if(l.it.slot==='use'){const it=l.it,got=addCons(it.kind,it.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:26,date:'4 Nov 2026',title:'Smarter monsters',items:[
+  'Monsters now fight more cleverly. When one notices you, its neighbours join in. Melee monsters spread out around you and take turns, so only three of them attack at a time.',
+  'Wolves hunt together. In a pack, up to two at a time circle towards your back, then pause before they bite, so you have a moment to turn.',
+  'Ranged monsters keep their distance and sidestep after they shoot.',
+  'Rats and Dune Raiders run away once when nearly dead, then come back for more. Undead and scorpions never run. They fly into a rage instead.',
+  'Dune Raiders, Drowned Acolytes and some wolves now walk patrol routes instead of milling about, and acolytes call for help from further away.',
+  'Bosses and the monsters in defend quests fight as they did before.']},
  {id:25,date:'4 Nov 2026',title:'Hollowmere rebuilt',items:[
   'Hollowmere has a new layout: a small square around the fountain, with lanes leading out to its buildings.',
   'Look for the Village Hall, the Inn, the General Store, the Herb Hut and the Stable. Their names appear as you walk near. You can\'t go inside them yet.',
@@ -3811,7 +3885,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={TACTICS,TACBY,tacRoute,tacFree,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
