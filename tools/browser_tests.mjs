@@ -143,6 +143,19 @@ await test('Lost graphics pause the game, keep the hero and reload', async () =>
   return bad;
 });
 
+await reset();
+await test('The frame rate display is off by default and readable when turned on', async () => {
+  const bad = [];
+  await sleep(1500);
+  const off = await ev(`()=>{const b=document.querySelector('.fpsbox');return !!b&&!b.hidden}`);
+  if (off) bad.push('the display shows before it is turned on');
+  await ev(`()=>{localStorage.setItem('veylmoor-opts',JSON.stringify({fps:true}))}`); await load(); await sleep(2000);
+  const on = await ev(`()=>{const b=document.querySelector('.fpsbox'),p=window.__veyl.perf();return{text:b&&!b.hidden?b.textContent:'',fps:p.fps,worst:p.worst}}`);
+  if (!/^\d+ fps · slowest \d+ ms · \d+% detail$/.test(on.text)) bad.push('unexpected display text: ' + on.text);
+  if (!(on.fps > 0)) bad.push('no frame rate measured');
+  return bad;
+});
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

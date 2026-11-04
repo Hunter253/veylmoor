@@ -129,6 +129,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 #zone .z1{font:600 12px/1 var(--f-body);letter-spacing:.2em;text-transform:uppercase;text-shadow:0 1px 3px #000}
 #zone .z2{font:400 clamp(24px,calc(6*var(--vw)),38px)/1.1 var(--f-ui);color:#8be06a;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);margin-top:6px}
 #zone .z2::before{content:"- "}#zone .z2::after{content:" -"}
+.fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
 .sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
 .toast{background:rgba(20,12,6,.88);border:1px solid #8a6420;border-radius:6px;padding:7px 12px;font:500 14px/1.3 var(--f-body);text-align:center;animation:tin .25s ease-out}
@@ -3128,6 +3129,7 @@ const UPDATES=[
   'If the graphics are interrupted, the game pauses, saves your hero and reloads when they return.',
   'If something goes wrong, you now see a message with a Reload button and a report you can copy and email to us.',
   'Fixed: the final quest, Heart of Cinders, now says it rewards a Legendary item. It always did, but it was labelled Uncommon.',
+  'Options > Display & sound can now show your frame rate, to help track down slowdowns.',
   'Vorgath and the Molten Throne are now level 50, matching the level cap, so he is very slightly less tough.']},
  {id:17,date:'3 Nov 2026',title:'A bigger bag, tonics and food',items:[
   'Each bag page now holds 18 slots instead of 9, and you can grow your bag up to 54 slots.',
@@ -3300,7 +3302,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    ${sg('sens','Look sensitivity','How fast the camera turns.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
    ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
   else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
-   ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}
+   ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}${tg('fps','Show frame rate','Shows how smoothly the game is running, at the top of the screen.',false)}
    <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
@@ -3606,7 +3608,10 @@ function liftTitle(){const el=$('#title'),btn=el&&!el.hidden&&el.querySelector('
 setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
-function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;if(glLost){requestAnimationFrame(frame);return}
+let pfN=0,pfT=0,pfW=0,pfFps=0,pfWorst=0,pfEl=null;
+function perfTick(ms){if(ms>1000){pfN=0;pfT=0;pfW=0;return}pfN++;pfT+=ms;if(ms>pfW)pfW=ms;if(pfT<1000)return;pfFps=Math.round(pfN*1000/pfT);pfWorst=Math.round(pfW);pfN=0;pfT=0;pfW=0;
+ if(!OPT.fps){if(pfEl)pfEl.hidden=true;return}if(!pfEl){pfEl=document.createElement('div');pfEl.className='fpsbox';document.body.appendChild(pfEl)}pfEl.hidden=false;pfEl.textContent=`${pfFps} fps · slowest ${pfWorst} ms · ${Math.round(RS*100)}% detail`}
+function frame(now){const rawMs=now-last,dt=Math.min(0.05,(now-last)/1000);last=now;perfTick(rawMs);if(glLost){requestAnimationFrame(frame);return}
  try{pollPad(dt)}catch(err){console.error(err);logError(err,'controller')}
  try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
   renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits()}}catch(err){console.error(err);logError(err,'game loop')}
@@ -3621,7 +3626,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={rewards,readErrors,get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
