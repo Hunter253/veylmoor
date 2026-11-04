@@ -297,7 +297,7 @@ await test('Durability survives saves and hero files, and old gear counts as ful
   const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});for(const v of [-1,101,'full'])if(!V.parseHeroFile(signed({...g,eq:{...g.eq,boots:{...g.eq.boots,dur:v}}})).err)bad.push('accepted durability '+v);return bad}`));
 
 await reset();
-await test('A profession is needed to forge, and decides the armor family only', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,stock=()=>{V.addMat('ore',1,6);V.addMat('herb',1,3)};P.gold=100000;stock();
+await test('A profession is needed to forge, and decides the armor family only', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,stock=()=>{V.addMat('ore',1,6);V.addMat('herb',1,6);V.addMat('hide',1,6);V.addMat('wood',1,3)};P.gold=100000;stock();
   if(V.canForge(1))bad.push('forged with no profession');const n0=P.bag.length;V.forge(1,'helm');if(P.bag.length!==n0)bad.push('forge ran with no profession');if(V.profChoose('wizard')||P.prof)bad.push('accepted a made-up profession');if(V.profBest()!=='metal')bad.push('wrong best profession for Bulwark');
   V.addMat('herb',1,3);const tonics=P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0);V.brew();if(P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0)!==tonics+2)bad.push('brewing needs a profession');
   for(const [pr,at] of [['metal','plate'],['leather','leather'],['cloth','cloth']]){P.prof=null;if(!V.profChoose(pr))bad.push('could not choose '+pr);for(const s of ['helm','chest','boots']){stock();P.bag=P.bag.filter(x=>x.slot==='mat'||x.slot==='use');V.forge(1,s);const it=P.bag.find(x=>x.slot===s);if(!it)bad.push(pr+' made no '+s);else if(it.at!==at)bad.push(pr+' made '+it.at+' '+s)}}
@@ -305,9 +305,9 @@ await test('A profession is needed to forge, and decides the armor family only',
   if(V.profChoose('metal'))bad.push('chose a second profession for free');return bad}`));
 
 await reset();
-await test('Forging costs gold and materials, and refunds when the bag is full', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;P.prof='cloth';V.addMat('ore',1,6);V.addMat('herb',1,3);const fee=V.FORGEGOLD[1];P.gold=fee-1;if(V.canForge(1))bad.push('forged without enough gold');P.gold=fee;if(!V.canForge(1))bad.push('could not forge with exactly enough gold');
-  V.forge(1,'boots');if(P.gold!==0)bad.push('gold left: '+P.gold);if(V.haveMat('ore',1)!==0||V.haveMat('herb',1)!==0)bad.push('materials not spent');
-  V.addMat('ore',1,7);V.addMat('herb',1,4);P.gold=fee;const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));const n=P.bag.length;V.forge(1,'boots');if(P.gold!==fee)bad.push('a full bag still took gold');if(V.haveMat('ore',1)!==7||V.haveMat('herb',1)!==4)bad.push('a full bag lost materials');if(P.bag.length!==n)bad.push('a full bag gained an item');return bad}`));
+await test('Forging costs gold and materials, and refunds when the bag is full', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;P.prof='cloth';const need=V.forgeNeeds(1,'boots'),have=()=>need.map(([f])=>V.haveMat(f,1)).join(',');for(const[f,n]of need)V.addMat(f,1,n);const fee=V.FORGEGOLD[1];P.gold=fee-1;if(V.canForge(1))bad.push('forged without enough gold');P.gold=fee;if(!V.canForge(1))bad.push('could not forge with exactly enough gold');
+  V.forge(1,'boots');if(P.gold!==0)bad.push('gold left: '+P.gold);if(have()!==need.map(()=>0).join(','))bad.push('materials not spent: '+have());
+  for(const[f,n]of need)V.addMat(f,1,n+1);const before=have();P.gold=fee;const cap=P.bagMax||18;while(P.bag.length<cap)P.bag.push(V.rollItem(1,0,'charm',0));const n=P.bag.length;V.forge(1,'boots');if(P.gold!==fee)bad.push('a full bag still took gold');if(have()!==before)bad.push('a full bag lost materials');if(P.bag.length!==n)bad.push('a full bag gained an item');return bad}`));
 
 await reset();
 await test('Switching profession costs a fee, and the Craft tab works by clicking', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('ashcaller','Tester');const P=V.P;P.lvl=10;P.gold=0;V.openPanel('shop','pell');const q=x=>document.querySelector('#book '+x);q('[data-act="shtab"][data-t="craft"]').click();
@@ -778,6 +778,24 @@ await test('The rite waits for you, Vorgath rises only when you step in, and the
   V.enterMap('ember');V.refreshQuestWorld();if(!G.nodes.some(o=>o.q.id==='e10'))bad.push('leaving the zone mid-fight lost the way back');const node2=G.nodes.find(o=>o.q.id==='e10');V.useNode(node2);document.querySelector('#book [data-act="ritego"]').click();const v2=G.enemies.find(e=>e.type==='vorgathr'&&!e.dead);if(!v2){bad.push('Vorgath did not rise again');return bad}
   v2.hp=1;V.hitEnemy(v2,{a:1e9},{quiet:true});if(!v2.dead)bad.push('Vorgath did not die');if(P.q.e10.s!=='ready')bad.push('e10 is '+P.q.e10.s);if(!V.storyS().f.vorgath)bad.push('the ending was not recorded');for(let i=0;i<100;i++)V.update(1/30);if(G.panel!=='scene'||G.panelArg!=='ending')bad.push('no ending scene: '+G.panel);if(!/mask/.test(document.querySelector('#book').innerText))bad.push('the ending text is missing');
   V.closePanel(true);if(!(v2.respawn<0))bad.push('Vorgath is set to come back');if(V.qTurn(V.QUESTS.find(q=>q.id==='e10'))!=='vael')bad.push('e10 is not handed in to Vael');V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+// Wood and hides (17.a).
+await reset();
+await test('Wood grows in every zone, and each profession forges with its own material', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('thornstalker','Tester');const P=V.P;
+  for(const f of ['wood','hide'])if(!V.RESF[f]||V.RESF[f].n.length!==5||V.RESF[f].c.length!==5)bad.push(f+' does not have five grades');
+  for(const id of ['vale','dunes','frost','gloam','ember']){V.enterMap(id);const w=(G.res||[]).filter(o=>o.fam==='wood');if(w.length<3)bad.push(id+' has '+w.length+' trees to chop');if(w.some(o=>o.g!==V.AREAG[id]&&o.g!==V.AREAG[id]+1))bad.push(id+' wood has the wrong grade')}
+  V.enterMap('vale',G.maps.vale.start);P.gold=1e6;const clear=()=>{P.bag=P.bag.filter(x=>x.slot!=='mat')};
+  P.prof='leather';clear();V.addMat('ore',1,40);V.addMat('herb',1,40);if(V.canForge(1,'chest'))bad.push('leather forged without hides');V.addMat('hide',1,40);if(!V.canForge(1,'chest'))bad.push('leather could not forge with hides');const h0=V.haveMat('hide',1),o0=V.haveMat('ore',1);V.forge(1,'chest');if(V.haveMat('hide',1)>=h0)bad.push('leather did not use hides');if(V.haveMat('ore',1)!==o0)bad.push('leather used ore');
+  P.prof='cloth';clear();V.addMat('herb',1,40);V.addMat('hide',1,40);if(!V.canForge(1,'helm'))bad.push('cloth could not forge with herbs and hide');P.prof='metal';clear();V.addMat('ore',1,40);V.addMat('herb',1,40);if(!V.canForge(1,'helm'))bad.push('metal could not forge with ore');
+  if(V.canForge(1,'weapon'))bad.push('a weapon was forged without wood');V.addMat('wood',1,40);if(!V.canForge(1,'weapon'))bad.push('a weapon could not be forged with wood');const w0=V.haveMat('wood',1);V.forge(1,'helm');if(V.haveMat('wood',1)!==w0)bad.push('a helm used wood');V.forge(1,'weapon');if(V.haveMat('wood',1)!==w0-V.FORGEWOOD[1])bad.push('a weapon did not use its wood');
+  V.openPanel('shop','bram');G.shopTab='craft';V.openPanel('shop','bram');if(!/Willow Log/.test(document.querySelector('#book').innerText))bad.push('the Craft tab does not show the wood');V.closePanel(true);return bad}`));
+
+await test('Beasts can be skinned for a while after they fall, and others cannot', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('reaver','Tester');const P=V.P;V.enterMap('dunes');G.enemies=[];
+  const w=V.mkEnemy('scorp',20,P.x+30,P.y);G.enemies.push(w);V.killEnemy(w);if((G.skins||[]).length!==1)bad.push('a scorpion left '+(G.skins||[]).length+' bodies to skin');const sk=G.skins[0];if(sk&&sk.g!==2)bad.push('a Dunes hide is grade '+sk.g);
+  const g=V.mkEnemy('sandsh',20,P.x+30,P.y);G.enemies.push(g);V.killEnemy(g);if(G.skins.length!==1)bad.push('a sand shade could be skinned');const h0=V.haveMat('hide',2);if(!V.skinIt(sk))bad.push('skinning failed');if(!(V.haveMat('hide',2)>h0))bad.push('skinning gave no hide');if(V.skinIt(sk))bad.push('one body was skinned twice');
+  for(let i=0;i<10;i++){const e=V.mkEnemy('scorp',20,P.x+30,P.y);G.enemies.push(e);V.killEnemy(e)}if(G.skins.filter(o=>o.t>0).length>V.SKIN.max)bad.push('too many bodies kept: '+G.skins.length);
+  for(let i=0;i<Math.ceil(V.SKIN.last*2)+2;i++)V.update(.5);if(G.skins.some(o=>o.t>0))bad.push('bodies never went away');const last=G.skins[0];if(last&&V.skinIt(last))bad.push('an old body could still be skinned');
+  V.enterMap('vale',G.maps.vale.start);if(G.skins.length)bad.push('bodies followed you to another zone');return bad}`));
 
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);

@@ -1781,6 +1781,7 @@ function hitEnemy(e,r,o={}){
  if(e.hp<=0&&!e.dead)killEnemy(e)}
 function killEnemy(e){
  if(!e.dead){talentKill(e);foeDeath(e)} if(e.markT>0&&P.cls==='thornstalker'&&P.cds[2]>0){P.cds[2]=0;txt(P.x,P.y,2.3,'Vault ready','#c8ff9a',13)}e.dots=null;e.slowT=e.vulnT=e.weakT=e.markT=e.taunt=0;e.kb=null;sfx('kill');
+ if(!e.dead&&SKIN.types.has(e.type)&&!e.summoned&&G.map.id!=='abbey'){G.skins=(G.skins||[]).filter(o=>o.t>0).slice(-(SKIN.max-1));G.skins.push({x:e.x,y:e.y,t:SKIN.last,g:AREAG[G.map.id]||1,name:e.d.name})}
  if(!e.dead){achAdd('kills');if(e.moonElite)achAdd('moonElites')}e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite||e.moonX||e.story)e.respawn=-1;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
  gainXP(Math.max(1,Math.round(e.d.xp*PL(e.lvl)*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
  const gold=Math.round(PL(e.lvl)*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
@@ -2006,7 +2007,7 @@ function enterMap(id,pos){
  if(!pos)pos=G.maps[id].start;
  P.cast=null;if(id==='abbey')P.mounted=false;const m=G.map=G.maps[id];P.map=id;if(!m.gfx)buildWorld(m);
  if(id==='vale')m.portals=m.portals.filter(p=>p.to!=='home');
- G.enemies=[];G.projs=[];G.areas=[];G.tele=[];G.harm=[];G.loot=[];G.fx=[];G.timers=[];G.parts=[];G.boss=null;G.tgt=null;if(P)P.auto=false;
+ G.enemies=[];G.skins=[];G.projs=[];G.areas=[];G.tele=[];G.harm=[];G.loot=[];G.fx=[];G.timers=[];G.parts=[];G.boss=null;G.tgt=null;if(P)P.auto=false;
  if(m.spawns)for(const sp of m.spawns)for(let k=0;k<sp.n;k++){const p=findSpot(m,sp);if(p)G.enemies.push(mkEnemy(sp.type,ri(sp.l0,sp.l1),p.x,p.y))}
  if(m.fixed)for(const[ty,l,x,y]of m.fixed){const e=mkEnemy(ty,l,(x+.5)*TS,(y+.5)*TS);if(e.d.boss&&id!=='abbey')e.leash=520;G.enemies.push(e)}G.event=null;
  P.x=pos.x;P.y=pos.y;P.dash=null;
@@ -2022,7 +2023,7 @@ function moveEnt(o,dx,dy,r){const m=G.map;if(dx&&!blocked(m,o.x+dx,o.y,r))o.x+=d
 
 /* ================= Update ================= */
 function update(dt){
- G.time+=dt;wearTick(dt);moonTick(dt);achTick(dt);storyTick(dt);
+ G.time+=dt;wearTick(dt);if(G.skins)for(const o of G.skins)o.t-=dt;moonTick(dt);achTick(dt);storyTick(dt);
  for(let k=G.timers.length-1;k>=0;k--){const t=G.timers[k];t.t-=dt;if(t.t<=0){G.timers.splice(k,1);t.fn()}}
  updatePlayer(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
  for(let k=G.tele.length-1;k>=0;k--){const t=G.tele[k];t.t+=dt;if(t.t>=t.max){G.tele.splice(k,1);t.cb()}}
@@ -2063,7 +2064,7 @@ function updatePlayer(dt){
  P.mv+=(moving-P.mv)*Math.min(1,dt*10);
  if(P.jz>0||P.jv>0){P.jz+=P.jv*dt;P.jv-=13*dt;if(P.jz<=0){P.jz=0;P.jv=0;sfx('land');burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',8,60,.45,3,.05)}}
  if(P.cast){P.cast.t+=dt;if(len>0.3&&!P.dash){txt(P.x,P.y,2.2,'Interrupted','#ff4a3a',16);P.cast=null}
-  else if(P.cast.t>=P.cast.max){const c=P.cast;P.cast=null;if(c.i===-2){const d=c.dest;enterMap(d,G.maps[d]?G.maps[d].start:null);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.4});sfx('portal');ring(P.x,P.y,60,'#9ff0ff',1,4,true);toast(`Welcome to <b>${esc(AREAS[d].town)}</b>`,'q')}else if(c.i===-1){P.mounted=true;burst(P.x,P.y,'#e0c890',18,80,.6,3,.3);ring(P.x,P.y,50,'#ffe0a0',.5,3)}else if(c.i===-3)useNode(c.node);else if(c.i===-4)harvest(c.res);else if(c.i===-5)useMoon(c.moon);else execAbility(c.i,c.tgt)}}
+  else if(P.cast.t>=P.cast.max){const c=P.cast;P.cast=null;if(c.i===-2){const d=c.dest;enterMap(d,G.maps[d]?G.maps[d].start:null);G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.4});sfx('portal');ring(P.x,P.y,60,'#9ff0ff',1,4,true);toast(`Welcome to <b>${esc(AREAS[d].town)}</b>`,'q')}else if(c.i===-1){P.mounted=true;burst(P.x,P.y,'#e0c890',18,80,.6,3,.3);ring(P.x,P.y,50,'#ffe0a0',.5,3)}else if(c.i===-3)useNode(c.node);else if(c.i===-4)harvest(c.res);else if(c.i===-5)useMoon(c.moon);else if(c.i===-6)skinIt(c.skin);else execAbility(c.i,c.tgt)}}
  if(G.tgt&&(G.tgt.dead||dist(P.x,P.y,G.tgt.x,G.tgt.y)>620))G.tgt=null;
  if(P.auto&&G.tgt&&!P.cast&&!P.mounted&&!P.blocking){const r=CLS.ab[0].range+G.tgt.d.r+12;if(dist(P.x,P.y,G.tgt.x,G.tgt.y)<=r)useAbility(0)}
  if(P.auto&&!G.tgt)P.auto=false;
@@ -2072,7 +2073,7 @@ function updatePlayer(dt){
  for(const k of G.map.npcs){const n=NPCS[k];const d=dist(P.x,P.y,n.x*TS,n.y*TS);if(d<58&&d<nd){nd=d;near={kind:'npc',id:k}}}
  for(const p of G.map.portals){const d=dist(P.x,P.y,p.x,p.y);if(d<70&&d<nd){nd=d;near={kind:'portal',p}}}
  for(const o of G.nodes||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'node',o}}}for(const o of G.res||[]){if(o.t>0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'res',o}}}if(!G.event)for(const o of G.beacons||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<72&&d<nd){nd=d;near={kind:'beacon',o}}}
- for(const o of G.moonO||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'moon',o}}}
+ for(const o of G.moonO||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'moon',o}}}for(const o of G.skins||[]){if(o.t<=0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'skin',o}}}
  if((G.spotT=(G.spotT||0)-dt)<=0){G.spotT=.25;checkSpots()}
  G.near=near;checkZone()}
 /* ================= Enemy tactics (7.b) =================
@@ -2236,7 +2237,11 @@ function bossReset(e){if(G.boss===e)G.boss=null;e.ph1=e.ph2=e.enr=0;e.mvT=3;e.bd
 /* ================= Farmable resources: ore, herbs and crystals graded by zone ================= */
 const RESF={ore:{n:['Copper Ore','Iron Ore','Darkiron Ore','Runestone Ore','Starmetal Ore'],act:'Mine',verb:'Mining',c:['#d4875a','#b9bcc4','#7a82a0','#7fe8ff','#ffe8a0'],w:7},
  herb:{n:['Marshleaf','Desert Sage','Snowthistle','Duskbloom','Fireblossom'],act:'Gather',verb:'Gathering',c:['#9ad870','#d8c070','#cfe8ff','#c890ff','#ff8a4a'],w:8},
- gem:{n:['Glimmer Shard','Sunstone','Rimecrystal','Hexcrystal','Heartflame Gem'],act:'Harvest',verb:'Harvesting',c:['#bfe8ff','#ffc860','#9fd8ff','#c080ff','#ff6a3a'],w:3}};
+ gem:{n:['Glimmer Shard','Sunstone','Rimecrystal','Hexcrystal','Heartflame Gem'],act:'Harvest',verb:'Harvesting',c:['#bfe8ff','#ffc860','#9fd8ff','#c080ff','#ff6a3a'],w:3},
+ wood:{n:['Willow Log','Palm Log','Frostpine Log','Gloamoak Log','Emberheart Log'],act:'Chop',verb:'Chopping',c:['#b08a5a','#d8b070','#a8c0d0','#8a6aa8','#e07040'],w:6},
+ hide:{n:['Rough Hide','Sand-cured Hide','Frost Pelt','Shadow Pelt','Ashen Hide'],act:'Skin',verb:'Skinning',c:['#b08060','#d0a070','#e0e8f0','#7a6a8a','#a05030'],w:0}};
+/* Beasts that can be skinned for hides after a kill. The hide's grade follows the zone, like everything else gathered there. */
+const SKIN={types:new Set(['rat','wolf','scorp','frostwolf','gloomwolf','ashhound','magmascorp']),last:30,max:6,extra:.35};
 const AREAG={vale:1,dunes:2,frost:3,gloam:4,ember:5};
 const matKey=(f,g)=>f+g,matName=(f,g)=>RESF[f].n[g-1],matValue=(f,g)=>Math.round([2,5,12,26,55][g-1]*(f==='gem'?2.5:1));
 function spawnResources(){const m=G.map;G.res=[];if(!m||m.id==='abbey'||!AREAG[m.id])return;G.resMap=G.resMap||{};if(G.resMap[m.id]){G.res=G.resMap[m.id];return}
@@ -2245,10 +2250,13 @@ function spawnResources(){const m=G.map;G.res=[];if(!m||m.id==='abbey'||!AREAG[m
  for(const fam of fams){for(let t=0;t<120;t++){const x=3+Math.floor(Rn()*(m.w-6)),y=3+Math.floor(Rn()*(m.h-6)),v=m.get(x,y);if(SOLID[v]||v===T.PATH||v===T.COBBLE||v===T.WAY||bad(x,y))continue;
   if(fam==='ore'&&t<90&&![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m.get(x+dx,y+dy)===T.ROCK))continue;
   if(fam==='herb'&&t<90&&v!==T.GRASS&&v!==T.FLOWER&&v!==T.BOG)continue;
+  if(fam==='wood'&&t<100&&![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m.get(x+dx,y+dy)===T.TREE))continue;
   if(list.some(o=>Math.hypot(o.tx-x,o.ty-y)<4))continue;
   const g=Math.min(5,base+(Rn()<.15?1:0));list.push({fam,g,tx:x,ty:y,x:(x+.5)*TS,y:(y+.5)*TS,t:0,i:list.length,name:matName(fam,g)});break}}
  G.resMap[m.id]=G.res=list}
 function updateRes(dt){for(const o of G.res||[])if(o.t>0)o.t-=dt}
+function skinIt(o){const i=(G.skins||[]).indexOf(o);if(i<0||o.t<=0)return false;G.skins.splice(i,1);const q=1+(R()<SKIN.extra?1:0),got=addMat('hide',o.g,q);
+ if(!got){toast('Your bag is full. Sell something to make room.','warn');return false}achAdd('gathered');sfx('loot',.7);burst(o.x,o.y,RESF.hide.c[o.g-1],12,70,.5,3,.2);toast(`Skinned <b>${got} ${esc(matName('hide',o.g))}</b>`);save();return true}
 function harvest(o){if(!o||o.t>0)return;const F=RESF[o.fam],q=1+Math.floor(R()*2)+(R()<.25?1:0),got=addMat(o.fam,o.g,q);if(got)achAdd('gathered');
  if(!got){msg('Your bag is full. Sell or use something to make room.');return}o.t=rr(150,240);
  const c=RAR[o.g-1].c2;txt(o.x,o.y,1.6,`+${got} ${o.name}`,c,15);burst(o.x,o.y,F.c[o.g-1],18,100,.6,3,.4);rise(o.x,o.y,c,8,12,.8,3);sfx(o.fam==='ore'?'clang':o.fam==='gem'?'halo':'loot',.7);
@@ -2262,7 +2270,10 @@ function haveMat(f,g){let n=0;for(const it of P.bag)if(it.slot==='mat'&&it.fam==
 function addMat(f,g,q){let left=q;for(const it of P.bag)if(left&&it.slot==='mat'&&it.fam===f&&it.g===g&&it.qty<MATSTACK){const a=Math.min(left,MATSTACK-it.qty);it.qty+=a;left-=a}
  while(left>0&&P.bag.length<bagCap()){const a=Math.min(left,MATSTACK);P.bag.push(matItem(f,g,a));left-=a}return q-left}
 /* ---- Professions decide which armor family a hero forges. Weapons, charms and cloaks stay open to all until trading exists (decided 4 Nov 2026). ---- */
-const PROFS={metal:{n:'Metal',at:'plate',d:'Forge plate armor, the heaviest protection.'},leather:{n:'Leather',at:'leather',d:'Forge leather armor, balanced and rich in Agility.'},cloth:{n:'Cloth',at:'cloth',d:'Forge cloth armor, light and rich in Intelligence.'}};
+const PROFS={metal:{n:'Metal',at:'plate',main:'ore',sec:'herb',d:'Forge plate armor, the heaviest protection, from ore.'},leather:{n:'Leather',at:'leather',main:'hide',sec:'herb',d:'Forge leather armor, balanced and rich in Agility, from the hides of skinned beasts.'},cloth:{n:'Cloth',at:'cloth',main:'herb',sec:'hide',d:'Forge cloth armor, light and rich in Intelligence, from herbs, trimmed with hide.'}};
+/* What one forging takes: the profession's main material in FORGE.ore amounts, its second material in FORGE.herb amounts, crystals, and FORGEWOOD wood for a weapon. */
+const FORGEWOOD=[0,3,4,5,6,8];
+function forgeNeeds(g,slot){const r=FORGE[g],pr=PROFS[P.prof]||PROFS.metal,out=[[pr.main,r.ore],[pr.sec,r.herb]];if(r.gem)out.push(['gem',r.gem]);if(slot==='weapon'&&FORGEWOOD[g])out.push(['wood',FORGEWOOD[g]]);return out}
 const FORGEGOLD=[0,10,30,80,200,500],PROFFEE={base:50,perLvl:20};
 const profKnown=k=>Object.prototype.hasOwnProperty.call(PROFS,k),profBest=()=>Object.keys(PROFS).find(k=>PROFS[k].at===ARMT[P.cls]),profFee=()=>PROFFEE.base+PROFFEE.perLvl*P.lvl;
 /* ---- Ranks give bonuses, never locks, so a hero who chooses late can still use the materials they have. Decided 4 Nov 2026. ---- */
@@ -2274,27 +2285,29 @@ function forgeRar(g,rank,r){const base=FORGE[g].rar,b=PROFRANK.rarity[rank];if(g
 function forgeSocket(it,rank,r){const lim=SOCKETS[it.rar];if(!lim||!SOCKSLOTS.has(it.slot)||r>=PROFRANK.socket[rank])return false;const have=it.soc?it.soc.length:0;if(have>=lim[1])return false;it.soc=(it.soc||[]).concat([null]);return true}
 function profChoose(k){if(!profKnown(k)||P.prof)return false;P.prof=k;return true}
 function profSwitch(k){if(!profKnown(k)||!P.prof||P.prof===k||P.gold<profFee())return false;P.gold-=profFee();P.prof=k;P.profXp=0;return true}
-function canForge(g){const r=FORGE[g];return !!P.prof&&P.gold>=FORGEGOLD[g]&&haveMat('ore',g)>=r.ore&&haveMat('herb',g)>=r.herb&&haveMat('gem',g)>=r.gem}
+function canForge(g,slot='helm'){return !!P.prof&&P.gold>=FORGEGOLD[g]&&forgeNeeds(g,slot).every(([f,n])=>haveMat(f,g)>=n)}
 function useMat(f,g,n){for(let i=P.bag.length-1;i>=0&&n>0;i--){const it=P.bag[i];if(it.slot==='mat'&&it.fam===f&&it.g===g){const a=Math.min(n,it.qty);it.qty-=a;n-=a;if(!it.qty)P.bag.splice(i,1)}}}
-function forge(g,slot){if(!canForge(g))return;const r=FORGE[g];useMat('ore',g,r.ore);useMat('herb',g,r.herb);if(r.gem)useMat('gem',g,r.gem);if(P.bag.length>=bagCap()){addMat('ore',g,r.ore);addMat('herb',g,r.herb);if(r.gem)addMat('gem',g,r.gem);msg('Your bag is full.');return}
+function forge(g,slot){if(!canForge(g,slot))return;const need=forgeNeeds(g,slot);for(const[f,n]of need)useMat(f,g,n);if(P.bag.length>=bagCap()){for(const[f,n]of need)addMat(f,g,n);msg('Your bag is full.');return}
  P.gold-=FORGEGOLD[g];const rk=profRank(),rar=forgeRar(g,rk,R()),it=rollItem(P.lvl,0,slot,rar,PROFS[P.prof].at);forgeSocket(it,rk,R());addToBag(it);achAdd('forged');P.profXp=(P.profXp||0)+PROFRANK.gradeXp[g];sfx('clang');toast(`Forged <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`,'lvl');{const nr=profRank();if(nr>rk)toast(`You are now a <b>${PROFRANK.names[nr]}</b> ${PROFS[P.prof].n} crafter.`,'lvl')}save()}
 function herbTotal(){let n=0;for(let g=1;g<=5;g++)n+=haveMat('herb',g);return n}
 function brew(){if(herbTotal()<3)return;let need=3;for(let g=1;g<=5&&need;g++){const h=Math.min(need,haveMat('herb',g));if(h){useMat('herb',g,h);need-=h}}giveCons('tonic',null,2);sfx('heal');toast('Brewed <b>2 Marsh Tonics</b>.');save()}
 function matIcon(f,g){const c=RESF[f].c[g-1],id='mi'+(++ICN);
  const art=f==='ore'?`<path d="M10 46l8-20 16-8 18 10 4 18-14 10H18z" fill="#5a5450" stroke="#1a1410"/><path d="M22 30l8-4 6 8-8 6zM38 24l8 4-2 8-8-2zM30 42l8-2 4 6-8 2z" fill="url(#${id})" stroke="#1a1410"/>`:
+  f==='wood'?`<path d="M10 40l34-20 10 8-34 20z" fill="#6a4a2a" stroke="#1a1410"/><ellipse cx="49" cy="24" rx="6" ry="8" transform="rotate(-30 49 24)" fill="url(#${id})" stroke="#1a1410"/><path d="M14 50l30-16 8 6-30 16z" fill="#5a3e22" stroke="#1a1410"/>`:
+  f==='hide'?`<path d="M18 10c6 4 22 4 28 0l6 12-4 10 4 18-10 6H22l-10-6 4-18-4-10z" fill="url(#${id})" stroke="#1a1410"/><path d="M24 22c6 3 10 3 16 0M22 38c7 3 13 3 20 0" stroke="#1a1410" stroke-opacity=".4" fill="none"/>`:
   f==='herb'?`<path d="M32 58V30M32 44c-8-2-14-8-16-16 8 0 14 6 16 16zM32 38c8-2 14-8 16-16-8 0-14 6-16 16z" stroke="#3a6a2a" stroke-width="3" fill="#4a8a34"/><circle cx="32" cy="22" r="8" fill="url(#${id})" stroke="#1a1410"/><circle cx="22" cy="26" r="5" fill="url(#${id})" stroke="#1a1410"/><circle cx="42" cy="26" r="5" fill="url(#${id})" stroke="#1a1410"/>`:
   `<path d="M32 6l8 22-8 30-8-30z" fill="url(#${id})" stroke="#1a1410"/><path d="M18 22l6 14-4 18-6-16zM46 22l-6 14 4 18 6-16z" fill="url(#${id})" stroke="#1a1410" opacity=".85"/><path d="M32 10v40" stroke="#fff" stroke-opacity=".6"/>`;
  return`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${c}"/><stop offset="1" stop-color="${RAR[g-1].c}"/></radialGradient></defs>${art}</svg>`}
 function repairHTML(){const L=repairables();if(!L.length)return'<p class="gemnote">All your gear is in good condition.</p>';const t=L.reduce((a,x)=>a+repairCost(x.it),0);
  return`<div class="replist">${L.map(x=>{const c=repairCost(x.it);return`<div class="reprow"><div class="islot has" style="--rc:${RAR[x.it.rar].c}">${itemIcon(x.it)}</div><div class="repn"><b style="color:${RAR[x.it.rar].c2}">${esc(x.it.name)}</b><span>${x.src==='eq'?'Equipped':'In your bag'} · ${itemBroken(x.it)?'Broken':`Durability ${Math.ceil(itemDur(x.it))} / ${DUR.max}`}</span></div><button class="gbar" data-act="repair" data-src="${x.src}" data-k="${x.key}" ${P.gold<c?'disabled':''}><span>Repair</span><b>${c}<i class="coin"></i></b></button></div>`}).join('')}</div><button class="gbar repall" data-act="repairall" ${P.gold<t?'disabled':''}><span>Repair All</span><b>${t}<i class="coin"></i></b></button>`}
-function profHTML(){const best=profBest();if(!P.prof)return`<div class="profpick"><p class="profq">Choose your profession before you forge. You can make weapons, charms and cloaks with any of them, and your profession decides which armor you make. You can switch later for a fee.</p><div class="cgrid">${Object.keys(PROFS).map(k=>`<div class="ccard ${k===best?'best':''}"><div class="cc-t">${PROFS[k].n}${k===best?' · best for you':''}</div><div class="cc-d">${esc(PROFS[k].d)}${k===best?'':` Your class is at its best in ${ARMK[ARMT[P.cls]].n.toLowerCase()} armor.`}</div><button class="gbar" data-act="profpick" data-k="${k}"><span>Choose ${PROFS[k].n}</span></button></div>`).join('')}</div></div>`;
+function profHTML(){const best=profBest();if(!P.prof)return`<div class="profpick"><p class="profq">Choose your profession before you forge. You can make weapons, charms and cloaks with any of them. Your profession decides which armor you make and what you forge with: ore, hides or herbs. You can switch later for a fee.</p><div class="cgrid">${Object.keys(PROFS).map(k=>`<div class="ccard ${k===best?'best':''}"><div class="cc-t">${PROFS[k].n}${k===best?' · best for you':''}</div><div class="cc-d">${esc(PROFS[k].d)}${k===best?'':` Your class is at its best in ${ARMK[ARMT[P.cls]].n.toLowerCase()} armor.`}</div><button class="gbar" data-act="profpick" data-k="${k}"><span>Choose ${PROFS[k].n}</span></button></div>`).join('')}</div></div>`;
  const fee=profFee(),rk=profRank(),last=rk>=PROFRANK.xp.length-1,xp=P.profXp||0,pc=v=>Math.round(v*100);return`<div class="profhead"><b>${PROFRANK.names[rk]} ${PROFS[P.prof].n} crafter</b><span>Armor you forge is ${ARMK[PROFS[P.prof].at].n.toLowerCase()}. ${last?'You have reached the highest rank.':`${xp} / ${PROFRANK.xp[rk+1]} XP to ${PROFRANK.names[rk+1]}.`}${rk?` ${pc(PROFRANK.rarity[rk])}% chance of better rarity and ${pc(PROFRANK.socket[rk])}% chance of an extra socket.`:' Higher ranks can improve what you forge.'}</span>${Object.keys(PROFS).filter(k=>k!==P.prof).map(k=>`<button class="cbtn ${G.confirm==='prof:'+k?'warn':''}" data-act="profswitch" data-k="${k}" ${P.gold<fee?'disabled':''}>${G.confirm==='prof:'+k?'Press again: rank resets':'Switch to '+PROFS[k].n} <span class="price">${fee}</span><i class="coin"></i></button>`).join('')}</div>`}
 function craftHTML(){const slots=['weapon','helm','chest','boots','cloak','charm'],full=false;
  let h=`${profHTML()}<div class="cgrid"><div class="ccard"><div class="cc-t">Brew tonics</div><div class="cc-d">Any 3 herbs make 2 Marsh Tonics.</div><div class="cc-c">Herbs ${herbTotal()} / 3</div><button class="gbar" data-act="brew" ${herbTotal()<3?'disabled':''}><span>Brew</span><b>×2</b></button></div>`;
  for(let g=1;g<=5;g++){const r=FORGE[g],ok=canForge(g),c=RAR[g-1];
   h+=`<div class="ccard ${ok?'':'off'}" style="--rc:${c.c}"><div class="cc-t" style="color:${c.c2}">${c.n} forge</div><div class="cc-d">Makes ${g===5?'Epic gear, sometimes Legendary':(r.rar===1?'Uncommon':r.rar===2?'Rare':'Epic')+' gear'} at your level.</div>
-   <div class="cc-c"><span class="${haveMat('ore',g)>=r.ore?'':'lack'}">${esc(matName('ore',g))} ${haveMat('ore',g)}/${r.ore}</span> · <span class="${haveMat('herb',g)>=r.herb?'':'lack'}">${esc(matName('herb',g))} ${haveMat('herb',g)}/${r.herb}</span>${r.gem?` · <span class="${haveMat('gem',g)>=r.gem?'':'lack'}">${esc(matName('gem',g))} ${haveMat('gem',g)}/${r.gem}</span>`:''} · <span class="${P.gold>=FORGEGOLD[g]?'':'lack'}">${FORGEGOLD[g]} gold</span></div>
-   <div class="cc-s">${slots.map(s=>`<button class="cbtn" data-act="forge" data-g="${g}" data-s="${s}" ${ok&&!full?'':'disabled'} title="Forge ${SLOTNAME[s].toLowerCase()}" aria-label="Forge ${SLOTNAME[s]}">${svg(SLOTICON[s])}</button>`).join('')}</div></div>`}
+   <div class="cc-c">${forgeNeeds(g,'helm').map(([f,n])=>`<span class="${haveMat(f,g)>=n?'':'lack'}">${esc(matName(f,g))} ${haveMat(f,g)}/${n}</span>`).join(' · ')} · <span class="${P.gold>=FORGEGOLD[g]?'':'lack'}">${FORGEGOLD[g]} gold</span>${FORGEWOOD[g]?` · weapons also <span class="${haveMat('wood',g)>=FORGEWOOD[g]?'':'lack'}">${esc(matName('wood',g))} ${haveMat('wood',g)}/${FORGEWOOD[g]}</span>`:''}</div>
+   <div class="cc-s">${slots.map(s=>`<button class="cbtn" data-act="forge" data-g="${g}" data-s="${s}" ${canForge(g,s)&&!full?'':'disabled'} title="Forge ${SLOTNAME[s].toLowerCase()}" aria-label="Forge ${SLOTNAME[s]}">${svg(SLOTICON[s])}</button>`).join('')}</div></div>`}
  return h+`</div>${full?'<p class="tnote" style="margin:8px 4px 0">Your bag is full. Make room to forge.</p>':''}`}
 
 /* ================= Enemy abilities: each monster type has its own special attacks ================= */
@@ -2978,6 +2991,7 @@ function loadModels(){
   wmark:null,mcache:null,tents:null,pup:null,rite:null,
   beacon:[mk(g=>{g.cyl(T3(0,0,0,1,1.1,1),[96,90,84],8,.34,.26);g.cyl(T3(0,1.1,0,1,.18,1),[70,60,50],8,.4,.44);for(let k=0;k<4;k++){const a=k/4*TAU;g.box(T3(Math.cos(a)*.32,.6,Math.sin(a)*.32,.08,1.2,.08,a),[60,50,40])}}),null]};
  MODELS.node.wmark=MODELS.node.altar;MODELS.node.tents=MODELS.node.relic;MODELS.node.pup=MODELS.node.herb;MODELS.node.rite=MODELS.node.altar;MODELS.node.mcache=MODELS.node.relic;
+ MODELS.resWood=[mk(g=>{g.cyl(T3(0,0,0,1,.42,1),[96,70,44],8,.3,.34);g.cyl(T3(0,.42,0,1,.03,1),[190,160,110],8,.29,.29);for(let k=0;k<3;k++)g.cyl(T3(.45,.12+k*.17,-.15+k*.12,1,.75,1,0,k*.5,Math.PI/2),[110,80,50],7,.11,.11)}),mk(g=>{g.cyl(T3(0,0,0,1,.3,1),[80,60,40],8,.28,.32);g.cyl(T3(0,.3,0,1,.02,1),[150,124,84],8,.27,.27)})];
  MODELS.resOre=[mk(g=>{g.ico(T3(0,.24,0,.78,.5,.66),[96,90,84],.35,R,0);g.ico(T3(.42,.12,.32,.32,.22,.3),[84,80,74],.3,R,0);g.ico(T3(-.4,.1,-.25,.26,.18,.26),[90,86,80],.3,R,0)}),mk(g=>{for(let k=0;k<6;k++){const a=k*1.05;g.box(T3(Math.cos(a)*.42,.3+Math.sin(k*1.7)*.12,Math.sin(a)*.34,.14,.22,.12,a,.4,.3),[255,255,255])}})];
  MODELS.resHerb=[mk(g=>{for(let k=0;k<8;k++){const a=k/8*TAU;g.box(T3(Math.cos(a)*.13,.18,Math.sin(a)*.13,.04,.38,.12,a,.4),[50,96,40])}}),mk(g=>{for(let k=0;k<5;k++){const a=k/5*TAU+.3;g.sphere(T3(Math.cos(a)*.17,.42+(k%2)*.08,Math.sin(a)*.17,.075,.075,.075),[255,255,255],6,4)}}),mk(g=>{for(let k=0;k<5;k++){const a=k/5*TAU;g.box(T3(Math.cos(a)*.1,.06,Math.sin(a)*.1,.04,.12,.1,a,.6),[90,84,50])}})];
  MODELS.resGem=[mk(g=>{for(let k=0;k<6;k++){const a=k/6*TAU,d=k?.26:0,h=k?.5+(k%3)*.18:1.05;g.box(T3(Math.cos(a)*d,h/2,Math.sin(a)*d,.17,h,.17,a,k?Math.cos(a)*.35:0,k?Math.sin(a)*.35:0),[255,255,255])}}),mk(g=>{g.ico(T3(0,.06,0,.42,.12,.42),[80,76,86],.3,R,0)})];
@@ -3254,6 +3268,7 @@ function renderWorld(dt){
   // loot
   for(const l of G.loot){const x=l.x*U,z=l.y*U,y=groundH(x,z);drawMesh(MODELS.chest,M4.trs(x,y,z,l.t*.5+l.x));const c=RAR[l.it.rar].c;sprite(x,y+.3,z,.6,.6,c,.6);if(l.it.rar>=2)sprite(x,y,z,.18,3.5,c,.7,1);decal(x,z,y+.04,.4,.4,0,0,[0,0,0],.4)}
   // quest objects
+  for(const o of G.skins||[]){if(o.t<=0)continue;const x=o.x*U,z=o.y*U,y=groundH(x,z),c=RESF.hide.c[o.g-1];sprite(x,y+.25,z,.55,.55,c,.28);decal(x,z,y+.04,.5,.5,G.time,4,hexC(c).map(v=>v/255),.45,.6)}
   for(const n of[...(G.nodes||[]),...(G.moonO||[])]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
    sprite(x,y+.5,z,.9,.9,k.c,.3);sprite(x,y,z,.12,4+Math.sin(G.time*3)*.3,k.c,.4,1);decal(x,z,y+.04,.6,.6,G.time,5,hexC(k.c).map(v=>v/255),.55,.6)}
   for(const b of G.beacons||[]){const x=b.x*U,z=b.y*U,y=groundH(x,z),lit=G.event&&G.event.q===b.q;drawMesh(MODELS.node.beacon[0],M4.trs(x,y,z,0));
@@ -3262,6 +3277,7 @@ function renderWorld(dt){
   for(const o of G.res||[]){const x=o.x*U,z=o.y*U;if(Math.hypot(x-CAM.tx,z-CAM.tz)>32)continue;const y=groundH(x,z),c=RESF[o.fam].c[o.g-1],up=o.t<=0,rot=o.i*1.7;
    if(o.fam==='ore'){drawMesh(MODELS.resOre[0],M4.trs(x,y,z,rot));if(up)drawMesh(MODELS.resOre[1],M4.trs(x,y,z,rot),2.2,0,0,lin(c))}
    else if(o.fam==='herb'){if(up){drawMesh(MODELS.resHerb[0],M4.trs(x,y,z,rot));drawMesh(MODELS.resHerb[1],M4.trs(x,y,z,rot),1.8,0,0,lin(c))}else drawMesh(MODELS.resHerb[2],M4.trs(x,y,z,rot))}
+   else if(o.fam==='wood'){drawMesh(MODELS.resWood[up?0:1],M4.trs(x,y,z,rot))}
    else{if(up)drawMesh(MODELS.resGem[0],M4.trs(x,y,z,rot),2.8,0,0,lin(c));else drawMesh(MODELS.resGem[1],M4.trs(x,y,z,rot))}
    if(up){const sz=.6+o.g*.1;sprite(x,y+.55,z,sz,sz,c,.32);if(o.g>=3)sprite(x,y,z,.08,1.4+o.g*.35,RAR[o.g-1].c,.32,1)}}
   // projectiles
@@ -3413,7 +3429,7 @@ function hud(){hudF++;if(hudF%30===1)dayIcon();
  EL.carrow.style.transform=`rotate(${((Math.PI-P.rot)*180/Math.PI).toFixed(1)}deg)`;
  if(hudF%6===0){let h='';for(const d of P.deb||[])h+=`<div class="bf debuff" title="${DEBN[d.k][0]}" aria-label="${DEBN[d.k][0]}" style="color:${DEBN[d.k][1]}">${svg(DEBI[d.k])}<b>${Math.ceil(d.t)}</b></div>`;if(wadeSlow()>0){const lava=G.map&&G.map.theme===4;h+=`<div class="bf debuff" title="${P.wade>0?(lava?'Lava shallows':'Wading'):'Soaked'}: ${Math.round(wadeSlow()*100)}% slower" aria-label="${P.wade>0?'Wading':'Soaked'}, ${Math.round(wadeSlow()*100)} percent slower">${svg('wave')}<b>-${Math.round(wadeSlow()*100)}%</b></div>`}for(const b of P.buffs){const ic=BUFFI[b.id];if(ic)h+=`<div class="bf">${svg(ic)}<b>${Math.ceil(b.t)}</b></div>`}if(P.mounted)h+=`<div class="bf">${svg('boot')}</div>`;EL.buffs.innerHTML=h}
  const n=G.near,key=n?(n.kind==='npc'?n.id:n.kind==='portal'?n.p.label:n.kind+n.o.name+(n.o.i??'')):null;
- if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):n.kind==='res'?esc(RESF[n.o.fam].act+' '+n.o.name):n.kind==='moon'?esc(NODEK[n.o.kind].act+' the '+n.o.name.toLowerCase()):esc(n.p.label))+'<kbd>'+(PAD?gpg('a'):'E')+'</kbd>'}}
+ if(key!==lastNear){lastNear=key;if(!n)EL.btnAct.hidden=true;else{EL.btnAct.hidden=false;EL.btnAct.innerHTML=(n.kind==='npc'?(NPCS[n.id].shop?'Trade with ':'Talk to ')+esc(NPCS[n.id].name.split(' ').pop()):n.kind==='node'?esc((NODEK[n.o.kind]||NODEK.herb).act+' '+n.o.name):n.kind==='beacon'?esc('Light the '+n.o.name):n.kind==='res'?esc(RESF[n.o.fam].act+' '+n.o.name):n.kind==='skin'?esc('Skin the '+n.o.name):n.kind==='moon'?esc(NODEK[n.o.kind].act+' the '+n.o.name.toLowerCase()):esc(n.p.label))+'<kbd>'+(PAD?gpg('a'):'E')+'</kbd>'}}
  if(hudF%5===0)updLoot();
  if(OPT.mini!==false&&hudF%3===1)drawMini();
  EL.tracker.hidden=!OPT.tracker||!!G.boss}
@@ -3475,7 +3491,7 @@ const ACH=[
  {id:'q25',g:'quests',n:'Trusted Blade',d:'Finish 25 quests.',goal:25,v:()=>QUESTS.filter(qDone).length},
  {id:'qzone',g:'quests',n:'Nothing Left Undone',d:'Finish every quest in one zone.',goal:1,v:()=>AREA_ORDER.filter(a=>QUESTS.filter(q=>qArea(q)===a).every(qDone)).length},
  {id:'qall',g:'quests',n:'Champion of Veylmoor',d:'Finish every quest in the realm.',t:'Champion',goal:()=>QUESTS.length,v:()=>QUESTS.filter(qDone).length},
- {id:'gath50',g:'craft',n:'Forager',d:'Gather ore, herbs or crystals 50 times.',goal:50,v:()=>achC('gathered')},
+ {id:'gath50',g:'craft',n:'Forager',d:'Gather, chop or skin 50 times.',goal:50,v:()=>achC('gathered')},
  {id:'gath250',g:'craft',n:'Prospector',d:'Gather 250 times.',t:'Prospector',goal:250,v:()=>achC('gathered')},
  {id:'forge10',g:'craft',n:'Hammer and Anvil',d:'Forge 10 items.',goal:10,v:()=>achC('forged')},
  {id:'rank3',g:'craft',n:'Expert Hands',d:'Reach Expert rank in your profession.',goal:3,v:()=>P.prof?profRank():0},
@@ -3540,6 +3556,10 @@ const qTabs=()=>{const t=G.qTab==='letters',S=P?storyS():null,unread=S&&LETTERS.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:36,date:'4 Nov 2026',title:'Wood and hides',items:[
+  'Fallen logs lie by the trees in every zone. Chop them for wood, from Willow in Veylmoor to Emberheart in the Caldera.',
+  'Beasts such as rats, wolves, scorpions and hounds can be skinned for a short while after they fall. Walk up to the body and skin it for hides.',
+  'Each profession now forges with its own material: Metal with ore, Leather with hides, and Cloth with herbs trimmed with a little hide. Every weapon also needs some wood. The Craft tab shows exactly what each forge needs.']},
  {id:35,date:'4 Nov 2026',title:'The Heart of Cinders',items:[
   'The story reaches its end in Emberfall Caldera. Commander Vael trusts the Covenant completely, but Rusk\'s rescued scouts were not watching the Caldera, and a letter from Hollowmere has a warning for you.',
   'The guardian of the Caldera is now the Heart of Cinders, and it is not the last fight. After it falls, there is something more at the Caldera\'s edge, and it waits until you are ready.',
@@ -3769,7 +3789,7 @@ function cmpCard(it){const cur=P.eq[it.slot];if(!cur)return`<div class="icard"><
  return`<div class="icard"><div class="ic-h"><b>Equipment Comparison</b></div><div style="color:${RAR[cur.rar].c2};font:400 17px var(--f-ui)">${esc(cur.name)}</div>${h||'<div>No difference in stats.</div>'}${cur.uq&&!it.uq?'<div class="st r">Loses its legendary effect</div>':''}</div>`}
 function tipHTML(){const tp=G.tip;if(!tp)return'';if(tp.src==='gem')return gemTip(tp.k);const it=tp.src==='eq'?P.eq[tp.slot]:P.bag[tp.idx];if(!it){G.tip=null;return''}
  if(it.slot==='use')return consTip(it);
- if(it.slot==='mat'){const D={ore:'Ore for the forge. Take it to any shop and use the Craft tab.',herb:'Brewed into tonics, and needed to forge gear at any shop.',gem:'A crystal needed to forge Rare and better gear.'};
+ if(it.slot==='mat'){const D={wood:'Wood for the forge. Every weapon needs some, whatever your profession.',hide:'Hide from a skinned beast. Leather crafters forge with it, and Cloth crafters trim with it.',ore:'Ore for the forge. Take it to any shop and use the Craft tab.',herb:'Brewed into tonics, and needed to forge gear at any shop.',gem:'A crystal needed to forge Rare and better gear.'};
   return`<div class="tipwrap"><div class="icard"><div class="ic-h"><div class="ic-pic islot has" style="--rc:${RAR[it.rar].c}">${itemIcon(it)}</div><b style="color:${RAR[it.rar].c2}">${esc(it.name)}</b><button class="rx sm" data-act="tipclose" aria-label="Close">✕</button></div><div class="split"><span>Material · stack of ${it.qty}</span><span>${RAR[it.rar].n}</span></div><div>${D[it.fam]}</div><div style="color:var(--ink2)">Worth ${matValue(it.fam,it.g)} gold each</div><div class="ic-btns"><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell all'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button></div></div></div>`}
  let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip">Equip</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
  return`<div class="tipwrap">${itemCard(it,btns,true)}${tp.src==='bag'?cmpCard(it):''}</div>`}
@@ -4028,7 +4048,7 @@ function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGam
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
-function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
+function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else if(n.kind==='skin'){dismount();P.auto=false;P.cast={i:-6,t:0,max:1.2,name:'Skinning the '+n.o.name,skin:n.o};sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
@@ -4199,7 +4219,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
