@@ -958,6 +958,17 @@ await test('Privacy and Terms open from Options, the pages load, and fonts come 
   return bad;
 });
 
+// Status resistance (6.b).
+await reset();
+await test('Resistance shortens every bad effect but not its damage per second', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,S=()=>V.S;for(const k of['poison','burn','bleed','chill','root','stun','weak']){for(const[r,want]of[[0,10],[20,8],[50,5]]){P.deb=[];P.iframes=0;S().resist=r;V.pDebuff(k,10,k==='poison'?7:0);const d=P.deb.find(x=>x.k===k);if(!d){bad.push(k+' was not applied');continue}if(Math.abs(d.t-want)>.001)bad.push(k+' at '+r+'% lasted '+d.t);if(k==='poison'&&d.dps!==7)bad.push('poison damage became '+d.dps)}}P.deb=[];return bad}`));
+
+await test('Resistance comes from Vitality and gear, and stops at its cap', () => ev(`()=>{const V=window.__veyl,bad=[],C=V.RESIST;V.startNew('bulwark','Tester');const P=V.P;P.eq={};P.lvl=1;V.recalc(false);const low=V.S.resist;P.lvl=50;V.recalc(false);const high=V.S.resist;if(!(low>0))bad.push('a new hero has '+low);if(!(high>low))bad.push('Vitality did not raise it: '+low+' to '+high);if(high<10||high>17)bad.push('a level 50 Bulwark has '+high.toFixed(1));
+  const c=V.rollItem(50,0,'cloak',2);c.st={resist:5};P.eq.cloak=c;V.recalc(false);if(Math.abs(V.S.resist-(high+5))>.001)bad.push('gear added '+(V.S.resist-high));c.st={resist:999};V.recalc(false);if(V.S.resist!==C.cap)bad.push('the cap gave '+V.S.resist);P.eq={};V.recalc(false);return bad}`));
+
+await test('Only charms and cloaks roll Resistance, and old items and saves still work', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;const seen={};for(const slot of['weapon','helm','chest','boots','charm','cloak']){seen[slot]=0;for(let i=0;i<300;i++){const it=V.rollItem(50,0,slot,4);if(it.st.resist)seen[slot]++}}for(const s of['weapon','helm','chest','boots'])if(seen[s])bad.push(s+' rolled it '+seen[s]+' times');for(const s of['charm','cloak'])if(!seen[s])bad.push(s+' never rolled it');for(let i=0;i<300;i++)if(V.rollItem(50,0,'charm',1).st.resist)bad.push('an Uncommon charm rolled it');
+  const it=V.rollItem(50,0,'charm',2);it.st={resist:5.5};const tip=V.statLines(it);if(!/\\+5\\.5% Resistance/.test(tip))bad.push('the tooltip says '+tip);if(!/Shortens bad effects/.test(tip))bad.push('the tooltip has no explanation');
+  const d=V.serialize();const old=V.rollItem(10,0,'cloak',2);old.st={arm:9};d.eq=d.eq||{};d.eq.cloak=old;V.loadSave(JSON.parse(JSON.stringify(d)));V.recalc(false);if(!isFinite(V.S.resist))bad.push('an old item gave '+V.S.resist);return bad.slice(0,6)}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

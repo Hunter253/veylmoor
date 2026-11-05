@@ -1110,9 +1110,12 @@ function durBadge(){const eq=SLOTS.map(s=>P.eq[s]).filter(Boolean),st=eq.some(it
 function gemsValid(g){if(g==null)return true;if(typeof g!=='object'||Array.isArray(g))return false;for(const k of Object.keys(g))if(!gemParse(k)||!Number.isInteger(g[k])||g[k]<0||g[k]>1e6)return false;return true}
 function socketsValid(it){if(!it)return true;if(it.dur!=null&&!(typeof it.dur==='number'&&it.dur>=0&&it.dur<=DUR.max))return false;if(it.soc==null)return true;return Array.isArray(it.soc)&&it.soc.length<=3&&it.soc.every(x=>x===null||!!gemParse(x))}
 const ATTR=['str','agi','int','vit'],ATTRN={str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality'};
-const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','cdr','mf'];
-const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find'};
-const PCT=new Set(['critd','crit','move','dodge','armP','cast','cdr','mf']),RATE=new Set(['mpr','hpr']);
+const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','cdr','mf','resist'];
+/* Resistance (6.b) shortens bad effects on the hero, as a percent. Vitality gives vitK x vit / (vit + vitD), gear adds to it, and cap is the most it can reach. */
+const RESIST={cap:50,vitK:42,vitD:200,slots:new Set(['charm','cloak'])};
+const STATD={resist:'Shortens bad effects on you.'};
+const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find',resist:'Resistance'};
+const PCT=new Set(['critd','crit','move','dodge','armP','cast','cdr','mf','resist']),RATE=new Set(['mpr','hpr']);
 const TIERW=['','Worn','Tempered','Masterwork','Runed','Exalted'],TIERR=['','I','II','III','IV','V'];
 const tierOf=l=>clamp(1+Math.floor((PL(l)-1)/5),1,5);
 const BASES={helm:['Coif','Helm','Hood','Circlet'],chest:['Hauberk','Brigandine','Robe','Jerkin'],boots:['Greaves','Boots','Treads','Sabatons'],charm:['Ring','Amulet','Seal','Token'],cloak:['Cape','Mantle','Cloak','Shroud']};
@@ -1126,7 +1129,7 @@ const legByKey=k=>Object.values(LEG).find(l=>l.k===k);
 const fmtStat=(k,v)=>PCT.has(k)?`+${(+v).toFixed(1).replace(/\.0$/,'')}%`:RATE.has(k)?`+${(+v).toFixed(1)}/s`:`+${v}`;
 function rollRar(min){const f=1+((S&&S.mf)||0)/100,w=[55,28,11*f,3*f,0.45*f];let tot=0;for(let i=min;i<5;i++)tot+=w[i];let r=R()*tot;for(let i=min;i<5;i++){r-=w[i];if(r<=0)return i}return 4}
 function specRoll(k,ilvl,mult){const r=rr(.8,1.2)*mult,t=ilvl/25;
- const v={critd:(6+14*t)*r,crit:(1.2+3.5*t)*r,move:(2.5+5*t)*r,dodge:(1.2+3.5*t)*r,armP:(4+10*t)*r,hp:(12+ilvl*7)*r,mp:(10+ilvl*5)*r,mpr:(.4+ilvl*.12)*r,hpr:(.5+ilvl*.16)*r,cast:(3+8*t)*r,cdr:(2.5+6*t)*r,mf:(5+15*t)*r}[k];
+ const v={critd:(6+14*t)*r,crit:(1.2+3.5*t)*r,move:(2.5+5*t)*r,dodge:(1.2+3.5*t)*r,armP:(4+10*t)*r,hp:(12+ilvl*7)*r,mp:(10+ilvl*5)*r,mpr:(.4+ilvl*.12)*r,hpr:(.5+ilvl*.16)*r,cast:(3+8*t)*r,cdr:(2.5+6*t)*r,mf:(5+15*t)*r,resist:(1.5+5*t)*r}[k];
  return PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}
 /* ================= Item generation: categories, armor families, materials, names, budgets ================= */
 const ARMT={bulwark:'plate',reaver:'plate',thornstalker:'leather',ashcaller:'cloth',lumen:'cloth'};
@@ -1160,7 +1163,7 @@ const ABASE={helm:{plate:['Greathelm','Helm','Visored Helm'],leather:['Hood','Ca
 const CLOAKB=['Cloak','Cape','Shroud','Mantle'];
 const CHARMK={ring:{n:'Ring',b:['Ring','Band','Signet']},amulet:{n:'Amulet',b:['Amulet','Pendant','Torc']},trinket:{n:'Talisman',b:['Talisman','Idol','Charm']}};
 const BEAST={str:'of the Bear',agi:'of the Lynx',int:'of the Owl',vit:'of the Ox'};
-const SPECPRE={critd:'Ruinous',crit:'Keen',move:'Fleet',dodge:'Shadowed',armP:'Warded',hp:'Hearty',mp:'Tidal',mpr:'Flowing',hpr:'Mending',cast:'Quickened',cdr:'Swift',mf:'Lucky'};
+const SPECPRE={critd:'Ruinous',crit:'Keen',move:'Fleet',dodge:'Shadowed',armP:'Warded',hp:'Hearty',mp:'Tidal',mpr:'Flowing',hpr:'Mending',cast:'Quickened',cdr:'Swift',mf:'Lucky',resist:'Steadfast'};
 const EPICSET=[[10,["Fenwarden's","Gravebell"]],[14,['Sunscorched',"Qarim's"]],[18,['Rimebound','Pale Mother\'s']],[22,['Hexwoven','Duskhollow']],[99,['Cinderborn','Caldera']]];
 const LEGW={bulwark:'Oathkeeper',reaver:'Gravecleaver',ashcaller:'Emberheart',thornstalker:'Thornwake',lumen:'Dawnspire'};
 const RMUL=[1,1.12,1.28,1.48,1.75];
@@ -1178,7 +1181,7 @@ function rollItem(lv,min=0,slot,rar,fam){const ilvl=PL(lv);
  const lean=at?ARMK[at].lean:[main,'vit'],A=pw*.85*ATTW[slot]*rr(.9,1.1),na=rar>=1||slot==='charm'?2:1,keys=[];
  keys.push(R()<.65?(slot==='weapon'||slot==='charm'||slot==='cloak'?main:lean[0]):pick(ATTR));if(na>1){let k2=R()<.5?lean[1]:pick(ATTR);if(k2===keys[0])k2=pick(ATTR.filter(x=>x!==keys[0]));keys.push(k2)}
  keys.forEach((k,i)=>{st[k]=(st[k]||0)+Math.max(1,Math.round(A*(na>1?(i?.4:.6):1)))});
- const ns=[0,0,1,2,3][rar],sp=[...SPEC].sort(()=>R()-.5).slice(0,ns);for(const k of sp)st[k]=+((st[k]||0)+specRoll(k,ilvl,RMUL[rar])).toFixed(PCT.has(k)||RATE.has(k)?1:0);
+ const ns=[0,0,1,2,3][rar],sp=SPEC.filter(k=>k!=='resist'||RESIST.slots.has(slot)).sort(()=>R()-.5).slice(0,ns);for(const k of sp)st[k]=+((st[k]||0)+specRoll(k,ilvl,RMUL[rar])).toFixed(PCT.has(k)||RATE.has(k)?1:0);
  const mn=MATN[mat][tier];let name;
  if(rar===4)name=slot==='weapon'?LEGW[cls]:LEG[slot].n;
  else if(rar===3){const set=EPICSET.find(e=>ilvl<=e[0])[1];name=pick(set)+' '+bn}
@@ -1668,7 +1671,7 @@ function recalc(keep=true){
  S.maxSt=Math.round(100+a.agi*2);
  S.hpReg=a.str*.06+g.hpr+S.maxHp*m.hpReg;S.mpReg=(c.mpRegen*(1+.08*(L-1))+a.int*.05)*m.mpReg+g.mpr;S.stReg=14+a.agi*.12;
  S.arm=Math.round((c.arm+3*(L-1)+(a.str-c.base.str)+g.arm)*(1+g.armP/100+m.armP));S.drArm=Math.min(.65,S.arm/(S.arm+40+15*L));
- S.dodge=Math.min(50,35*a.agi/(a.agi+120)+g.dodge+m.dodge);S.crit=5+g.crit+m.crit;S.critD=175+g.critd+m.critD;S.amp=a.int*.5;
+ S.resist=Math.min(RESIST.cap,RESIST.vitK*a.vit/(a.vit+RESIST.vitD)+g.resist);S.dodge=Math.min(50,35*a.agi/(a.agi+120)+g.dodge+m.dodge);S.crit=5+g.crit+m.crit;S.critD=175+g.critd+m.critD;S.amp=a.int*.5;
  S.atk=(1+S.main/100)*(1+g.wd/80);S.castSp=g.cast;S.cdr=Math.min(.5,m.cdr+g.cdr/100);S.mf=g.mf;S.speed=c.spd*(1+m.spd+g.move/100);
  if(keep&&oldHp){P.hp=Math.min(S.maxHp,P.hp*S.maxHp/oldHp);P.mp=Math.min(S.maxMp,P.mp*S.maxMp/oldMp);P.st=Math.min(S.maxSt,(P.st??S.maxSt)*S.maxSt/(oldSt||S.maxSt))}}
 /* Levels run 1 to 50. PL turns a level into the 'power level' the stat formulas were built on (1 to 25.5), so each level is half a step of power. */
@@ -2437,7 +2440,7 @@ function updateHarm(dt){if(!G.harm)return;for(const h of G.harm){h.t-=dt;h.n-=dt
 /* ================= Player status effects ================= */
 const DEBN={poison:['Poisoned','#8ac040'],burn:['Burning','#ff8a3a'],bleed:['Bleeding','#e04040'],chill:['Chilled','#9fd8ff'],root:['Rooted','#7fb050'],stun:['Stunned','#ffe070'],weak:['Weakened','#c890ff']};
 const DEBI={poison:'snare',burn:'s_ember',bleed:'s_rend',chill:'storm',root:'s_thorns',stun:'crack',weak:'s_roar'};
-function pDebuff(k,t,dps=0){if(P.dead)return;P.deb=P.deb||[];if((k==='stun'||k==='root')&&P.iframes>0)return;const d=P.deb.find(x=>x.k===k);if(d){d.t=Math.max(d.t,t);d.dps=Math.max(d.dps||0,dps)}else P.deb.push({k,t,max:t,dps,n:1});
+function pDebuff(k,t,dps=0){if(P.dead)return;t*=1-(S.resist||0)/100;P.deb=P.deb||[];if((k==='stun'||k==='root')&&P.iframes>0)return;const d=P.deb.find(x=>x.k===k);if(d){d.t=Math.max(d.t,t);d.dps=Math.max(d.dps||0,dps)}else P.deb.push({k,t,max:t,dps,n:1});
  if(k==='stun'||k==='root'){P.dash=null;if(P.cast&&P.cast.i>=0&&k==='stun')P.cast=null}if(k==='stun')txt(P.x,P.y,2,'Stunned','#ffe070',15);if(k==='root')txt(P.x,P.y,2,'Rooted','#9fd070',14);if(k==='chill')sfx('freeze',.4)}
 const pHas=k=>!!(P.deb&&P.deb.some(d=>d.k===k&&d.t>0));
 function pCleanse(all){if(!P.deb)return;P.deb=all?[]:P.deb.filter(d=>!['poison','burn','bleed','chill'].includes(d.k))}
@@ -3738,6 +3741,9 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:48,date:'5 Nov 2026',title:'Resistance',items:[
+  'A new stat, Resistance, shortens poison, burns, bleeds, chills, roots, stuns and weakening. Every 1% takes 1% off how long they last on you, up to 50%.',
+  'Every hero gets some from Vitality, and newly found or forged charms and cloaks can add more. See yours on the character sheet.']},
  {id:47,date:'4 Nov 2026',title:'Performance check',items:[
   'Options, Display and sound now has a Performance check. It takes about 40 seconds, flies the camera through four scenes, and shows how smoothly the game runs on your device.',
   'Press Copy results and send them to us, so the game can be tuned for the phones and computers people really play on.']},
@@ -3992,7 +3998,7 @@ function rewards(q){let s=`<b>${q.xp}</b> XP · <b>${q.gold}</b><i class="coin">
 function statLines(it){let h='';const st=it.st;
  if(st.wd)h+=`<div style="font-weight:700">${st.wd} Weapon Damage</div>`;if(st.arm)h+=`<div style="font-weight:700">${st.arm} Armor</div>`;
  for(const k of ATTR)if(st[k])h+=`<div>${fmtStat(k,st[k])} ${STATN[k]}${k===CLS.main?' <span style="color:var(--brass2)">◆</span>':''}</div>`;
- for(const k of SPEC)if(st[k])h+=`<div class="st g">${fmtStat(k,st[k])} ${STATN[k]}</div>`;return h}
+ for(const k of SPEC)if(st[k])h+=`<div class="st g">${fmtStat(k,st[k])} ${STATN[k]}</div>${STATD[k]?`<div class="st">${STATD[k]}</div>`:''}`;return h}
 function gemIcon(k){const g=gemParse(k);if(!g)return'';const c=GEMCOL[g.c].c;return`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8l20 14-8 30H20l-8-30z" fill="${c}" stroke="#1a1410" stroke-width="2"/><path d="M32 8v16M12 22l20 2 20-2M32 24L20 52M32 24l12 28" stroke="#fff" stroke-opacity=".45" fill="none"/></svg>`}
 function socketsHTML(it,rm){if(!it.soc||!it.soc.length)return'';return`<div class="socs">${it.soc.map((k,i)=>{const b=k&&gemBonus(k);return b?`<div class="socrow"><span class="socic">${gemIcon(k)}</span><span>${esc(gemName(k))}: +${b.v}${b.st==='crit'?'%':''} ${STATN[b.st]}</span>${rm?`<button class="cbtn socbtn" data-act="unsock" data-i="${i}">Remove</button>`:''}</div>`:`<div class="socrow"><span class="socic empty"></span><span>Empty socket</span></div>`}).join('')}</div>`}
 function gemTabHTML(){const keys=Object.keys(P.gems||{}).filter(k=>P.gems[k]>0&&gemParse(k)).sort((a,b)=>{const x=gemParse(a),y=gemParse(b),o=Object.keys(GEMCOL);return o.indexOf(x.c)-o.indexOf(y.c)||x.r-y.r||x.l-y.l});let h='';for(const k of keys){const g=gemParse(k);h+=`<button class="islot has" style="--rc:${RAR[g.r].c}" data-act="selgem" data-k="${k}" aria-label="${esc(gemName(k))}, ${P.gems[k]} owned">${gemIcon(k)}<i class="gemlv">${g.l}</i><i class="qty">${P.gems[k]}</i></button>`}for(let i=keys.length;i<18;i++)h+='<div class="islot"></div>';
@@ -4023,7 +4029,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
     return`<button class="islot eqs ${it?'has':''} ${it&&itemBroken(it)?'broken':it&&itemDur(it)<=DUR.warnAt?'worn':''}" style="left:${x}%;top:${y}%;${it?`--rc:${RAR[it.rar].c}`:''}" ${it?`data-act="seleq" data-slot="${s}"`:''} aria-label="${SLOTNAME[s]}${it?': '+esc(it.name):' (empty)'}">${it?itemIcon(it):`<span class="ghost">${svg(SLOTICON[s])}</span>`}</button>`}).join('')}</div>
     <div class="eqname"><b>${esc(P.name||CLS.name)}</b>${achTitle()?`<span class="achttl">${esc(achTitle())}</span>`:''}<span>Level ${P.lvl} ${CLS.name}</span></div></div>`}
   else if(tab==='ach')h+=achHTML();
-  else{const f1=v=>(+v).toFixed(1).replace(/\.0$/,''),rows=[...ATTR.map(k=>[ATTRN[k]+(k===CLS.main?' ◆':''),S.a[k],k===CLS.main]),['Health',S.maxHp],['Mana',S.maxMp],['Stamina',S.maxSt],['Armor',`${S.arm} (${Math.round((S.drArm+S.m.dr)*100)}% block)`],['Dodge chance',f1(S.dodge)+'%'],['Critical chance',f1(S.crit)+'%'],['Critical damage',Math.round(S.critD)+'%'],['Spell amplification','+'+f1(S.amp)+'%'],['Health regen',f1(S.hpReg)+'/s'],['Mana regen',f1(S.mpReg)+'/s'],['Movement speed','+'+Math.round((S.speed/CLS.spd-1)*100)+'%'],['Cast speed','+'+f1(S.castSp)+'%'],['Cooldown reduction',Math.round(S.cdr*100)+'%'],['Rare find','+'+f1(S.mf)+'%']];
+  else{const f1=v=>(+v).toFixed(1).replace(/\.0$/,''),rows=[...ATTR.map(k=>[ATTRN[k]+(k===CLS.main?' ◆':''),S.a[k],k===CLS.main]),['Health',S.maxHp],['Mana',S.maxMp],['Stamina',S.maxSt],['Armor',`${S.arm} (${Math.round((S.drArm+S.m.dr)*100)}% block)`],['Dodge chance',f1(S.dodge)+'%'],['Resistance',f1(S.resist)+'%'],['Critical chance',f1(S.crit)+'%'],['Critical damage',Math.round(S.critD)+'%'],['Spell amplification','+'+f1(S.amp)+'%'],['Health regen',f1(S.hpReg)+'/s'],['Mana regen',f1(S.mpReg)+'/s'],['Movement speed','+'+Math.round((S.speed/CLS.spd-1)*100)+'%'],['Cast speed','+'+f1(S.castSp)+'%'],['Cooldown reduction',Math.round(S.cdr*100)+'%'],['Rare find','+'+f1(S.mf)+'%']];
    h+=`<div class="pad" style="padding-top:10px"><dl class="attrs" style="grid-template-columns:repeat(3,minmax(0,1fr));max-width:none;gap:0 18px;font-size:13.5px">${rows.map(([x,y,mn])=>`<div style="padding:4px 0"><dt class="${mn?'main':''}">${x}</dt><dd class="${mn?'main':''}" style="font-size:14px">${y}</dd></div>`).join('')}</dl><p style="margin:10px 0 0;font-size:12.5px;color:var(--ink2)">◆ ${CLS.name} main attribute: ${ATTRN[CLS.main]}. It raises all your damage. Strength adds health, health regen and armor. Agility adds dodge, stamina and stamina regen. Intelligence adds mana, mana regen and spell power.</p></div>`}}
  else if(k==='quests'&&G.qTab==='letters'){title='Quests';h=qTabs()+lettersHTML()}
  else if(k==='letter'){title='Letter';h=letterHTML(a)}
@@ -4491,7 +4497,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
