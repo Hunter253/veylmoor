@@ -958,6 +958,33 @@ await test('Privacy and Terms open from Options, the pages load, and fonts come 
   return bad;
 });
 
+await test('A hero file keeps storage, achievements, story and the cat setting', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Mover');const P=V.P;
+  P.stash=[V.rollItem(5,1,'weapon',0),V.rollItem(4,1,'helm',0)];P.stashMax=V.STASH.start+V.STASH.step;const a=V.achS();const ak=V.ACH[0].id;a.got[ak]=Date.now();a.c.kills=7;if(V.ACH[0].t)a.title=ak;V.storyS().f.testChoice='kept';P.moon={seen:3};P.petOff=true;
+  dispatchEvent(new Event('pagehide'));const f=V.heroFileText(V.readSlot(0)),r=V.importHeroText(f);if(r.err){bad.push('import refused: '+r.err);return bad}const d=V.readSlot(r.slot);
+  if(!d.stash||d.stash.length!==2)bad.push('storage was lost');if(d.stashMax!==V.STASH.start+V.STASH.step)bad.push('storage size was lost');if(!d.ach||!d.ach.got||!d.ach.got[ak]||d.ach.c.kills!==7)bad.push('achievements were lost');
+  if(!d.story||!d.story.f||d.story.f.testChoice!=='kept')bad.push('story choices were lost');if(!d.moon||d.moon.seen!==3)bad.push('moon progress was lost');if(d.petOff!==true)bad.push('the hidden cat came back');
+  V.loadSave(d);if(V.stashS().length!==2)bad.push('imported storage did not load');
+  const g=JSON.parse(f).hero,signed=h=>JSON.stringify({game:'wardens-of-veylmoor',format:1,check:V.heroCheck(JSON.stringify(h)),hero:h});
+  for(const [n,h] of Object.entries({'storage not a list':{...g,stash:'x'},'storage too big':{...g,stash:Array(V.STASH.max+1).fill(g.stash[0])},'bad storage size':{...g,stashMax:9999},'bad storage item':{...g,stash:[{...g.stash[0],soc:['pink.0.1']}]},'story not an object':{...g,story:[1]},'achievements not an object':{...g,ach:'all'},'cat setting not true or false':{...g,petOff:'yes'}}))if(!V.parseHeroFile(signed(h)).err)bad.push('accepted: '+n);
+  const old={...g};for(const k of ['stash','stashMax','story','ach','moon','petOff'])delete old[k];if(V.parseHeroFile(signed(old)).err)bad.push('an older hero file without these was refused');
+  localStorage.clear();return bad}`));
+
+await test('A hero open in two windows: the newer window keeps saving, the older one stops', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];localStorage.clear();V.startNew('lumen','Twin');const K=V.claimKey(0);
+  const c=JSON.parse(localStorage.getItem(K)||'null');if(!c||c.id!==V.TABID)bad.push('playing did not mark the hero as open here');
+  V.P.gold=123;dispatchEvent(new Event('pagehide'));if(V.readSlot(0).gold!==123)bad.push('the window holding the hero could not save');
+  const other=JSON.stringify({id:'other-window',t:Date.now()});localStorage.setItem(K,other);V.P.gold=999;dispatchEvent(new Event('pagehide'));
+  if(V.readSlot(0).gold===999)bad.push('an older window wrote over the newer one');if(G.mode!=='title')bad.push('the older window kept playing');if(!/opened in another window/.test(document.body.innerText))bad.push('no notice in the older window');
+  for(const n of document.querySelectorAll('.sysnote'))n.remove();
+  V.loadSave(V.readSlot(0));if(JSON.parse(localStorage.getItem(K)).id!==V.TABID)bad.push('picking the hero again did not take it back');V.P.gold=456;dispatchEvent(new Event('pagehide'));if(V.readSlot(0).gold!==456)bad.push('could not save after taking the hero back');
+  dispatchEvent(new StorageEvent('storage',{key:K,newValue:other}));if(G.mode!=='title')bad.push('a storage event from another window did not stop this one');
+  for(const n of document.querySelectorAll('.sysnote'))n.remove();localStorage.clear();return bad}`));
+
+await test('Automatic detail recovers on a 60 Hz screen and leaves a 30 fps cap alone', () => ev(`()=>{const V=window.__veyl,bad=[];const run=(sec,ms)=>{for(let t=0;t<sec;t+=.05){V.frameAvg=typeof ms==='function'?ms():ms;V.rsTick(.05)}};const max=V.RSMAX;
+  V.rsReset();V.RS=.6;run(30,16.7);if(V.RS<max-.001)bad.push('60 Hz did not climb back to full detail: '+V.RS);
+  V.rsReset();V.RS=max;let low=max;run(120,()=>{low=Math.min(low,V.RS);return 33.3});if(V.RS<max-.001)bad.push('a 30 fps cap left detail at '+V.RS);if(low<max-.15)bad.push('a 30 fps cap dropped detail more than one step: '+low);
+  V.rsReset();V.RS=max;run(10,()=>V.RS<max-.001?22:33.3);if(!(V.RS<max-.001))bad.push('a step down that helped was undone');
+  V.rsReset();V.RS=max;V.frameAvg=16.7;return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
