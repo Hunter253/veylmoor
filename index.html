@@ -2617,11 +2617,13 @@ void main(){vec2 p=vW.xz;float t=uTime;float a=vn(p*2.2+vec2(t*.35,t*.2)),b=vn(p
  col=mix(col,vec3(.9,.95,.93)*(.45+.35*uSunCol.g),clamp(foam,0.,1.)*.8);float al=uFoam>.5?uAlpha*clamp(dep*4.+.25,0.,1.)+foam*.35:uAlpha;
  gl_FragColor=vec4(finish(col,vW),clamp(al,0.,1.));}`;
 const VS_Q=`attribute vec2 aQ;varying vec2 vQ;void main(){vQ=aQ;gl_Position=vec4(aQ,.9999,1.);}`;
-const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight,uMoonK,uMoonS;uniform vec4 uMoon;
+const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight,uMoonK,uMoonS,uAur;uniform vec4 uMoon;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 void main(){vec3 d=normalize(uF+vQ.x*uTan.x*uR+vQ.y*uTan.y*uU);float y=d.y;vec3 c=mix(uHor,uTop,pow(clamp(y,0.,1.),.5));float sd=max(dot(d,uSun),0.);
  c+=uSunC*(pow(sd,900.)*40.+pow(sd,30.)*.7+pow(sd,5.)*.2)*uDay;
  if(uNight>0.&&y>0.){float st=fract(sin(dot(floor(d*190.),vec3(12.9898,78.233,37.719)))*43758.5453);c+=vec3(.85,.9,1.)*step(.9965,st)*(.5+.5*sin(uTime*2.+st*90.))*uNight*smoothstep(.04,.25,y);}
+ if(uAur>0.&&y>.04){float az=atan(d.x,d.z);float w=fbm(vec2(az*2.4+uTime*.03,uTime*.02))*.9;float band=smoothstep(.1,.24,y-w*.12)*(1.-smoothstep(.34,.62,y-w*.12));float rays=.55+.45*sin(az*38.+fbm(vec2(az*7.,uTime*.05))*9.+uTime*.4);
+  float a=band*rays*smoothstep(.25,.75,fbm(vec2(az*1.3-uTime*.02,7.)));vec3 ac=mix(vec3(.15,1.,.55),vec3(.55,.35,1.),smoothstep(.2,.55,y));c+=ac*a*.55*uAur;}
  if(uMoonK>0.){vec3 md=normalize(uMoon.xyz),mr=normalize(cross(md,vec3(0.,1.,0.))),mu=cross(mr,md);float mz=dot(d,md),sz=uMoonS,u=dot(d,mr)/sz,v=dot(d,mu)/sz,rr=u*u+v*v;
   if(mz>0.){float k=cos(6.2832*uMoon.w),e=k*sqrt(max(0.,1.-v*v)),lit=uMoon.w<.5?step(e,u):step(u,-e);float disc=1.-smoothstep(.9,1.,rr);float tex=.85+.15*fbm(vec2(u,v)*2.2+3.);
   c=mix(c,c*.35+vec3(.04,.05,.08),disc*uMoonK);c+=vec3(1.,.97,.88)*1.25*tex*lit*disc*uMoonK;float il=abs(.5-abs(uMoon.w-.5))*2.;c+=vec3(.55,.65,.85)*pow(max(mz,0.),400.)*.35*il*uMoonK;}}
@@ -3225,6 +3227,15 @@ function drawHum(model,x,z,rot,ph,mv,atk,cast,fl,scale=1,yOff=0,tint=null){const
  drawPart(model.root,M,anim,fl,tint)}
 const DEC=[];const SPR=[];
 function decal(x,z,y,sx,sz,rot,kind,col,a,p=0,arc=0){DEC.push([x,y,z,sx,sz,rot,kind,col,a,p,arc])}
+/* ================= Night finishing touches (25.b) =================
+   NIGHTFX.aurora: which map themes get auroras, and how strong. Weather dims them.
+   NIGHTFX.glow: Gloamwood's flowers and bog plants glow after dark; spots are fixed per map, and only the nearest few are drawn. */
+const NIGHTFX={aurora:{2:1},glow:{theme:3,tiles:[T.FLOWER,T.BOG],per:3,max:90,range:22,cols:['#9fffd8','#c8a0ff','#e4ff8a'],size:.22}};
+function auroraK(m,env){const k=m&&NIGHTFX.aurora[m.theme];if(!k||m.id==='abbey'||!env)return 0;return k*env.night*(env.wx?1-.8*env.wx.s:1)}
+function glowSpots(m){if(!m||m.theme!==NIGHTFX.glow.theme)return[];if(m.glowSpots)return m.glowSpots;const G0=NIGHTFX.glow,Rn=rng(m.w*131+m.h),out=[];
+ for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){if(!G0.tiles.includes(m.get(x,y)))continue;if(Rn()>.55)continue;for(let k=0;k<G0.per;k++)out.push({x:(x+Rn())*U*TS,z:(y+Rn())*U*TS,c:G0.cols[Math.floor(Rn()*G0.cols.length)],p:Rn()*6.28})}return m.glowSpots=out}
+function drawGlowPlants(m,env){if(!env||env.night<=0||!m||m.theme!==NIGHTFX.glow.theme)return 0;const G0=NIGHTFX.glow,cx=CAM.tx,cz=CAM.tz,near=[];for(const o of glowSpots(m)){const d=Math.abs(o.x-cx)+Math.abs(o.z-cz);if(d<G0.range)near.push(o)}
+ const n=Math.min(near.length,Math.round(G0.max*fxK()));for(let i=0;i<n;i++){const o=near[i],y=groundH(o.x,o.z)+.12,a=env.night*(.45+.35*Math.sin(G.time*1.6+o.p));sprite(o.x,y,o.z,G0.size,G0.size,o.c,a)}return n}
 function sprite(x,y,z,sx,sy,col,a,cyl=0,al=0){SPR.push([x,y,z,sx,sy,col,a,cyl,al])}
 function drawStatus(e){if(e.fade>0||e.ghostT>0)return;const x=e.x*U,z=e.y*U,gy=groundH(x,z),h=e.d.h*(e.d.boss?1.75:1),r=e.d.r*U*(e.d.boss?2:1.5);
  if(e.stun>0)for(let k=0;k<3;k++){const a=G.time*5+k*TAU/3;sprite(x+Math.cos(a)*.38,gy+h+.3,z+Math.sin(a)*.38,.2,.2,'#ffe070',.95)}
@@ -3272,7 +3283,7 @@ function renderWorld(dt){
  {const pr=useProg(PR.sky);gl.depthMask(false);gl.disable(gl.DEPTH_TEST);bindQuad();const V=VIEW;
   gl.uniform3f(pr.U.uR,V[0],V[4],V[8]);gl.uniform3f(pr.U.uU,V[1],V[5],V[9]);gl.uniform3f(pr.U.uF,-V[2],-V[6],-V[10]);gl.uniform2f(pr.U.uTan,1/PROJ[0],1/PROJ[5]);
   gl.uniform3fv(pr.U.uTop,env.top);gl.uniform3fv(pr.U.uHor,env.hor);gl.uniform3fv(pr.U.uFog,env.fog);gl.uniform3fv(pr.U.uSun,SUN);gl.uniform3fv(pr.U.uSunC,env.sunC);gl.uniform3fv(pr.U.uMtn,env.mtn);gl.uniform1f(pr.U.uTime,G.time);gl.uniform1f(pr.U.uDay,m.id!=='abbey'?1:0);gl.uniform1f(pr.U.uNight,env.night);
-  {const mc=moonNow(),D=MOON.sky.dir;gl.uniform4f(pr.U.uMoon,D[0],D[1],D[2],mc.p);gl.uniform1f(pr.U.uMoonS,MOON.sky.size);gl.uniform1f(pr.U.uMoonK,m.id!=='abbey'?env.night*(env.wx?1-.7*env.wx.s:1):0)}
+  {const mc=moonNow(),D=MOON.sky.dir;gl.uniform4f(pr.U.uMoon,D[0],D[1],D[2],mc.p);gl.uniform1f(pr.U.uMoonS,MOON.sky.size);gl.uniform1f(pr.U.uMoonK,m.id!=='abbey'?env.night*(env.wx?1-.7*env.wx.s:1):0);gl.uniform1f(pr.U.uAur,auroraK(m,env))}
   gl.drawArrays(gl.TRIANGLES,0,6);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
  const mapSize=[m.w,m.h];
  // terrain
@@ -3318,6 +3329,7 @@ function renderWorld(dt){
   // loot
   for(const l of G.loot){const x=l.x*U,z=l.y*U,y=groundH(x,z);drawMesh(MODELS.chest,M4.trs(x,y,z,l.t*.5+l.x));const c=RAR[l.it.rar].c;sprite(x,y+.3,z,.6,.6,c,.6);if(l.it.rar>=2)sprite(x,y,z,.18,3.5,c,.7,1);decal(x,z,y+.04,.4,.4,0,0,[0,0,0],.4)}
   // quest objects
+  drawGlowPlants(m,env);
   for(const o of G.fishS||[]){const x=o.x*U,z=o.y*U;if(Math.hypot(x-CAM.tx,z-CAM.tz)>30)continue;const y=groundH(x,z),up=o.t<=0;decal(x,z,y+.05,.8,.8,G.time*.6,6,[.7,.85,1],up?.5:.2,.55);if(up)sprite(x,y+.35+Math.sin(G.time*3+o.i)*.06,z,.18,.18,'#ff6040',.9)}
   for(const o of G.skins||[]){if(o.t<=0)continue;const x=o.x*U,z=o.y*U,y=groundH(x,z),c=RESF.hide.c[o.g-1];sprite(x,y+.25,z,.55,.55,c,.28);decal(x,z,y+.04,.5,.5,G.time,4,hexC(c).map(v=>v/255),.45,.6)}
   for(const n of[...(G.nodes||[]),...(G.moonO||[])]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
@@ -3657,6 +3669,9 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:44,date:'4 Nov 2026',title:'Auroras and glowing plants',items:[
+  'On clear nights, green and violet auroras ripple across the sky over Frostfang Reach. Snow and cloud hide them.',
+  'After dark, the flowers and bog plants of Gloamwood glow softly. Effect intensity in Options turns the glow down too.']},
  {id:43,date:'4 Nov 2026',title:'Choices that count',items:[
   'Your choices in the story now matter beyond a single conversation. If Hassa counts you as a friend, visit her at the well each day for water and a couple of tonics.',
   'Some choices are remembered as clues. Find them under Quests, Letters. They will matter later in the story.']},
@@ -4347,7 +4362,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
