@@ -1110,11 +1110,15 @@ function durBadge(){const eq=SLOTS.map(s=>P.eq[s]).filter(Boolean),st=eq.some(it
 function gemsValid(g){if(g==null)return true;if(typeof g!=='object'||Array.isArray(g))return false;for(const k of Object.keys(g))if(!gemParse(k)||!Number.isInteger(g[k])||g[k]<0||g[k]>1e6)return false;return true}
 function socketsValid(it){if(!it)return true;if(it.dur!=null&&!(typeof it.dur==='number'&&it.dur>=0&&it.dur<=DUR.max))return false;if(it.soc==null)return true;return Array.isArray(it.soc)&&it.soc.length<=3&&it.soc.every(x=>x===null||!!gemParse(x))}
 const ATTR=['str','agi','int','vit'],ATTRN={str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality'};
-const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','cdr','mf','resist'];
+const SPEC=['critd','crit','move','dodge','armP','hp','mp','mpr','hpr','cast','cdr','mf','resist','pen'];
 /* Resistance (6.b) shortens bad effects on the hero, as a percent. Vitality gives vitK x vit / (vit + vitD), gear adds to it, and cap is the most it can reach. */
 const RESIST={cap:50,vitK:42,vitD:200,slots:new Set(['charm','cloak'])};
-const STATD={resist:'Shortens bad effects on you.'};
-const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find',resist:'Resistance'};
+const STATD={resist:'Shortens bad effects on you.',pen:"Ignores this much of a monster's armor."};
+/* Monster armor and Armor Penetration (6.f). Monster armor is hidden from the player. A monster has base + perLvl for each level above 1, and penetration is taken off it, down to 0.
+   What's left blocks left / (left + k + kL x power level) of direct hits, so more armor always blocks more but each extra point adds less. Damage over time ignores armor.
+   hpK lowers monster health to balance their armor, so a hero with no penetration kills as fast as before. deadeye is the extra penetration on the Thornstalker's Deadeye. */
+const MONARM={base:10,perLvl:1.3,k:40,kL:15,hpK:.85,deadeye:30};
+const STATN={wd:'Weapon Damage',arm:'Armor',str:'Strength',agi:'Agility',int:'Intelligence',vit:'Vitality',critd:'Critical Damage',crit:'Critical Chance',move:'Movement Speed',dodge:'Dodge Chance',armP:'Armor',hp:'Health',mp:'Mana',mpr:'Mana Regen',hpr:'Health Regen',cast:'Cast Speed',cdr:'Cooldown Reduction',mf:'Rare Find',resist:'Resistance',pen:'Armor Penetration'};
 const PCT=new Set(['critd','crit','move','dodge','armP','cast','cdr','mf','resist']),RATE=new Set(['mpr','hpr']);
 const TIERW=['','Worn','Tempered','Masterwork','Runed','Exalted'],TIERR=['','I','II','III','IV','V'];
 const tierOf=l=>clamp(1+Math.floor((PL(l)-1)/5),1,5);
@@ -1129,7 +1133,7 @@ const legByKey=k=>Object.values(LEG).find(l=>l.k===k);
 const fmtStat=(k,v)=>PCT.has(k)?`+${(+v).toFixed(1).replace(/\.0$/,'')}%`:RATE.has(k)?`+${(+v).toFixed(1)}/s`:`+${v}`;
 function rollRar(min){const f=1+((S&&S.mf)||0)/100,w=[55,28,11*f,3*f,0.45*f];let tot=0;for(let i=min;i<5;i++)tot+=w[i];let r=R()*tot;for(let i=min;i<5;i++){r-=w[i];if(r<=0)return i}return 4}
 function specRoll(k,ilvl,mult){const r=rr(.8,1.2)*mult,t=ilvl/25;
- const v={critd:(6+14*t)*r,crit:(1.2+3.5*t)*r,move:(2.5+5*t)*r,dodge:(1.2+3.5*t)*r,armP:(4+10*t)*r,hp:(12+ilvl*7)*r,mp:(10+ilvl*5)*r,mpr:(.4+ilvl*.12)*r,hpr:(.5+ilvl*.16)*r,cast:(3+8*t)*r,cdr:(2.5+6*t)*r,mf:(5+15*t)*r,resist:(1.5+5*t)*r}[k];
+ const v={critd:(6+14*t)*r,crit:(1.2+3.5*t)*r,move:(2.5+5*t)*r,dodge:(1.2+3.5*t)*r,armP:(4+10*t)*r,hp:(12+ilvl*7)*r,mp:(10+ilvl*5)*r,mpr:(.4+ilvl*.12)*r,hpr:(.5+ilvl*.16)*r,cast:(3+8*t)*r,cdr:(2.5+6*t)*r,mf:(5+15*t)*r,resist:(1.5+5*t)*r,pen:(2+8*t)*r}[k];
  return PCT.has(k)||RATE.has(k)?Math.round(v*10)/10:Math.round(v)}
 /* ================= Item generation: categories, armor families, materials, names, budgets ================= */
 const ARMT={bulwark:'plate',reaver:'plate',thornstalker:'leather',ashcaller:'cloth',lumen:'cloth'};
@@ -1163,7 +1167,7 @@ const ABASE={helm:{plate:['Greathelm','Helm','Visored Helm'],leather:['Hood','Ca
 const CLOAKB=['Cloak','Cape','Shroud','Mantle'];
 const CHARMK={ring:{n:'Ring',b:['Ring','Band','Signet']},amulet:{n:'Amulet',b:['Amulet','Pendant','Torc']},trinket:{n:'Talisman',b:['Talisman','Idol','Charm']}};
 const BEAST={str:'of the Bear',agi:'of the Lynx',int:'of the Owl',vit:'of the Ox'};
-const SPECPRE={critd:'Ruinous',crit:'Keen',move:'Fleet',dodge:'Shadowed',armP:'Warded',hp:'Hearty',mp:'Tidal',mpr:'Flowing',hpr:'Mending',cast:'Quickened',cdr:'Swift',mf:'Lucky',resist:'Steadfast'};
+const SPECPRE={critd:'Ruinous',crit:'Keen',move:'Fleet',dodge:'Shadowed',armP:'Warded',hp:'Hearty',mp:'Tidal',mpr:'Flowing',hpr:'Mending',cast:'Quickened',cdr:'Swift',mf:'Lucky',resist:'Steadfast',pen:'Piercing'};
 const EPICSET=[[10,["Fenwarden's","Gravebell"]],[14,['Sunscorched',"Qarim's"]],[18,['Rimebound','Pale Mother\'s']],[22,['Hexwoven','Duskhollow']],[99,['Cinderborn','Caldera']]];
 const LEGW={bulwark:'Oathkeeper',reaver:'Gravecleaver',ashcaller:'Emberheart',thornstalker:'Thornwake',lumen:'Dawnspire'};
 const RMUL=[1,1.12,1.28,1.48,1.75];
@@ -1250,8 +1254,9 @@ const EN={
  prior:{name:'The Drowned Prior',hp:1300,dmg:20,spd:70,range:30,cd:1.6,r:24,xp:120,col:'#7fc8d8',shape:'prior',aggro:250,boss:true,h:2.6},
 };
 let eid=0;
-function mkEnemy(type,lvl,x,y){const d=EN[type];const hp=Math.round(d.hp*1.12*(1+0.35*(PL(lvl)-1)));
- return{type,d,lvl,x,y,hx:x,hy:y,hp,max:hp,dmg:d.dmg*1.1*(1+0.22*(PL(lvl)-1)),state:'idle',cd:rr(0,1),wander:rr(1,4),tx:x,ty:y,stun:0,root:0,wind:0,dead:false,respawn:0,hitFlash:0,rot:R()*TAU,anim:R()*10,id:++eid,slam:5,fade:0,px:x,py:y,mv:0,ph:R()*6}}
+function monBlock(e,pen=0){const left=Math.max(0,(e.arm||0)-pen);return left/(left+MONARM.k+MONARM.kL*PL(e.lvl))}
+function mkEnemy(type,lvl,x,y){const d=EN[type];const hp=Math.round(d.hp*1.12*MONARM.hpK*(1+0.35*(PL(lvl)-1)));
+ return{type,d,lvl,x,y,hx:x,hy:y,hp,max:hp,arm:MONARM.base+MONARM.perLvl*(lvl-1),dmg:d.dmg*1.1*(1+0.22*(PL(lvl)-1)),state:'idle',cd:rr(0,1),wander:rr(1,4),tx:x,ty:y,stun:0,root:0,wind:0,dead:false,respawn:0,hitFlash:0,rot:R()*TAU,anim:R()*10,id:++eid,slam:5,fade:0,px:x,py:y,mv:0,ph:R()*6}}
 const NPCS={
  marwen:{town:'Hollowmere',name:'Elder Marwen',title:'Village elder',col:'#9a86c2',x:12.8,y:25.4,idle:'Keep to the roads after dark. The fen remembers every path that was ever drowned.'},
  corra:{town:'Hollowmere',name:'Huntress Corra',title:'Ridge scout',col:'#7f9c58',x:25.6,y:23.9,idle:'The wolves on the ridge hunt in threes. Watch your flanks.'},
@@ -1671,7 +1676,7 @@ function recalc(keep=true){
  S.maxSt=Math.round(100+a.agi*2);
  S.hpReg=a.str*.06+g.hpr+S.maxHp*m.hpReg;S.mpReg=(c.mpRegen*(1+.08*(L-1))+a.int*.05)*m.mpReg+g.mpr;S.stReg=14+a.agi*.12;
  S.arm=Math.round((c.arm+3*(L-1)+(a.str-c.base.str)+g.arm)*(1+g.armP/100+m.armP));S.drArm=Math.min(.65,S.arm/(S.arm+40+15*L));
- S.resist=Math.min(RESIST.cap,RESIST.vitK*a.vit/(a.vit+RESIST.vitD)+g.resist);S.dodge=Math.min(50,35*a.agi/(a.agi+120)+g.dodge+m.dodge);S.crit=5+g.crit+m.crit;S.critD=175+g.critd+m.critD;S.amp=a.int*.5;
+ S.pen=g.pen;S.resist=Math.min(RESIST.cap,RESIST.vitK*a.vit/(a.vit+RESIST.vitD)+g.resist);S.dodge=Math.min(50,35*a.agi/(a.agi+120)+g.dodge+m.dodge);S.crit=5+g.crit+m.crit;S.critD=175+g.critd+m.critD;S.amp=a.int*.5;
  S.atk=(1+S.main/100)*(1+g.wd/80);S.castSp=g.cast;S.cdr=Math.min(.5,m.cdr+g.cdr/100);S.mf=g.mf;S.speed=c.spd*(1+m.spd+g.move/100);
  if(keep&&oldHp){P.hp=Math.min(S.maxHp,P.hp*S.maxHp/oldHp);P.mp=Math.min(S.maxMp,P.mp*S.maxMp/oldMp);P.st=Math.min(S.maxSt,(P.st??S.maxSt)*S.maxSt/(oldSt||S.maxSt))}}
 /* Levels run 1 to 50. PL turns a level into the 'power level' the stat formulas were built on (1 to 25.5), so each level is half a step of power. */
@@ -1788,7 +1793,7 @@ function resNote(i){const d=RES[P.cls];if(!d)return'';if(i===0)return`<div class
 function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*resDmg(i)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit+S.m.critA[i];if(crit)a*=S.critD/100;a*=talentSelf();return{a:Math.max(1,Math.round(a)),crit,i}}
 function healP(a,quiet){if(P.dead)return;a=Math.round(a*(1+S.amp/200));if(a<=0)return;const b=P.hp;P.hp=Math.min(S.maxHp,P.hp+a);const got=Math.round(P.hp-b);if(S.m.k.overheal&&a-got>0){P.shield=Math.min(S.maxHp*.3,(P.shield||0)+(a-got));P.shieldT=Math.max(P.shieldT||0,6)}if(!quiet&&got>0)txt(P.x,P.y,1.9,'+'+got,'#6aff5a',19)}
 function hitEnemy(e,r,o={}){
- if(e.dead)return;if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0}let a=r.a;const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
+ if(e.dead)return;if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0}let a=r.a;const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;if(!o.dot&&!o.noArm)a*=1-monBlock(e,(S.pen||0)+(o.pen||0));a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
  if(e.state!=='chase'){e.state='chase';for(const f of live())if(f!==e&&f.state==='idle'&&dist(f.x,f.y,e.x,e.y)<110)f.state='chase'}
  const hh=e.d.h*(e.d.boss?1.75:1);
  if(o.dot)txt(e.x,e.y,hh*.8,a,o.dot==='burn'?'#ff9a4a':'#ff5a5a',14);else txt(e.x,e.y,hh+.1,a+(r.crit?'!':''),r.crit?'#ffa53a':'#ffe14a',r.crit?28:20);
@@ -1959,7 +1964,7 @@ const ABFX={
   ring(p.x,p.y,tr,'#9cc263',.45,5,true);burst(p.x,p.y,'#6a9a3a',20,120,.6,3,.1);sfx('trap')},
  mark(ab,t,i){if(!t||t.dead||dist(P.x,P.y,t.x,t.y)>ab.range+t.d.r+12){notReady('No target in range');return false}
   shoot(i,ab,{spd:620,col:'#ff5a3a',r:5,kind:'arrow',ang:Math.atan2(t.y-P.y,t.x-P.x),onHit:e=>{vuln(e,.25,10,'#ff3a2a');e.markT=10;ring(e.x,e.y,e.d.r+16,'#ff3a2a',.5,4,true);txt(e.x,e.y,e.d.h+.5,'Marked','#ff6a4a',14)}});sfx('mark')},
- pierce(ab,t,i){const sc=P.sureCrit;P.sureCrit=1;shoot(i,ab,{spd:900,col:'#c8ff9a',r:9,pierce:9,kind:'deadeye',ho:{markB:.5},onHit:(e,p)=>{if(S.m.k.oneShot&&!e.dead&&!isBoss(e)&&e.hp<e.max*.25){txt(e.x,e.y,e.d.h+.7,'One Shot','#c8ff9a',17);hitEnemy(e,{a:e.hp,crit:true},{col:'#c8ff9a',quiet:true});if(e.dead)P.mp=Math.min(S.maxMp,P.mp+abCost(5))}knock(e,e.x-p.vx,e.y-p.vy,260);spark(e.x,e.y,'#e8ffc0',10,e.d.h*.6,120)}});P.sureCrit=sc;
+ pierce(ab,t,i){const sc=P.sureCrit;P.sureCrit=1;shoot(i,ab,{spd:900,col:'#c8ff9a',r:9,pierce:9,kind:'deadeye',ho:{markB:.5,pen:MONARM.deadeye},onHit:(e,p)=>{if(S.m.k.oneShot&&!e.dead&&!isBoss(e)&&e.hp<e.max*.25){txt(e.x,e.y,e.d.h+.7,'One Shot','#c8ff9a',17);hitEnemy(e,{a:e.hp,crit:true},{col:'#c8ff9a',quiet:true,noArm:true});if(e.dead)P.mp=Math.min(S.maxMp,P.mp+abCost(5))}knock(e,e.x-p.vx,e.y-p.vy,260);spark(e.x,e.y,'#e8ffc0',10,e.d.h*.6,120)}});P.sureCrit=sc;
   const a=Math.atan2(P.fy,P.fx);G.fx.push({k:'line',x1:P.x,y1:P.y,x2:P.x+Math.cos(a)*300,y2:P.y+Math.sin(a)*300,c:'#c8ff9a',w:10,t:0,max:.35});ring(P.x,P.y,50,'#c8ff9a',.3,5);sfx('deadeye');shake(4)},
 
  /* ---------- Lumen: healing, light, protection ---------- */
@@ -3741,6 +3746,10 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:49,date:'5 Nov 2026',title:'Armor Penetration',items:[
+  'A new stat, Armor Penetration, ignores part of a monster\'s armor so your direct hits do more damage. Rare and better gear can roll it, and you can see your total on the character sheet.',
+  'Every monster now has some armor, and slightly less health to balance it, so fights take about as long as before if you have no penetration.',
+  'Bleeds and burns ignore armor. The Thornstalker\'s Deadeye punches through extra armor.']},
  {id:48,date:'5 Nov 2026',title:'Resistance',items:[
   'A new stat, Resistance, shortens poison, burns, bleeds, chills, roots, stuns and weakening. Every 1% takes 1% off how long they last on you, up to 50%.',
   'Every hero gets some from Vitality, and newly found or forged charms and cloaks can add more. See yours on the character sheet.']},
@@ -4029,7 +4038,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
     return`<button class="islot eqs ${it?'has':''} ${it&&itemBroken(it)?'broken':it&&itemDur(it)<=DUR.warnAt?'worn':''}" style="left:${x}%;top:${y}%;${it?`--rc:${RAR[it.rar].c}`:''}" ${it?`data-act="seleq" data-slot="${s}"`:''} aria-label="${SLOTNAME[s]}${it?': '+esc(it.name):' (empty)'}">${it?itemIcon(it):`<span class="ghost">${svg(SLOTICON[s])}</span>`}</button>`}).join('')}</div>
     <div class="eqname"><b>${esc(P.name||CLS.name)}</b>${achTitle()?`<span class="achttl">${esc(achTitle())}</span>`:''}<span>Level ${P.lvl} ${CLS.name}</span></div></div>`}
   else if(tab==='ach')h+=achHTML();
-  else{const f1=v=>(+v).toFixed(1).replace(/\.0$/,''),rows=[...ATTR.map(k=>[ATTRN[k]+(k===CLS.main?' ◆':''),S.a[k],k===CLS.main]),['Health',S.maxHp],['Mana',S.maxMp],['Stamina',S.maxSt],['Armor',`${S.arm} (${Math.round((S.drArm+S.m.dr)*100)}% block)`],['Dodge chance',f1(S.dodge)+'%'],['Resistance',f1(S.resist)+'%'],['Critical chance',f1(S.crit)+'%'],['Critical damage',Math.round(S.critD)+'%'],['Spell amplification','+'+f1(S.amp)+'%'],['Health regen',f1(S.hpReg)+'/s'],['Mana regen',f1(S.mpReg)+'/s'],['Movement speed','+'+Math.round((S.speed/CLS.spd-1)*100)+'%'],['Cast speed','+'+f1(S.castSp)+'%'],['Cooldown reduction',Math.round(S.cdr*100)+'%'],['Rare find','+'+f1(S.mf)+'%']];
+  else{const f1=v=>(+v).toFixed(1).replace(/\.0$/,''),rows=[...ATTR.map(k=>[ATTRN[k]+(k===CLS.main?' ◆':''),S.a[k],k===CLS.main]),['Health',S.maxHp],['Mana',S.maxMp],['Stamina',S.maxSt],['Armor',`${S.arm} (${Math.round((S.drArm+S.m.dr)*100)}% block)`],['Dodge chance',f1(S.dodge)+'%'],['Resistance',f1(S.resist)+'%'],['Armor penetration',S.pen],['Critical chance',f1(S.crit)+'%'],['Critical damage',Math.round(S.critD)+'%'],['Spell amplification','+'+f1(S.amp)+'%'],['Health regen',f1(S.hpReg)+'/s'],['Mana regen',f1(S.mpReg)+'/s'],['Movement speed','+'+Math.round((S.speed/CLS.spd-1)*100)+'%'],['Cast speed','+'+f1(S.castSp)+'%'],['Cooldown reduction',Math.round(S.cdr*100)+'%'],['Rare find','+'+f1(S.mf)+'%']];
    h+=`<div class="pad" style="padding-top:10px"><dl class="attrs" style="grid-template-columns:repeat(3,minmax(0,1fr));max-width:none;gap:0 18px;font-size:13.5px">${rows.map(([x,y,mn])=>`<div style="padding:4px 0"><dt class="${mn?'main':''}">${x}</dt><dd class="${mn?'main':''}" style="font-size:14px">${y}</dd></div>`).join('')}</dl><p style="margin:10px 0 0;font-size:12.5px;color:var(--ink2)">◆ ${CLS.name} main attribute: ${ATTRN[CLS.main]}. It raises all your damage. Strength adds health, health regen and armor. Agility adds dodge, stamina and stamina regen. Intelligence adds mana, mana regen and spell power.</p></div>`}}
  else if(k==='quests'&&G.qTab==='letters'){title='Quests';h=qTabs()+lettersHTML()}
  else if(k==='letter'){title='Letter';h=letterHTML(a)}
@@ -4497,7 +4506,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

@@ -969,6 +969,24 @@ await test('Only charms and cloaks roll Resistance, and old items and saves stil
   const it=V.rollItem(50,0,'charm',2);it.st={resist:5.5};const tip=V.statLines(it);if(!/\\+5\\.5% Resistance/.test(tip))bad.push('the tooltip says '+tip);if(!/Shortens bad effects/.test(tip))bad.push('the tooltip has no explanation');
   const d=V.serialize();const old=V.rollItem(10,0,'cloak',2);old.st={arm:9};d.eq=d.eq||{};d.eq.cloak=old;V.loadSave(JSON.parse(JSON.stringify(d)));V.recalc(false);if(!isFinite(V.S.resist))bad.push('an old item gave '+V.S.resist);return bad.slice(0,6)}`));
 
+// Monster armor and Armor Penetration (6.f).
+await reset();
+await test('Every monster has armor that blocks about 15%, with falling returns', () => ev(`()=>{const V=window.__veyl,bad=[],A=V.MONARM;V.startNew('reaver','Tester');for(const t in V.EN){const e=V.mkEnemy(t,20,0,0);if(!(e.arm>0))bad.push(t+' has no armor')}for(const[l,want]of[[1,10],[25,41.2],[50,73.7]]){const e=V.mkEnemy('wolf',l,0,0);if(Math.abs(e.arm-want)>.01)bad.push('level '+l+' armor is '+e.arm);const b=V.monBlock(e);if(b<.14||b>.16)bad.push('level '+l+' blocks '+b.toFixed(3))}
+  const f=V.mkEnemy('wolf',50,0,0),at=a=>{f.arm=a;return V.monBlock(f)};if(Math.abs(at(100)-.1914)>.001)bad.push('100 armor blocks '+at(100));if(Math.abs(at(800)-.654)>.001)bad.push('800 armor blocks '+at(800));let prev=0,last=1e9;for(const a of[100,200,300,400,500,600,700,800]){const b=at(a),g=b-prev;if(!(b>prev))bad.push('more armor blocked less at '+a);if(!(g<last))bad.push('no falling returns at '+a);prev=b;last=g}if(at(1e9)>=1)bad.push('armor reached 100%');
+  const w=V.mkEnemy('wolf',1,0,0);if(Math.abs(w.max-Math.round(V.EN.wolf.hp*1.12*A.hpK))>0)bad.push('a level 1 wolf has '+w.max+' health');const net=w.max/(1-V.monBlock(w));const old=V.EN.wolf.hp*1.12;if(Math.abs(net/old-1)>.02)bad.push('fights changed length by '+((net/old-1)*100).toFixed(1)+'%');return bad.slice(0,8)}`));
+
+await test('Penetration takes off armor, and bleeds and burns skip it', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P;P.eq={};V.recalc(false);const e=V.mkEnemy('wolf',50,P.x+900,P.y);V.G.enemies=[e];const hit=(pen,o={})=>{V.S.pen=pen;e.hp=e.max=1e8;e.vulnT=0;e.markT=0;V.hitEnemy(e,{a:10000,crit:false},Object.assign({quiet:true},o));return 1e8-e.hp};
+  const none=hit(0),some=hit(20),more=hit(50),all=hit(999);if(Math.abs(none-8513)>30)bad.push('no penetration did '+none);if(Math.abs(some/none-1.042)>.006)bad.push('20 penetration gave +'+((some/none-1)*100).toFixed(1)+'%');if(Math.abs(more/none-1.112)>.006)bad.push('50 penetration gave +'+((more/none-1)*100).toFixed(1)+'%');if(all!==10000)bad.push('all armor gone did '+all);
+  if(hit(0,{dot:'burn'})!==10000)bad.push('a burn was blocked');if(hit(0,{dot:'bleed'})!==10000)bad.push('a bleed was blocked');if(hit(0,{pen:V.MONARM.deadeye})!==hit(V.MONARM.deadeye))bad.push('Deadeye penetration is wrong');
+  const k=V.mkEnemy('wolf',50,P.x+900,P.y);V.G.enemies=[k];k.hp=500;V.hitEnemy(k,{a:k.hp,crit:true},{quiet:true,noArm:true});if(!k.dead)bad.push('an exact finishing blow did not kill');V.G.enemies=[];V.S.pen=0;return bad}`));
+
+await test('Rare and better gear rolls penetration as a number, and monster armor stays hidden', async () => {
+  const bad = await ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P;for(const r of[0,1])for(let i=0;i<300;i++)if(V.rollItem(50,0,'weapon',r).st.pen){bad.push('rarity '+r+' rolled it');break}let got=0,top=0;for(let i=0;i<400;i++){const v=V.rollItem(50,0,'helm',4).st.pen;if(v){got++;top=Math.max(top,v);if(v!==Math.round(v))bad.push('not a whole number: '+v)}}if(!got)bad.push('Legendary gear never rolled it');if(top>40)bad.push('a roll reached '+top);
+   const it=V.rollItem(50,0,'charm',2);it.st={pen:12};const tip=V.statLines(it);if(!/\\+12 Armor Penetration/.test(tip))bad.push('the tooltip says '+tip);if(/%/.test(tip))bad.push('penetration shows as a percent');if(!/Ignores this much/.test(tip))bad.push('the tooltip has no explanation');
+   P.eq={charm:it};V.recalc(false);if(V.S.pen!==12)bad.push('gear gave '+V.S.pen);V.G.charTab='attr';V.openPanel('char');await new Promise(r=>setTimeout(r,200));const txt=document.getElementById('book').textContent;V.closePanel(true);return bad.slice(0,8).concat(/Resistance/.test(txt)&&/Armor penetration/.test(txt)?[]:['the character sheet is missing the new stats'])}`);
+  return bad;
+});
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
