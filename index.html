@@ -170,6 +170,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 /* Book (menus) */
 #book{position:fixed;inset:0;z-index:20;background:rgba(8,5,2,.62);display:flex;align-items:center;justify-content:center;touch-action:auto;overflow:hidden}
 .bk{flex:none;transform:scale(var(--ui,1));width:800px;height:470px;display:grid;grid-template-columns:186px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);border-radius:4px;overflow:hidden;background:#d6bf8e}
+#book.side{justify-content:flex-start;background:none}#book.side .bk{width:400px;height:auto;transform-origin:left center;margin-left:max(12px,env(safe-area-inset-left,0px))}
 #book.left{justify-content:flex-start;background:linear-gradient(90deg,rgba(8,5,2,.5),rgba(8,5,2,.2) 75%,rgba(8,5,2,0))}
 #book.left .bk{transform-origin:left center;margin-left:max(4px,env(safe-area-inset-left,0px))}
 #book:not(.left) .bk{box-shadow:0 10px 40px rgba(0,0,0,.7)}
@@ -689,7 +690,7 @@ const ICON={
  potion:'<path d="M10 3h4M10 3v5L6 15a4 4 0 004 6h4a4 4 0 004-6l-4-7V3M7.5 14h9"/>',helm:'<path d="M5 16a7 7 0 0114 0v3H5zM12 9V5M9 16h6"/>',
  chest:'<path d="M8 4l-4 3 2 4 2-1v10h8V10l2 1 2-4-4-3-2 2h-4z"/>',boots:'<path d="M8 4v10l-4 3v3h11l5-3v-2l-7-2V4z"/>',charm:'<circle cx="12" cy="14" r="6"/><path d="M10 6l2-3 2 3-2 2z"/>',
 };
-Object.assign(ICON,{axe:'<path d="M5 21L18 8"/><path d="M14 4c3 0 6 3 6 6l-4 1-3-3z"/><path d="M9 15l-2-2"/>',rend:'<path d="M6 4l4 16M11 4l4 16M16 4l4 16"/>',leap:'<path d="M4 20c3-10 9-14 16-14"/><path d="M16 3l4 3-4 3"/><path d="M3 20h8"/>',roll:'<circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 017 7M5 12a7 7 0 007 7"/><path d="M17 4l2 3-3 1"/>',horse:'<path d="M5 21l2-6-3-3 2-6 5-3 5 1 4 5-2 3-3-1-1 3 3 7"/><path d="M10 3l-1-2M14 9h.01"/>',gem:'<path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 18M15 3l-3 18"/>',charge:'<path d="M3 12h11M10 7l5 5-5 5M19 4v16"/>',whirl:'<path d="M12 4a8 8 0 108 8M12 8a4 4 0 104 4M20 4l-2 5-5-1"/>',blink:'<path d="M4 20l3-3M9 15l2-2M13 11l2-2"/><path d="M18 3l3 3-3 3-3-3z"/>',storm:'<path d="M6 13a4 4 0 010-8 5 5 0 019 1 3.5 3.5 0 011 7H6zM8 16l-1 4M12 16l-1 4M16 16l-1 4"/>',
+Object.assign(ICON,{tpick:'<path d="M5 21L15 9"/><path d="M6 6c5-3 10-2 14 3"/>',tknife:'<path d="M4 20l6-6"/><path d="M9 15L19 4c1 5-1 9-6 12z"/>',trod:'<path d="M4 21L19 3"/><path d="M19 3v12"/><path d="M19 15a2 2 0 102 2"/>',axe:'<path d="M5 21L18 8"/><path d="M14 4c3 0 6 3 6 6l-4 1-3-3z"/><path d="M9 15l-2-2"/>',rend:'<path d="M6 4l4 16M11 4l4 16M16 4l4 16"/>',leap:'<path d="M4 20c3-10 9-14 16-14"/><path d="M16 3l4 3-4 3"/><path d="M3 20h8"/>',roll:'<circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 017 7M5 12a7 7 0 007 7"/><path d="M17 4l2 3-3 1"/>',horse:'<path d="M5 21l2-6-3-3 2-6 5-3 5 1 4 5-2 3-3-1-1 3 3 7"/><path d="M10 3l-1-2M14 9h.01"/>',gem:'<path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 18M15 3l-3 18"/>',charge:'<path d="M3 12h11M10 7l5 5-5 5M19 4v16"/>',whirl:'<path d="M12 4a8 8 0 108 8M12 8a4 4 0 104 4M20 4l-2 5-5-1"/>',blink:'<path d="M4 20l3-3M9 15l2-2M13 11l2-2"/><path d="M18 3l3 3-3 3-3-3z"/>',storm:'<path d="M6 13a4 4 0 010-8 5 5 0 019 1 3.5 3.5 0 011 7H6zM8 16l-1 4M12 16l-1 4M16 16l-1 4"/>',
  pierce:'<path d="M2 12h17M15 8l4 4-4 4M2 9v6M6 10v4"/>',rain:'<path d="M5 3v9M10 3v11M15 3v9M20 3v11M3 10l2 2 2-2M8 12l2 2 2-2M13 10l2 2 2-2M18 12l2 2 2-2"/>',sanct:'<path d="M3 18a9 9 0 0118 0M12 4v4M7 6l2 3M17 6l-2 3"/><path d="M2 18h20"/>',lance:'<path d="M3 21L21 3M15 3h6v6M5 15l4 4"/>',
  boot:'<path d="M7 2h6v10l7 3v5H4v-5l3-2z"/><path d="M4 17h16M9 6h4"/>',target:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',cloak:'<path d="M8 2h8l5 20-9-4-9 4z"/>',
  bag:'<path d="M6 8h12l2 13H4zM9 8V6a3 3 0 016 0v2"/>',person:'<circle cx="12" cy="6" r="3.5"/><path d="M5 21v-4a7 7 0 0114 0v4"/>',scroll:'<path d="M7 3h11a2 2 0 010 4H7M7 3a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 000-4H9M7 3v14"/>',
@@ -1662,7 +1663,7 @@ let P=null,CLS=null,S=null;
 const G={mode:'title',map:null,maps:{},enemies:[],projs:[],fx:[],tele:[],areas:[],loot:[],texts:[],parts:[],timers:[],time:0,panel:null,zone:'',boss:null,near:null,tgt:null,shake:0,sel:null,saveT:0};
 const input={up:0,down:0,left:0,right:0,atk:false,sx:0,sy:0};
 const CAM={yaw:Math.PI,pitch:.5,zoom:1,lastDrag:-99,x:0,y:0,z:0,tx:0,ty:0,tz:0};
-function newPlayer(cls){return{cls,prof:null,profXp:0,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],res:0,resB:[0,0,0,0,0,0],resLast:-99,bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
+function newPlayer(cls){return{cls,tools:{},prof:null,profXp:0,gems:{},lvl:1,xp:0,gold:10,potions:3,bag:[],eq:{},tal:{},q:{},x:0,y:0,hp:1,mp:1,cds:[0,0,0,0,0,0],cdMax:[1,1,1,1,1,1],res:0,resB:[0,0,0,0,0,0],resLast:-99,bosses:{},shield:0,shieldT:0,shotN:0,sureCrit:0,potCd:0,name:'',bagMax:18,jz:0,jv:0,st:100,stLast:-9,iframes:0,rollAnim:0,sprint:false,auto:false,mounted:false,cast:null,spin:0,buffs:[],fx:0,fy:-1,faceLock:0,abCount:0,lastHurt:-99,dead:false,dash:null,walk:0,mv:0,atkAnim:0,castAnim:0,hurtFlash:0,nid:1,map:'vale',rot:Math.PI}}
 function talentSpent(){let s=0;for(const k in P.tal)s+=P.tal[k];return s}
 const talentPoints=()=>Math.max(0,P.lvl-1-talentSpent());
 function recalc(keep=true){
@@ -2012,9 +2013,10 @@ function fishSpots(m){if(!m||!FISH.zones[m.id])return[];G.fishMap=G.fishMap||{};
  for(let t=0;t<900&&out.length<FISH.spots;t++){const x=2+Math.floor(Rn()*(m.w-4)),y=2+Math.floor(Rn()*(m.h-4)),v=m.get(x,y);if(v<0||SOLID[v]||v===T.WAY)continue;
   if(![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>wet(x+dx,y+dy)))continue;if(m.arena&&Math.hypot(x+.5-m.arena.x,y+.5-m.arena.y)<m.arena.r+2)continue;if(out.some(o=>Math.hypot(o.tx-x,o.ty-y)<FISH.gap))continue;
   out.push({tx:x,ty:y,x:(x+.5)*TS,y:(y+.5)*TS,t:0,i:out.length})}return G.fishMap[m.id]=out}
-function fishRoll(z){const r=R(),o=FISH.odds;const i=r<o[2]?2:r<o[2]+o[1]?1:0;return{i,fid:'fish_'+z+'_'+FISH.zones[z][i][0]}}
-function fishStart(spot){if(!spot||spot.t>0||!FISH.zones[G.map.id])return false;if(inFight()){toast("The fish won't bite with a fight going on.",'warn');return false}const f=fishRoll(G.map.id);
- G.fishing={spot,fid:f.fid,i:f.i,start:performance.now(),w:FISH.width[f.i],per:FISH.period[f.i]*1000,a:.08+R()*(.84-FISH.width[f.i])};openPanel('fish');fishAnim();return true}
+function fishRoll(z){const r=R(),o=rodMatch(z)?TOOLS.rodOdds:FISH.odds;const i=r<o[2]?2:r<o[2]+o[1]?1:0;return{i,fid:'fish_'+z+'_'+FISH.zones[z][i][0]}}
+function fishStart(spot){if(!spot||spot.t>0||!FISH.zones[G.map.id])return false;if(inFight()){toast("The fish won't bite with a fight going on.",'warn');return false}const f=fishRoll(G.map.id),w=FISH.width[f.i]*(toolHave('rod')?TOOLS.rodWidth:1);
+ const wet=[[1,0],[-1,0],[0,1],[0,-1]].find(([dx,dy])=>G.map.get(spot.tx+dx,spot.ty+dy)===T.WATER);if(wet)toolFace('rod',(spot.tx+.5+wet[0]*2)*TS,(spot.ty+.5+wet[1]*2)*TS);
+ G.fishing={spot,fid:f.fid,i:f.i,start:performance.now(),w,per:FISH.period[f.i]*1000,a:.08+R()*(.84-w)};openPanel('fish');fishAnim();return true}
 const fishPos=(F,now=performance.now())=>{const u=((now-F.start)/F.per)%2;return u<1?u:2-u};
 function fishAnim(){const F=G.fishing;if(!F||G.panel!=='fish')return;const m=document.getElementById('fishM');if(m)m.style.left=(fishPos(F)*100).toFixed(1)+'%';requestAnimationFrame(fishAnim)}
 function fishHTML(){const F=G.fishing;if(!F)return'';return`<div class="pad fishp"><p>Something bites! Reel in while the marker is in the bright zone.</p><div class="fbar"><i class="fz" style="left:${(F.a*100).toFixed(1)}%;width:${(F.w*100).toFixed(1)}%"></i><i class="fm" id="fishM"></i></div><div class="row" style="justify-content:center"><button class="gbtn" data-act="reel">Reel in</button></div><p class="fhint">Tap the button, or press Space or E.</p></div>`}
@@ -2328,13 +2330,31 @@ function spawnResources(){const m=G.map;G.res=[];if(!m||m.id==='abbey'||!AREAG[m
   const g=Math.min(5,base+(Rn()<.15?1:0));list.push({fam,g,tx:x,ty:y,x:(x+.5)*TS,y:(y+.5)*TS,t:0,i:list.length,name:matName(fam,g)});break}}
  G.resMap[m.id]=G.res=list}
 function updateRes(dt){for(const o of G.res||[])if(o.t>0)o.t-=dt}
-function skinIt(o){const i=(G.skins||[]).indexOf(o);if(i<0||o.t<=0)return false;G.skins.splice(i,1);const q=1+(R()<SKIN.extra?1:0),got=addMat('hide',o.g,q);
+function skinIt(o){const i=(G.skins||[]).indexOf(o);if(i<0||o.t<=0)return false;G.skins.splice(i,1);const q=1+(R()<SKIN.extra?1:0)+toolExtra('hide',o.g),got=addMat('hide',o.g,q);
  if(!got){toast('Your bag is full. Sell something to make room.','warn');return false}achAdd('gathered');sfx('loot',.7);burst(o.x,o.y,RESF.hide.c[o.g-1],12,70,.5,3,.2);toast(`Skinned <b>${got} ${esc(matName('hide',o.g))}</b>`);save();return true}
-function harvest(o){if(!o||o.t>0)return;const F=RESF[o.fam],q=1+Math.floor(R()*2)+(R()<.25?1:0),got=addMat(o.fam,o.g,q);if(got)achAdd('gathered');
+function harvest(o){if(!o||o.t>0)return;const F=RESF[o.fam],q=1+Math.floor(R()*2)+(R()<.25?1:0)+toolExtra(o.fam,o.g),got=addMat(o.fam,o.g,q);if(got)achAdd('gathered');
  if(!got){msg('Your bag is full. Sell or use something to make room.');return}o.t=rr(150,240);
  const c=RAR[o.g-1].c2;txt(o.x,o.y,1.6,`+${got} ${o.name}`,c,15);burst(o.x,o.y,F.c[o.g-1],18,100,.6,3,.4);rise(o.x,o.y,c,8,12,.8,3);sfx(o.fam==='ore'?'clang':o.fam==='gem'?'halo':'loot',.7);
  let extra='';if(o.fam==='ore'&&R()<.08&&addMat('gem',o.g,1))extra=` and a <b style="color:${c}">${matName('gem',o.g)}</b>`;
  toast(`+${got} <b style="color:${c}">${esc(o.name)}</b>${extra}${got<q?' (your bag is full)':''}`);save()}
+/* ---- Gathering tools (17.a). Optional: bare hands still gather. Any tool is faster; one whose grade matches or beats the material also brings in extra. Each hero keeps the best of each kind on a belt that uses no bag space. Herbs are picked by hand. ---- */
+const TOOLS={kinds:{pick:{n:'Pick',fams:['ore','gem'],icon:'tpick',d:'Mines ore and crystals faster. If its grade matches or beats the material, you get 1 extra each time.'},
+  axe:{n:'Wood Axe',fams:['wood'],icon:'axe',d:'Chops wood faster. If its grade matches or beats the wood, you get 1 extra each time.'},
+  knife:{n:'Skinning Knife',fams:['hide'],icon:'tknife',d:'Skins beasts faster. If its grade matches or beats the hide, you get 1 extra each time.'},
+  rod:{n:'Fishing Rod',fish:true,icon:'trod',d:'Widens the catch zone by a quarter. If its grade matches or beats the zone, rarer fish bite more often.'}},
+ grades:['Copper','Iron','Darkiron','Runestone','Starmetal'],price:[25,75,200,500,1200],speed:.625,extra:1,rodWidth:1.25,rodOdds:[.55,.33,.12],
+ metal:[[176,112,72],[118,122,128],[72,78,98],[96,176,196],[220,200,130]]};
+const toolHave=k=>(P.tools&&P.tools[k])||0,toolName=(k,g)=>TOOLS.grades[g-1]+' '+TOOLS.kinds[k].n;
+const toolKind=f=>Object.keys(TOOLS.kinds).find(k=>(TOOLS.kinds[k].fams||[]).includes(f))||null;
+const toolTime=(f,t)=>{const k=toolKind(f);return k&&toolHave(k)?t*TOOLS.speed:t};
+const toolExtra=(f,g)=>{const k=toolKind(f);return k&&toolHave(k)>=g?TOOLS.extra:0};
+const rodMatch=z=>!!AREAG[z]&&toolHave('rod')>=AREAG[z];
+function toolsClean(o){const t={};if(o&&typeof o==='object')for(const k in TOOLS.kinds){const g=Math.floor(+o[k]);if(g>=1&&g<=TOOLS.price.length)t[k]=g}return t}
+function toolBuy(k,g){if(!TOOLS.kinds[k]||!TOOLS.price[g-1]||toolHave(k)>=g||P.gold<TOOLS.price[g-1])return false;P.gold-=TOOLS.price[g-1];P.tools=P.tools||{};P.tools[k]=g;sfx('loot');toast(`Bought <b>${esc(toolName(k,g))}</b>. It is on your belt, under Bag, Tools.`);save();return true}
+/* Which tool the hero has in hand right now, if any. */
+function toolHeld(){if(!P||P.dead||P.mounted)return null;let kind=null;if(G.fishing)kind='rod';else if(P.cast&&P.cast.res)kind=toolKind(P.cast.res.fam);else if(P.cast&&P.cast.skin)kind='knife';const g=kind?toolHave(kind):0;return g?{kind,g}:null}
+function toolFace(k,x,y){if(!k||!toolHave(k))return;const dx=x-P.x,dy=y-P.y,l=Math.hypot(dx,dy);if(l<1)return;P.fx=dx/l;P.fy=dy/l;P.rot=Math.atan2(P.fx,P.fy)}
+function toolTabHTML(){return`<div class="pad"><p class="fhint">Tools sit on your belt and use no bag space. Town shops sell the grade for their own zone.</p><div class="sgrid">${Object.keys(TOOLS.kinds).map(k=>{const K=TOOLS.kinds[k],g=toolHave(k);return`<div class="scard"><div class="sc-t">${esc(g?toolName(k,g):K.n)}</div><div class="sc-i"><div class="sk" style="--c:${g?RESF.ore.c[g-1]:'#5a5a5a'}"><span class="ic">${svg(K.icon)}</span></div></div><div class="sc-d">${esc(g?K.d:'You have none yet.')}</div></div>`}).join('')}</div></div>`}
 /* ---- crafting ---- */
 const FORGE=[null,{ore:6,herb:3,gem:0,rar:1},{ore:8,herb:4,gem:1,rar:2},{ore:10,herb:6,gem:2,rar:2},{ore:14,herb:8,gem:3,rar:3},{ore:20,herb:12,gem:6,rar:3}];
 const MATSTACK=50;
@@ -2925,6 +2945,59 @@ function buildWild3D(m,g,ge,Rn,sh){const th=m.theme;
 /* ================= Models ================= */
 const part=(n,m,p,o={})=>({n,m,p:p||[0,0,0],r:o.r||[0,0,0],s:o.s||[1,1,1],e:o.e||0,sp:o.sp||0,t:o.t?lin(o.t):null,k:[]});
 const MODELS={};
+/* Gathering tools, made by Gemini (gemini-assets on the gemini branch). The metal is recoloured for each grade. Held at y=0, with the head towards +y. */
+function minerPickProp(g,ge,x,y,z,metal){
+  const wood=[92,64,42],wrap=[58,44,34];
+  g.cyl(T3(x,y-0.18,z,1,0.68,1),wood,6,0.026,0.034);
+  g.cyl(T3(x,y-0.08,z,1,0.16,1),wrap,6,0.034,0.035);
+  g.box(T3(x,y-0.18,z,0.07,0.04,0.07),wood);
+  g.box(T3(x,y+0.44,z,0.09,0.10,0.11),metal);
+  g.box(T3(x,y+0.43,z+0.13,0.06,0.07,0.18,0,0.18,0),metal);
+  g.box(T3(x,y+0.39,z+0.23,0.04,0.04,0.08,0,0.35,0),metal);
+  g.box(T3(x,y+0.43,z-0.13,0.06,0.07,0.18,0,-0.18,0),metal);
+  g.box(T3(x,y+0.39,z-0.23,0.04,0.04,0.08,0,-0.35,0),metal);
+}
+function woodAxeProp(g,ge,x,y,z,metal){
+  const wood=[92,64,42],wrap=[58,44,34];
+  g.cyl(T3(x,y-0.18,z,1,0.68,1),wood,6,0.028,0.035);
+  g.cyl(T3(x,y-0.08,z,1,0.16,1),wrap,6,0.036,0.036);
+  g.box(T3(x,y-0.18,z-0.01,0.07,0.05,0.09,0,0.2,0),wood);
+  g.box(T3(x,y+0.42,z-0.01,0.09,0.13,0.11),metal);
+  g.box(T3(x,y+0.50,z,0.06,0.04,0.06),wood);
+  g.box(T3(x,y+0.42,z+0.09,0.06,0.16,0.12),metal);
+  g.box(T3(x,y+0.46,z+0.16,0.04,0.13,0.09,0,-0.22,0),metal);
+  g.box(T3(x,y+0.37,z+0.16,0.04,0.13,0.09,0,0.28,0),metal);
+}
+function skinningKnifeProp(g,ge,x,y,z,metal){
+  const wood=[92,64,42],wrap=[58,44,34];
+  g.box(T3(x,y-0.06,z,0.06,0.04,0.07),wood);
+  g.box(T3(x,y,z,0.05,0.10,0.06),wrap);
+  g.box(T3(x,y+0.06,z+0.01,0.08,0.03,0.09),metal);
+  g.box(T3(x,y+0.13,z+0.01,0.04,0.12,0.08,0,-0.12,0),metal);
+  g.box(T3(x,y+0.21,z+0.03,0.035,0.09,0.07,0,-0.38,0),metal);
+}
+function fishingRodProp(g,ge,x,y,z,metal){
+  const wood=[92,64,42],wrap=[58,44,34];
+  g.cyl(T3(x,y-0.22,z,1,0.34,1),wrap,6,0.034,0.030);
+  g.cyl(T3(x,y+0.12,z,1,0.64,1),wood,5,0.028,0.021);
+  g.cyl(T3(x,y+0.76,z,1,0.42,1),wood,4,0.021,0.016);
+  g.box(T3(x,y+0.10,z+0.03,0.04,0.08,0.04),metal);
+  g.cyl(T3(x-0.04,y+0.10,z+0.08,1,0.08,1,0,0,-1.57),wood,6,0.055,0.055);
+  g.box(T3(x+0.05,y+0.10,z+0.10,0.03,0.03,0.07),metal);
+  g.box(T3(x,y+1.16,z+0.03,0.04,0.04,0.05),metal);
+}
+/* One part per kind and grade, held in the right hand. The rod also carries its line, which hangs from the tip in the fishing pose. */
+function toolModels(){const art={pick:minerPickProp,axe:woodAxeProp,knife:skinningKnifeProp,rod:fishingRodProp},out={},line=mk(g=>g.box(T3(0,-.65,0,.025,1.3,.025),[214,220,224]));
+ for(const k in art)out[k]=TOOLS.metal.map(c=>{const p=part('tool',mk(g=>art[k](g,null,0,0,0,c)),[0,-.47,0],{r:[Math.PI/2,0,0],sp:.6});if(k==='rod')p.k.push(part('line',line,[0,1.18,0],{r:[-1.245,0,0]}));return p});return out}
+/* Puts the tool in the hero's hand in place of the weapon, or puts the weapon back. */
+function toolShow(model,held){if(!model.armR)return;const key=held?held.kind+held.g:'';if((model.toolKey||'')===key)return;model.toolKey=key;
+ const drop=(arr,x)=>{const i=arr.indexOf(x);if(i>=0)arr.splice(i,1)};if(model.toolPart){drop(model.armR.k,model.toolPart);model.toolPart=null}
+ if(model.wPart&&!model.wHost.k.includes(model.wPart))model.wHost.k.push(model.wPart);
+ if(held){if(model.wPart)drop(model.wHost.k,model.wPart);model.toolPart=MODELS.tools[held.kind][held.g-1];model.armR.k.push(model.toolPart)}}
+/* How the hero moves with a tool: two swings of a pick or axe per gather, a low sawing with the knife, and a steady rod. */
+function toolAnim(held){if(!held)return null;if(held.kind==='rod')return{armR:{rx:-.62+Math.sin(G.time*1.5)*.04},armL:{rx:-.7,rz:-.35}};
+ const u=P.cast?P.cast.t/P.cast.max:0;if(held.kind==='knife'){const s=Math.sin(u*TAU*3);return{armR:{rx:-.75+s*.2},armL:{rx:-.5},upper:{rx:.6},legL:{rx:-.55},legR:{rx:.35}}}
+ const k=Math.abs(Math.sin(u*TAU));return{armR:{rx:-2.4+k*2.1},armL:{rx:-1.3+k*.9},upper:{rx:.1+k*.35}}}
 function weaponPart(kind,trim){
  if(kind==='axe'){const p=part('weapon',mk(g=>{g.cyl(T3(0,0,-.3,1,1.25,1,0,Math.PI/2),[80,56,36],7,.03,.03);for(let k=0;k<3;k++)g.cyl(T3(0,0,-.2+k*.4,1,.05,1,0,Math.PI/2),[150,120,60],7,.036,.036);
    for(const s2 of[-1,1]){g.box(T3(s2*.2,0,.82,.32,.03,.36),[176,180,188]);g.box(T3(s2*.36,0,.82,.05,.035,.48),[210,214,222])}g.cyl(T3(0,0,.95,1,.1,1,0,Math.PI/2),[150,120,60],5,.03,0)}),[0,-.47,0],{sp:1.4});
@@ -2993,13 +3066,13 @@ function humanoid(o){
  if(o.halo)hd.k.push(part('halo',mk(g=>g.torus(T3(0,0,0),[255,244,200],.17,.016,24,5)),[0,.38,-.05],{e:3,t:o.halo,r:[.3,0,0]}));
  if(o.rune)upper.k.push(part('rune',mk(g=>{g.box(T3(0,.25,.185,.08,.08,.01,0,0,.78),[255,255,255]);g.box(T3(0,.25,.19,.02,.17,.01),[255,255,255])}),[0,0,0],{e:3,t:o.rune}));
  const armL=part('armL',arm,[.22,.38,0],{r:[0,0,.1]}),armR=part('armR',arm,[-.22,.38,0],{r:[0,0,-.1]});
- let glow=null;
- if(o.weapon){const w=weaponPart(o.weapon);if(w){if(o.weapon==='bow')armL.k.push(w);else armR.k.push(w);glow=w.glow||null}}
+ let glow=null,wPart=null,wHost=null;
+ if(o.weapon){const w=weaponPart(o.weapon);if(w){wPart=w;wHost=o.weapon==='bow'?armL:armR;wHost.k.push(w);glow=w.glow||null}}
  if(o.shield)armL.k.push(weaponPart('shield',o.trim));
  if(o.cape){const top=part('capeT',mk(g=>{g.box(T3(0,-.24,0,.4,.48,.03),o.cape);if(o.trim)g.box(T3(0,-.01,0,.42,.045,.036),o.trim)}),[0,.38,-.18],{r:[.08,0,0]});
   top.k.push(part('capeB',mk(g=>{g.box(T3(0,-.22,0,.44,.46,.028),o.cape);g.box(T3(0,-.45,0,.46,.035,.032),o.trim||o.cape)}),[0,-.47,0]));upper.k.push(top)}
  upper.k.push(armL,armR);root.k.push(legL,legR,upper);
- return{root,kind:'hum',weapon:o.weapon,glow}}
+ return{root,kind:'hum',weapon:o.weapon,glow,armR,wPart,wHost}}
 function wolfModel(){const fur=[98,94,84],dark=[52,50,44];
  const root=part('root',null);const body=part('body',mk(g=>{g.sphere(T3(0,.55,-.05,.21,.22,.46),fur,10,7);g.sphere(T3(0,.6,.26,.22,.25,.25),fur,9,7);g.sphere(T3(0,.5,.05,.17,.13,.36),[140,134,120],8,6);
   g.ico(T3(0,.68,.32,.26,.28,.22),[78,72,62],.55,R,0,1,1);for(let k=0;k<7;k++)g.cyl(T3((k%2?.05:-.05),.74-k*.015,.26-k*.11,1,.28-k*.015,1,0,-.55,(k%2?-.25:.25)),[132,72,46],5,.05,0)}),[0,0,0]);
@@ -3106,7 +3179,7 @@ function loadModels(){
  MODELS.rusk=H({top:[110,90,70],bottom:[70,56,44],beard:[140,120,100],hair:[140,120,100],collar:[80,60,40],trim:[200,170,90],sleeve:[110,90,70],skin:[196,150,116]});
  MODELS.odette=H({top:[110,140,170],robe:[90,116,146],hood:[236,232,222],collar:[236,232,222],trim:[200,180,140],sleeve:[110,140,170]});
  MODELS.nomad=H({top:[150,96,56],bottom:[110,76,44],hood:[190,150,100],mask:[90,60,40],sleeve:[150,96,56],bracer:[110,76,44],weapon:'sword',cape:[140,40,30]});
- MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
+ MODELS.tools=toolModels();MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
  MODELS.portal=mk(g=>{const st=[108,110,104];for(const s of[-1,1]){g.box(T3(s*1.05,1.2,0,.4,2.4,.5),st);g.box(T3(s*1.05,.12,0,.55,.24,.62),[90,92,88])}for(let k=0;k<=8;k++){const a=Math.PI*k/8;g.box(T3(Math.cos(a)*1.05,2.4+Math.sin(a)*1.0,0,.4,.36,.5,0,0,a+Math.PI/2),st)}
   g.box(T3(0,1.4,-.12,1.75,2.8,.06),[6,10,12])});
  MODELS.bars=mk(g=>{for(let k=-3;k<=3;k++)g.box(T3(k*.25,1.5,.1,.05,3,.05),[50,50,46]);g.box(T3(0,2.2,.12,1.8,.07,.06),[50,50,46]);g.box(T3(0,.9,.12,1.8,.07,.06),[50,50,46])});
@@ -3303,7 +3376,7 @@ function humAnim(ph,mv,atk,cast,weapon,extra){const s=Math.sin(ph),a={legL:{rx:s
  if(atk>0){const k=1-atk;a.armR.rx=-2.5+k*2.9;a.upper={ry:.5-k*1};}
  if(cast>0){if(weapon==='bow'){a.armL.rx=-1.5;a.armR.rx=-1.4;a.armR.rz=-.6;}else{a.armR.rx=-1.4;a.armL.rx=-1.1;}}
  if(extra)Object.assign(a,extra);return a}
-function drawHum(model,x,z,rot,ph,mv,atk,cast,fl,scale=1,yOff=0,tint=null){const y=groundH(x,z)+yOff;const anim=humAnim(ph,mv,atk,cast,model.weapon);const M=M4.trs(x,y+(anim.bob||0),z,rot,0,0,scale,scale,scale);
+function drawHum(model,x,z,rot,ph,mv,atk,cast,fl,scale=1,yOff=0,tint=null,extra=null){const y=groundH(x,z)+yOff;const anim=humAnim(ph,mv,atk,cast,model.weapon,extra);const M=M4.trs(x,y+(anim.bob||0),z,rot,0,0,scale,scale,scale);
  drawPart(model.root,M,anim,fl,tint)}
 const DEC=[];const SPR=[];
 function decal(x,z,y,sx,sz,rot,kind,col,a,p=0,arc=0){DEC.push([x,y,z,sx,sz,rot,kind,col,a,p,arc])}
@@ -3387,14 +3460,15 @@ function renderWorld(dt){
   if(m.statues){gl.uniform1f(pr.U.uDetail,.45);for(const[sx,sz,sr]of m.statues)if(Math.hypot(sx-CAM.tx,sz-CAM.tz)<30)drawHum(MODELS.statue,sx,sz,sr,0,0,0,0,0,1.35,.4);gl.uniform1f(pr.U.uDetail,0)}
   // player
   if(P&&G.mode==='play'&&!G.bench){const x=P.x*U,z=P.y*U;const fl=P.hurtFlash>0?.35:0;
+   const held=toolHeld();toolShow(MODELS[P.cls],held);
    if(!P.dead){const mdl=MODELS[P.cls],wr=P.eq.weapon?P.eq.weapon.rar:0;if(mdl.glow){const gw=mdl.glow;if(gw.t0===undefined){gw.t0=gw.t;gw.e0=gw.e}if(wr>=2){gw.t=lin(RAR[wr].c);gw.e=2.6+Math.sin(G.time*4)*.6}else{gw.t=gw.t0;gw.e=gw.e0}}
-    if(wr>=2){const hp=handPos(x,z,P.rot,-.25);sprite(hp[0],hp[1],hp[2],.55,.55,RAR[wr].c,.45)}
+    if(wr>=2&&!held){const hp=handPos(x,z,P.rot,-.25);sprite(hp[0],hp[1],hp[2],.55,.55,RAR[wr].c,.45)}
     if(P.cls==='ashcaller'){const gy=groundH(x,z);for(let k=0;k<3;k++){const a=G.time*1.8+k*TAU/3,ox=Math.cos(a)*.55,oz=Math.sin(a)*.55,oy=1.25+Math.sin(G.time*3+k)*.1;drawMesh(MODELS.orb,M4.trs(x+ox,gy+oy,z+oz,0,0,0,.055,.055,.055),3,0,0,lin('#ff9a4a'));sprite(x+ox,gy+oy,z+oz,.35,.35,'#ff8a3a',.7)}}
     if(P.mounted){const ph=P.walk*5.5,sw=Math.sin(ph),mv=P.mv,gy=groundH(x,z);const an={lf:{rx:sw*.8*mv},rb:{rx:sw*.8*mv},rf:{rx:-sw*.8*mv},lb:{rx:-sw*.8*mv},head:{rx:Math.sin(ph*2)*.08*mv},tail:{rx:Math.sin(G.time*3)*.2},body:{y:Math.abs(Math.cos(ph))*.05*mv}};
      const jz=P.jz||0;if(jz>0){an.lf.rx=an.rf.rx=-.9;an.lb.rx=an.rb.rx=.7}drawPart(MODELS.steed.root,M4.trs(x,gy+jz,z,P.rot,0,0,.95,.95,.95),an,fl);drawPart(MODELS[P.cls].root,M4.trs(x,gy+.78+an.body.y+jz,z,P.rot),humAnim(0,0,0,P.castAnim>0?1:0,MODELS[P.cls].weapon,{legL:{rx:-1.35,rz:.45},legR:{rx:-1.35,rz:-.45}}),fl);decal(x,z,gy+.04,.6,1.1,P.rot,0,[0,0,0],.55)}
     else{if(P.rollAnim>0){const gy=groundH(x,z),m2=MODELS[P.cls],k=1-P.rollAnim/.36;drawPart(m2.root,M4.mul(M4.trs(x,gy+.42,z,P.rot,k*TAU),M4.trs(0,-.55,0)),humAnim(0,0,0,0,m2.weapon,{legL:{rx:-1.6},legR:{rx:-1.4},armL:{rx:-1.2},armR:{rx:-1.2},upper:{rx:.6}}),fl);decal(x,z,gy+.04,.45,.45,0,0,[0,0,0],.5)}
      else if(P.jz>0){const gy=groundH(x,z),m2=MODELS[P.cls];drawPart(m2.root,M4.trs(x,gy+P.jz,z,P.rot),humAnim(0,0,0,0,m2.weapon,{legL:{rx:-1.1},legR:{rx:.5},armL:{rx:-.9,rz:.4},armR:{rx:-.6,rz:-.4},capeT:{rx:.9},capeB:{rx:.5}}),fl);decal(x,z,gy+.04,.5-P.jz*.12,.5-P.jz*.12,0,0,[0,0,0],.55-P.jz*.25)}
-     else{drawHum(MODELS[P.cls],x,z,P.rot+(P.spin>0?(0.7-P.spin)*TAU*4.3:0),P.walk*7,P.mv,P.atkAnim>0&&(P.cls==='bulwark'||P.cls==='reaver')?P.atkAnim/.3:0,P.castAnim>0||P.cast?1:0,fl,1);decal(x,z,groundH(x,z)+.04,.5,.5,0,0,[0,0,0],.55)}}
+     else{drawHum(MODELS[P.cls],x,z,P.rot+(P.spin>0?(0.7-P.spin)*TAU*4.3:0),P.walk*7,P.mv,P.atkAnim>0&&(P.cls==='bulwark'||P.cls==='reaver')?P.atkAnim/.3:0,P.castAnim>0||P.cast?1:0,fl,1,0,null,toolAnim(held));decal(x,z,groundH(x,z)+.04,.5,.5,0,0,[0,0,0],.55)}}
     decal(x,z,groundH(x,z)+.045,.62,.62,0,1,[.35,.85,1],.45,.82);
     {const gy=groundH(x,z)+(P.jz||0);if(P.shield>0){const k=Math.min(1,P.shield/(S.maxHp*.25)),pl=1+Math.sin(G.time*5)*.04;sprite(x,gy+.95,z,1.5*pl,1.9*pl,'#ffe6a0',.12+.14*k);decal(x,z,gy+.05,.75,.75,G.time*.8,5,[1,.9,.6],.35+.3*k,.6)}
      if(P.deb)for(const d of P.deb){if(d.k==='stun')for(let k=0;k<3;k++){const a2=G.time*5+k*TAU/3;sprite(x+Math.cos(a2)*.35,gy+2.05,z+Math.sin(a2)*.35,.17,.17,'#ffe070',.95)}else if(d.k==='root')decal(x,z,gy+.05,.8,.8,G.time*.5,5,[.5,.85,.3],.75,.6);else if(d.k==='chill')sprite(x,gy+1,z,1.1,1.7,'#bfe8ff',.16);else if(d.k==='weak')sprite(x,gy+2,z,.45,.45,'#c890ff',.4);else if(d.k==='poison')sprite(x,gy+.9,z,1,1.4,'#8ac040',.1)}
@@ -3726,6 +3800,7 @@ const HINTS=[
  {id:'dodge',when:()=>P.lastHurt!=null&&G.time-P.lastHurt<3,k:()=>`Press ${kbdTag('V')} to dodge roll out of danger. A red marking on the ground means something big is coming.`,p:()=>`Press ${gpg('b')} to dodge roll out of danger. A red marking on the ground means something big is coming.`,t:()=>'Tap the roll button to dodge out of danger. A red marking on the ground means something big is coming.'},
  {id:'talent',when:()=>typeof talentPoints==='function'&&talentPoints()>0,k:()=>`You have a talent point to spend. Press ${kbdTag('K')} and open Talents.`,p:()=>'You have a talent point to spend. Open the menu, then Spells and Talents.',t:()=>'You have a talent point to spend. Open the book, then Spells and Talents.'},
  {id:'mats',when:()=>P.bag.some(x=>x.slot==='mat'),k:()=>'Ore, herbs, wood and hides go to the forge. Any town shop has a Craft tab: choose a profession there, then forge your own gear.',p:null,t:null},
+ {id:'tools',when:()=>P.bag.some(x=>x.slot==='mat')&&!Object.keys(P.tools||{}).length&&P.gold>=TOOLS.price[0],k:()=>'Town shops sell tools. A pick, wood axe or skinning knife makes gathering faster and can bring in more, and a fishing rod makes fish easier to catch.',p:null,t:null},
  {id:'skin',when:()=>(G.skins||[]).some(o=>o.t>0),k:()=>'Beasts can be skinned for hides for a little while after they fall. Walk to the body and use it.',p:null,t:null},
  {id:'fish',when:()=>(G.fishS||[]).some(o=>dist(o.x,o.y,P.x,P.y)<8*TS),k:()=>'Ripples and a red float beside the water mark a fishing spot. Walk up and use it, then reel in while the marker is in the bright zone.',p:null,t:null},
  {id:'bag',when:()=>P.bag.length>=bagCap()-3,k:()=>'Your bag is nearly full. Sell what you do not need at a shop, or keep it in Storage at any town shop.',p:null,t:null}];
@@ -3750,6 +3825,11 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:51,date:'5 Nov 2026',title:'Gathering tools',items:[
+  'Town shops now sell a pick, a wood axe, a skinning knife and a fishing rod. Each town sells the grade for its own zone, from Copper up to Starmetal.',
+  'A pick, axe or knife makes gathering faster. If its grade matches or beats the material, you also get 1 extra each time. Herbs are still picked by hand.',
+  'A fishing rod widens the catch zone by a quarter. If its grade matches or beats the zone, rarer fish bite more often.',
+  'Tools are optional, take no bag space and never wear out. See yours under Bag, Tools. Your hero now uses them when gathering and fishing.']},
  {id:50,date:'5 Nov 2026',title:'Gear level requirements',items:[
   'Gear now has a level requirement, shown on its tooltip: its item level minus 5. If you are too low to equip something, you can still keep it, store it or sell it.',
   'Anything you are already wearing keeps working, and quest rewards are always ones you can wear.']},
@@ -4035,9 +4115,9 @@ function tipHTML(){const tp=G.tip;if(!tp)return'';if(tp.src==='gem')return gemTi
  let btns='';if(tp.src==='bag')btns=`<button class="cbtn" data-act="equip" ${canWear(it)?'':`disabled title="Requires level ${gearReq(it)}"`}>${canWear(it)?'Equip':`Level ${gearReq(it)} to equip`}</button><button class="cbtn ${G.confirm===it.id?'warn':''}" data-act="salvage">${G.confirm===it.id?'Press again':'Sell'} <span class="price">${itemValue(it)}</span><i class="coin"></i></button>`;else btns=`<button class="cbtn" data-act="unequip" ${P.bag.length>=bagCap()?'disabled':''}>Unequip</button>`;
  return`<div class="tipwrap">${itemCard(it,btns,true)}${tp.src==='bag'?cmpCard(it):''}</div>`}
 const ANG={helm:-90,charm:-30,boots:30,weapon:150,chest:180,cloak:-150};
-function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold').textContent=P?P.gold:0;$h('bkGold').parentElement.style.visibility=G.mode==='play'?'':'hidden';let h='',title='';
+function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('book').classList.toggle('side',k==='fish');$h('bkGold').textContent=P?P.gold:0;$h('bkGold').parentElement.style.visibility=G.mode==='play'?'':'hidden';let h='',title='';
  if(k==='bag'){title='Bag';const cap=bagCap(),cells=cap+(cap<BAGMAX?1:0),pages=Math.max(1,Math.ceil(cells/18));G.bagPage=clamp(G.bagPage||0,0,pages-1);const pg=G.bagPage;
-  const gt=G.bagTab==='gem';h=`<div class="tabs"><button class="tab ${gt?'':'on'}" data-act="btab" data-t="item">${svg('bag')}Item</button><button class="tab ${gt?'on':''}" data-act="btab" data-t="gem">${svg('gem')}Gem</button></div>`;if(gt)h+=gemTabHTML();else{h+=`<div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">`;
+  const gt=G.bagTab==='gem',tt=G.bagTab==='tool';h=`<div class="tabs"><button class="tab ${gt||tt?'':'on'}" data-act="btab" data-t="item">${svg('bag')}Item</button><button class="tab ${gt?'on':''}" data-act="btab" data-t="gem">${svg('gem')}Gem</button><button class="tab ${tt?'on':''}" data-act="btab" data-t="tool">${svg('tpick')}Tools</button></div>`;if(gt)h+=gemTabHTML();else if(tt)h+=toolTabHTML();else{h+=`<div class="pad" style="padding-top:10px;padding-bottom:10px"><div class="bgrid">`;
   for(let c=pg*18;c<pg*18+18;c++){if(c<cap){const it=P.bag[c];h+=it?`<button class="islot has" style="--rc:${RAR[it.rar].c}" data-act="selbag" data-idx="${c}" aria-label="${esc(it.name)}">${itemIcon(it)}${better(it)?'<i class="upm">▲</i>':''}${it.slot==='mat'||it.slot==='use'?`<i class="qty">${it.qty}</i>`:''}</button>`:'<div class="islot"></div>'}
    else if(c===cap&&cap<BAGMAX){const pr=bagCost();h+=`<button class="bslot" data-act="bagx" ${P.gold<pr?'disabled style="opacity:.6"':''}><span>+6 slots</span><b>${pr}<i class="coin"></i></b></button>`}else h+='<div></div>'}
   h+=`</div><div class="pager"><button class="parr l" data-act="bpg" data-d="-1" ${pg<=0?'disabled':''} aria-label="Previous page"></button><span>${pg+1} / ${pages}</span><button class="parr r" data-act="bpg" data-d="1" ${pg>=pages-1?'disabled':''} aria-label="Next page"></button>${P.bag.some(x=>x.rar===0&&x.slot!=='mat'&&x.slot!=='use')?'<button class="cbtn side" data-act="salvageCommon" style="font-size:13px;padding:7px 10px">Sell Commons</button>':''}</div><div style="position:absolute;left:16px;bottom:14px;font:700 13px var(--f-num);color:var(--ink2)">${P.bag.length} / ${cap}</div></div>`}}
@@ -4096,7 +4176,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   h+=`<div class="btnrow">${ready?`<button class="gbtn sm gold" data-act="turnin" data-q="${ready.id}">Complete</button>`:av?`<button class="cbtn" data-act="close">Not now</button><button class="gbtn sm" data-act="accept" data-q="${av.id}">Accept</button>`:active&&active.choice&&!active.nodes?`<button class="cbtn" data-act="close">Not yet</button><button class="gbtn sm" data-act="choiceopen" data-q="${active.id}">Answer</button>`:`<button class="cbtn" data-act="close">Farewell</button>`}${n.shop?'<button class="cbtn" data-act="trade">Trade</button>':''}${!ready&&serviceReady(a)?`<button class="gbtn sm" data-act="service" data-k="${a}">${esc(SERVICES[a].label)}</button>`:''}</div>`}
  else if(k==='shop'){const sn=NPCS[a]||NPCS.pell;title=sn.place||`${sn.name.split(' ').pop()}'s Stall`;const tab=G.shopTab||'buy';h=`<div class="tabs"><button class="tab ${tab==='buy'?'on':''}" data-act="shtab" data-t="buy">Buy</button><button class="tab ${tab==='sell'?'on':''}" data-act="shtab" data-t="sell">Sell</button><button class="tab ${tab==='craft'?'on':''}" data-act="shtab" data-t="craft">Craft</button><button class="tab ${tab==='repair'?'on':''}" data-act="shtab" data-t="repair">Repair</button><button class="tab ${tab==='stash'?'on':''}" data-act="shtab" data-t="stash">Storage</button></div>`;
   if(tab==='buy')h+=`<div class="npcbox" style="padding:12px 16px 0;grid-template-columns:72px minmax(0,1fr);align-items:center"><div class="npcport" style="width:72px;height:72px;border-width:3px"><canvas id="npcCan"></canvas></div><div class="npctext"><div class="npcn" style="font-size:21px">${esc(sn.name)} <span class="npct" style="font-size:14px">‹${esc(sn.title)}›</span></div><blockquote style="margin-top:4px;font-size:15px">${esc(sn.idle)}</blockquote></div></div>`;h+=`<div class="pad">${tab==='buy'?'<div class="sgrid">':''}`;
-  if(tab==='buy'){const SL=SHOPLIST(),okF=s=>P.gold>=s.price&&(!s.gear||P.bag.length<bagCap())&&(!s.cons||consRoom(s.cons[0],s.cons[1])>=s.cons[2]);for(const s of SL){if(s.sub)continue;const ok=okF(s),pk=s.pack&&SL.find(x=>x.id===s.pack);h+=`<div class="scard"><div class="sc-t">${esc(s.n)}</div><div class="sc-i"><div class="sk" style="--c:${s.col}"><span class="ic">${svg(s.icon)}</span></div></div><div class="sc-d">${esc(s.d)}</div>${ok?'':`<span class="obar">${P.gold<s.price?"Can't afford":'Bag is full'}</span>`}${pk?`<div class="sc-2"><button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>×1</span><b>${s.price}<i class="coin"></i></b></button><button class="gbar" data-act="buy" data-id="${pk.id}" ${okF(pk)?'':'disabled'}><span>×5</span><b>${pk.price}<i class="coin"></i></b></button></div>`:`<button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>Buy</span><b>${s.price}<i class="coin"></i></b></button>`}</div>`}}
+  if(tab==='buy'){const SL=SHOPLIST(),okF=s=>P.gold>=s.price&&(!s.tool||toolHave(s.tool[0])<s.tool[1])&&(!s.gear||P.bag.length<bagCap())&&(!s.cons||consRoom(s.cons[0],s.cons[1])>=s.cons[2]);for(const s of SL){if(s.sub)continue;const ok=okF(s),pk=s.pack&&SL.find(x=>x.id===s.pack);h+=`<div class="scard"><div class="sc-t">${esc(s.n)}</div><div class="sc-i"><div class="sk" style="--c:${s.col}"><span class="ic">${svg(s.icon)}</span></div></div><div class="sc-d">${esc(s.d)}</div>${ok?'':`<span class="obar">${s.tool&&toolHave(s.tool[0])>=s.tool[1]?'You have this':P.gold<s.price?"Can't afford":'Bag is full'}</span>`}${pk?`<div class="sc-2"><button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>×1</span><b>${s.price}<i class="coin"></i></b></button><button class="gbar" data-act="buy" data-id="${pk.id}" ${okF(pk)?'':'disabled'}><span>×5</span><b>${pk.price}<i class="coin"></i></b></button></div>`:`<button class="gbar" data-act="buy" data-id="${s.id}" ${ok?'':'disabled'}><span>Buy</span><b>${s.price}<i class="coin"></i></b></button>`}</div>`}}
   else if(tab==='craft')h+=craftHTML();
   else if(tab==='repair')h+=repairHTML();
   else if(tab==='stash')h+=stashHTML();
@@ -4113,8 +4193,8 @@ function paintArea(c){const w=c.width=c.offsetWidth*2||300,h=c.height=c.offsetHe
  let g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,P3[0]);g.addColorStop(.6,P3[1]);x.fillStyle=g;x.fillRect(0,0,w,h);
  for(let l=0;l<3;l++){x.fillStyle=P3[2+l];x.beginPath();x.moveTo(0,h);for(let i=0;i<=24;i++){const xx=i/24*w,yy=h*(.45+l*.17)+Math.sin(i*.9+l*3+Rn()*1.5)*h*(.07-l*.015)-(id==='frost'&&l===0?Math.abs(Math.sin(i*.7))*h*.25:0);x.lineTo(xx,yy)}x.lineTo(w,h);x.fill()}
  x.fillStyle='rgba(160,240,255,.85)';x.fillRect(w*.72,h*.32,w*.025,h*.5);const rg=x.createRadialGradient(w*.732,h*.32,0,w*.732,h*.32,h*.3);rg.addColorStop(0,'rgba(200,250,255,.9)');rg.addColorStop(1,'rgba(200,250,255,0)');x.fillStyle=rg;x.fillRect(0,0,w,h)}
-const SHOPLIST=()=>{const fk=zoneFood(G.map&&G.map.id),F=FOODS[fk];return[{id:'food',fid:fk,n:F.n,d:`Restores ${Math.round(F.heal*100)}% health and mana over 10 seconds.${F.fed?' Well Fed: '+F.fd+'.':''}`,price:F.price,icon:'food',col:F.c,cons:['food',fk,1],pack:'food5'},{id:'food5',sub:true,fid:fk,n:F.n+' ×5',d:'',price:Math.round(F.price*4.6),icon:'food',col:F.c,cons:['food',fk,5]},{id:'tonic',n:'Marsh Tonic',d:'Restores 45% health and mana at once.',price:15,icon:'potion',col:'#c0402a',cons:['tonic',null,1],pack:'tonic5'},{id:'tonic5',sub:true,n:'Marsh Tonic ×5',d:'',price:70,icon:'potion',col:'#a0302a',cons:['tonic',null,5]},
- {id:'crate',n:"Pedlar's Crate",d:'One piece of gear at your level, Uncommon or better.',price:crateCost(),icon:'bag',col:'#8a5a2a',gear:true},{id:'cloak',n:"Traveler's Cloak",d:'An Uncommon cloak made for your level.',price:30+Math.round(PL(P.lvl)*8),icon:'cloak',col:'#3a5a9a',gear:true}]};
+const SHOPLIST=()=>{const fk=zoneFood(G.map&&G.map.id),F=FOODS[fk],tg=AREAG[G.map&&G.map.id]||1;return[{id:'food',fid:fk,n:F.n,d:`Restores ${Math.round(F.heal*100)}% health and mana over 10 seconds.${F.fed?' Well Fed: '+F.fd+'.':''}`,price:F.price,icon:'food',col:F.c,cons:['food',fk,1],pack:'food5'},{id:'food5',sub:true,fid:fk,n:F.n+' ×5',d:'',price:Math.round(F.price*4.6),icon:'food',col:F.c,cons:['food',fk,5]},{id:'tonic',n:'Marsh Tonic',d:'Restores 45% health and mana at once.',price:15,icon:'potion',col:'#c0402a',cons:['tonic',null,1],pack:'tonic5'},{id:'tonic5',sub:true,n:'Marsh Tonic ×5',d:'',price:70,icon:'potion',col:'#a0302a',cons:['tonic',null,5]},
+ {id:'crate',n:"Pedlar's Crate",d:'One piece of gear at your level, Uncommon or better.',price:crateCost(),icon:'bag',col:'#8a5a2a',gear:true},{id:'cloak',n:"Traveler's Cloak",d:'An Uncommon cloak made for your level.',price:30+Math.round(PL(P.lvl)*8),icon:'cloak',col:'#3a5a9a',gear:true},...Object.keys(TOOLS.kinds).map(k=>({id:'tool_'+k,tool:[k,tg],n:toolName(k,tg),d:TOOLS.kinds[k].d,price:TOOLS.price[tg-1],icon:TOOLS.kinds[k].icon,col:RESF.ore.c[tg-1]}))]};
 $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){closePanel();return}if(t.classList&&t.classList.contains('tipwrap')){G.tip=null;G.confirm=null;renderPanel();return}
  const nb=t.closest('[data-nav]');if(nb){openPanel(nb.dataset.nav);return}const b=t.closest('[data-act]');if(!b||b.disabled)return;const act=b.dataset.act;
  if(act==='close')return closePanel();if(act==='respawn')return respawn();if(act==='tipclose'){G.tip=null;G.confirm=null}
@@ -4154,7 +4234,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='turnin'){const q=QUESTS.find(x=>x.id===b.dataset.q);P.q[q.id].s='done';P.gold+=q.gold;if(q.potions)giveCons('tonic',null,q.potions);
   {const pk=qPick(q);if(pk&&pk.item){const it=rollItem(Math.max(P.lvl,q.lv),0,pk.item.slot,pk.item.rar);if(!addToBag(it))dropItem(P.x,P.y+20,it);toast(`Reward: <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`)}}if(q.item){const it=rollItem(Math.max(P.lvl,q.lv),0,q.item.slot,q.item.rar);if(!addToBag(it))dropItem(P.x,P.y+20,it);toast(`Reward: <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`)}
   gainXP(q.xp);toast(`Quest complete: <b>${esc(q.title)}</b>`,'q');sfx('lvl',.6);refreshQuestWorld();updateTracker();save();if(q.id==='q5')toast('Hollowmere is safe. The abbey can be cleared again for more gear.','lvl');return closePanel()}
- if(act==='buy'){const s=SHOPLIST().find(x=>x.id===b.dataset.id);if(s&&P.gold>=s.price){if(s.gear&&P.bag.length>=bagCap())return;if(s.cons&&consRoom(s.cons[0],s.cons[1])<s.cons[2])return;P.gold-=s.price;
+ if(act==='buy'){const s=SHOPLIST().find(x=>x.id===b.dataset.id);if(s&&s.tool)toolBuy(s.tool[0],s.tool[1]);else if(s&&P.gold>=s.price){if(s.gear&&P.bag.length>=bagCap())return;if(s.cons&&consRoom(s.cons[0],s.cons[1])<s.cons[2])return;P.gold-=s.price;
    if(s.cons){addCons(...s.cons);sfx('loot');toast(`Bought <b>${esc(s.n)}</b>`)}else{const it=s.id==='cloak'?rollItem(P.lvl,0,'cloak',1):rollItem(P.lvl,1);addToBag(it);toast(`Bought <b style="color:${RAR[it.rar].c}">${esc(it.name)}</b>`)}save()}}
  if(act==='travel'){const id=b.dataset.id;closePanel();P.auto=false;P.cast={i:-2,t:0,max:1.6,name:'Teleporting to '+AREAS[id].town,dest:id};G.fx.push({k:'pillar',x:P.x,y:P.y,c:'#9ff0ff',t:0,max:1.6});return}
  if(act==='sellsel'){G.sellSel=+b.dataset.idx;G.confirm=null}
@@ -4291,7 +4371,7 @@ function pollPad(dt){if(!navigator.getGamepads)return;const all=navigator.getGam
 addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=input.right=0;camKeys.left=camKeys.right=0;releaseLook()});
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
-function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else if(n.kind==='fish'){dismount();P.auto=false;fishStart(n.o)}else if(n.kind==='skin'){dismount();P.auto=false;P.cast={i:-6,t:0,max:1.2,name:'Skinning the '+n.o.name,skin:n.o};sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
+function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:toolTime(n.o.fam,1.6),name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};toolFace(toolKind(n.o.fam),n.o.x,n.o.y);sfx('cast')}else if(n.kind==='fish'){dismount();P.auto=false;fishStart(n.o)}else if(n.kind==='skin'){dismount();P.auto=false;P.cast={i:-6,t:0,max:toolTime('hide',1.2),name:'Skinning the '+n.o.name,skin:n.o};toolFace('knife',n.o.x,n.o.y);sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
 const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
 function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
@@ -4351,7 +4431,7 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,petOff:!!P.petOff,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,tools:P.tools||{},petOff:!!P.petOff,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
@@ -4369,7 +4449,7 @@ function freeSlot(){for(let i=0;i<HEROSLOTS;i++)if(!slotRaw(i))return i;return -
 function anySave(){for(let i=0;i<HEROSLOTS;i++)if(slotRaw(i))return true;return false}
 function useSlot(i){curSlot=i;try{localStorage.setItem(LASTKEY,String(i))}catch(_){}}
 /* ---- Hero files: export and import. The check catches damage and casual edits; it isn't anti-cheat. ---- */
-const HEROFIELDS=['v','prof','profXp','gems','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
+const HEROFIELDS=['v','tools','prof','profXp','gems','map','bagMax','name','cls','lvl','xp','gold','bag','eq','tal','q','bosses','nid','x','y'];
 function heroCheck(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(16)}
 function heroFileText(d){const hero={};for(const k of HEROFIELDS)if(d[k]!==undefined)hero[k]=d[k];return JSON.stringify({game:'wardens-of-veylmoor',format:1,exported:new Date().toISOString(),check:heroCheck(JSON.stringify(hero)),hero})}
 function heroSafe(o,depth=0){if(depth>8)return false;if(typeof o==='string')return o.length<=300&&!/[<>]/.test(o);if(typeof o==='number')return Number.isFinite(o);if(o===null||typeof o==='boolean')return true;if(typeof o!=='object')return false;for(const k of Object.keys(o)){if(k==='__proto__'||k==='constructor'||k==='prototype'||!heroSafe(k,depth+1)||!heroSafe(o[k],depth+1))return false}return true}
@@ -4417,7 +4497,7 @@ $('#title').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if
  if(b.dataset.t==='del'&&si>=0){if(!titleConfirm){titleConfirm=true;renderTitle();return}try{localStorage.removeItem(slotKey(si))}catch(_){}titleSel=null;titleConfirm=false;renderTitle();return}
  if(b.dataset.t==='play'){if(si>=0){const sv=readSlot(si);if(sv){useSlot(si);loadSave(sv)}return}const k=titleModelKey();startNew(k,(nameDraft[k]||'').trim()||pick(NAMES[k]))}});
 function startNew(cls,name){const free=freeSlot();if(free<0)return false;useSlot(free);P=newPlayer(cls);P.name=name||pick(NAMES[cls]);CLS=CLASSES[cls];S=null;P.eq.weapon=rollItem(1,0,'weapon',0);P.eq.chest=rollItem(1,0,'chest',0);migratePotions();addCons('food','loaf',2);recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay(null);toast('Speak with <b>Elder Marwen</b> in the village square.','q');if(canBlockCls())later(7,()=>toast('Tap dodge to roll. <b>Hold it to raise your shield</b> and block.','q'))}
-function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);if(!P.moon||typeof P.moon!=='object')P.moon={};storyS();P.stash=Array.isArray(P.stash)?P.stash.filter(x=>x&&typeof x==='object').map(migrateItem):[];P.stashMax=clamp(+P.stashMax||STASH.start,STASH.start,STASH.max);achS();if(P.ach.title&&!P.ach.got[P.ach.title])P.ach.title=null;achCheck(true);P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);if(!webValid(P.cls,P.tal)){const had=Object.keys(P.tal||{}).length;P.tal={};if(had)later(1.5,()=>toast('The talent web is new. Your talent points are back to spend in Spells.','lvl'))}P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;migratePotions();P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
+function loadSave(d){if(!CLASSES[d.cls])return;P=Object.assign(newPlayer(d.cls),d);P.tools=toolsClean(P.tools);if(!P.moon||typeof P.moon!=='object')P.moon={};storyS();P.stash=Array.isArray(P.stash)?P.stash.filter(x=>x&&typeof x==='object').map(migrateItem):[];P.stashMax=clamp(+P.stashMax||STASH.start,STASH.start,STASH.max);achS();if(P.ach.title&&!P.ach.got[P.ach.title])P.ach.title=null;achCheck(true);P.bag=(P.bag||[]).map(migrateItem);for(const k in P.eq)migrateItem(P.eq[k]);P.st=100;P.iframes=0;P.rollAnim=0;P.sprint=false;P.cds=[0,0,0,0,0,0];P.cdMax=[1,1,1,1,1,1];P.buffs=[];P.dead=false;P.mounted=false;P.cast=null;P.auto=false;if(!P.name)P.name=pick(NAMES[P.cls]);if(!webValid(P.cls,P.tal)){const had=Object.keys(P.tal||{}).length;P.tal={};if(had)later(1.5,()=>toast('The talent web is new. Your talent points are back to spend in Spells.','lvl'))}P.bosses=Object.assign({},d.bosses||{});if(P.q.q5&&P.q.q5.s==='done')P.bosses.vale=true;if(P.lvl>MAXL)P.lvl=MAXL;migratePotions();P.bagMax=Math.max(d.bagMax||18,Math.ceil(P.bag.length/6)*6);CLS=CLASSES[P.cls];S=null;recalc(false);P.hp=S.maxHp;P.mp=S.maxMp;P.st=S.maxSt;beginPlay({x:d.x,y:d.y},d.map)}
 function beginPlay(pos,mid){if(!BUILD[mid])mid='vale';G.mode='play';$('#title').hidden=true;$h('hud').hidden=false;setupButtons();restStick();CAM.zoom=OPT.camD||1;CAM.pitchAdj=0;titleConfirm=false;
  if(!G.maps[mid])G.maps[mid]=BUILD[mid]();const mm=G.maps[mid];let p=pos||mm.start;if(mm.solidAt(p.x,p.y))p=mm.start;enterMap(mid,p);save();$h('camHint').classList.remove('off');setTimeout(()=>$h('camHint').classList.add('off'),6000)}
 function toTitle(){closePanel(true);G.mode='title';$h('hud').hidden=true;G.map=G.maps.vale;G.enemies=[];G.projs=[];G.loot=[];G.areas=[];G.tele=[];G.fx=[];G.boss=null;G.tgt=null;titleSel=null;titleConfirm=false;snapCam();renderTitle()}
@@ -4514,7 +4594,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
