@@ -831,6 +831,14 @@ await test('Storage grows for gold, belongs to one hero, and survives saving', (
   const old=JSON.parse(JSON.stringify(d));delete old.stash;delete old.stashMax;V.loadSave(old);if(V.stashS().length!==0||V.stashCap()!==V.STASH.start)bad.push('an old save has the wrong storage');const junk=JSON.parse(JSON.stringify(d));junk.stash='x';junk.stashMax=9999;V.loadSave(junk);if(!Array.isArray(V.P.stash)||V.stashCap()>V.STASH.max)bad.push('damaged storage was kept');
   V.loadSave(d);V.startNew('bulwark','Second');if(V.stashS().length)bad.push('a new hero sees another hero\\'s storage');return bad}`));
 
+// Campaign milestones (11.c).
+await reset();
+await test('Campaign milestones stay hidden until earned, then show and give a title', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('reaver','Tester');const hid=V.ACH.filter(a=>a.hidden);if(hid.length<2)bad.push(hid.length+' hidden achievements');
+  V.openPanel('char');document.querySelector('#book [data-act="ctab"][data-t="ach"]').click();let txt=document.querySelector('#book').innerText;for(const a of hid){if(txt.includes(a.n))bad.push(a.id+' name shows before it is earned');if(txt.includes(a.d))bad.push(a.id+' text shows before it is earned')}if(!/\\?\\?\\?/.test(txt))bad.push('no hidden entries shown');V.closePanel(true);
+  V.storyS().f.vorgath=1;const got=V.achCheck(false);if(!got.some(a=>a.id==='story_end'))bad.push('the standard ending did not unlock its achievement');if(got.some(a=>a.id==='story_secret'))bad.push('the secret milestone unlocked without the secret ending');
+  V.openPanel('char');document.querySelector('#book [data-act="ctab"][data-t="ach"]').click();txt=document.querySelector('#book').innerText;if(!txt.includes('The Last Seal'))bad.push('the earned milestone is still hidden');const tb=document.querySelector('#book [data-act="achtitle"][data-k="story_end"]');if(!tb)bad.push('no title for finishing the campaign');V.closePanel(true);
+  const d=JSON.parse(JSON.stringify(V.serialize()));delete d.ach;V.loadSave(d);if(!V.achS().got.story_end)bad.push('an old hero who finished was not credited');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

@@ -9,7 +9,7 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - The Reaver builds Fury and the Lumen builds Light, spent on skills for up to 50% more damage or healing
 - Gems from bosses and elites to fuse and set in sockets
 - Day and night, weather, and a moon that runs through its phases every 28 hours, with shadow-filled new moons, moonlit elites at full moon, and Warden markings and relic caches on the quarter moons
-- 32 achievements, some giving a title to show under your name
+- 34 achievements, two of them hidden, some giving a title to show under your name
 - Ore, herbs, crystals and wood to gather and beasts to skin for hides, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - Fishing in every zone, with a common, an uncommon and a rare fish in each
 - Storage for each hero at every town shop
