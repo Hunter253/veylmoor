@@ -850,6 +850,16 @@ await test('Tips show once each, in the right words for the controls, and can be
   G.optTab='av';V.openPanel('options');const r=document.querySelector('#book [data-act="tipsreset"]');if(!r)bad.push('no reset button in Options');else{O.hintsSeen={move:1};r.click();if(Object.keys(V.hintSeen()).length)bad.push('reset did not clear the tips')}if(!/Tips for new players/.test(document.querySelector('#book').innerText))bad.push('no tips switch in Options');V.closePanel(true);
   V.openPanel('quests');O.hintsSeen={};run(4);if(el()&&!el().hidden)bad.push('a tip showed over a menu');V.closePanel(true);return bad}`));
 
+// Accessibility settings (30.b).
+await reset();
+await test('Text size grows menus and messages, and effect intensity cuts particles, flashes and specks', () => ev(`()=>{const V=window.__veyl,G=V.G,O=V.OPT,bad=[];V.startNew('ashcaller','Tester');G.enemies=[];V.closePanel(true);
+  const parts=k=>{O.fxLvl=k;G.parts=[];V.burst(V.P.x,V.P.y,'#fff',20);V.spark(V.P.x,V.P.y,'#fff',20);V.rise(V.P.x,V.P.y,'#fff',20);return G.parts.length};const full=parts(1),red=parts(.6),min=parts(.3);if(!(full===60&&red<full&&min<red&&min>=3))bad.push('particles '+[full,red,min]);for(const f of ['burst','spark','rise']){O.fxLvl=.3;G.parts=[];V[f](V.P.x,V.P.y,'#fff',20);if(G.parts.length!==6)bad.push(f+' made '+G.parts.length+' of 20 at Minimal')}
+  O.fxLvl=.3;G.parts=[];V.burst(V.P.x,V.P.y,'#fff',1);if(G.parts.length!==1)bad.push('a single spark vanished at Minimal');O.fxLvl=null;
+  G.optTab='av';V.openPanel('options');const t=document.querySelector('#book').innerText;if(!/Text size/.test(t)||!/Effect intensity/.test(t))bad.push('the settings are not in Options');const b=document.querySelector('#book [data-act="oseg"][data-k="textSize"][data-v="1.3"]');if(!b)bad.push('no Larger text button');else b.click();
+  const ts=getComputedStyle(document.documentElement).getPropertyValue('--ts').trim();if(ts!=='1.3')bad.push('text size did not apply: '+ts);const z=getComputedStyle(document.getElementById('bkMain')).zoom;if(String(z)!=='1.3')bad.push('the menu did not grow: '+z);
+  const n=document.querySelector('#book [data-act="oseg"][data-k="textSize"][data-v="1"]');if(n)n.click();if(getComputedStyle(document.documentElement).getPropertyValue('--ts').trim()!=='1')bad.push('text did not return to normal');V.closePanel(true);
+  O.textSize=9;V.applyText();if(getComputedStyle(document.documentElement).getPropertyValue('--ts').trim()!=='1.4')bad.push('a huge stored text size was not capped');O.textSize=1;V.applyText();return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
