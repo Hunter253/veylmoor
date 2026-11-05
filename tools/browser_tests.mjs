@@ -987,6 +987,17 @@ await test('Rare and better gear rolls penetration as a number, and monster armo
   return bad;
 });
 
+// Gear level requirements (9.b).
+await reset();
+await test('Gear needs its item level minus 5, and never less than level 1', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const R=V.gearReq;for(const[il,want]of[[1,1],[5,1],[6,1],[7,2],[20,15],[35,30],[51,46]])if(R({ilvl:il})!==want)bad.push('item level '+il+' needs '+R({ilvl:il}));if(R({})!==1)bad.push('an item with no level needs '+R({}));return bad}`));
+
+await test('You cannot equip gear above your level until you reach it', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P;P.lvl=20;V.recalc(false);const it=V.rollItem(30,0,'helm',2);P.eq.helm=null;P.bag=[it];const before=V.S.arm;if(V.equipFromBag(0)!==false)bad.push('equipping was not refused');if(P.eq.helm)bad.push('the item went on');if(P.bag[0]!==it)bad.push('the item left the bag');if(V.S.arm!==before)bad.push('its stats applied');
+  const tip=V.itemCard(it,'');if(!/Requires level 25/.test(tip))bad.push('no requirement on the tooltip');P.lvl=25;V.recalc(false);if(V.equipFromBag(0)!==true)bad.push('equipping failed at the required level');if(P.eq.helm!==it)bad.push('the item did not go on');if(P.bag.includes(it))bad.push('the item stayed in the bag');
+  const a=V.rollItem(10,0,'boots',1),b=V.rollItem(12,0,'boots',1);P.eq.boots=a;P.bag=[b];V.equipFromBag(0);if(P.eq.boots!==b||P.bag[0]!==a)bad.push('the old item did not swap back');if(V.equipFromBag(9)!==null)bad.push('an empty bag slot was not ignored');return bad}`));
+
+await test('Quest rewards and shop gear can be worn, and worn gear and old saves keep working', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Tester');const P=V.P;for(const lv of[1,5,10,20,30,45]){P.lvl=lv;const early=V.rollItem(Math.max(P.lvl,lv+4),0,'cloak',2);if(!V.canWear(early))bad.push('a quest taken 4 levels early at level '+lv+' gave unwearable gear');const boss=V.rollItem(lv+5,3,'helm',3);if(!V.canWear(boss))bad.push('a boss 4 levels up at level '+lv+' dropped unwearable gear');if(!V.canWear(V.rollItem(P.lvl,1)))bad.push('shop gear at level '+lv+' cannot be worn')}
+  P.lvl=10;const big=V.rollItem(50,0,'helm',3);big.st={arm:500};P.eq.helm=big;V.recalc(false);const arm=V.S.arm;if(arm<500)bad.push('worn gear above the requirement stopped working');const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);V.recalc(false);if(!V.P.eq.helm)bad.push('loading removed worn gear');if(V.S.arm!==arm)bad.push('loading changed its stats');if(V.serialize().v!==d.v)bad.push('the save version changed');return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
