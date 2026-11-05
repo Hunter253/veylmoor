@@ -14,9 +14,16 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>html,body{margin:0;height:100%;background:#120c06}</style>
 <title>Wardens of Veylmoor</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700&family=Alegreya+Sans:wght@700;800&family=IM+Fell+English+SC&family=Marcellus&display=swap">
+<style>
+/* Fonts are served from this site (fonts/, SIL Open Font License; see fonts/LICENSE-*.txt), so no font request leaves for another company and they work offline. Latin subset, the same weights the game used from Google Fonts. */
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/alegreya-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/alegreya-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-sans-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/alegreya-sans-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'IM Fell English SC';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/im-fell-english-sc-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Marcellus';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/marcellus-latin-400-normal.woff2) format('woff2')}
+</style>
 <style>
 /* Layout: full-bleed 3D world under a 2D label layer. HUD follows the classic mobile-MMO arrangement: portraits top-left, compass and menu top-right, vertical skill bar right, joystick bottom-left. Menus open as a parchment book. Single deliberate theme. */
 :root{
@@ -254,7 +261,8 @@ kbd{display:none}#app.kbm kbd{display:block}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;padding:14px 16px 18px}
 .optlist{display:grid;gap:8px;max-width:680px;margin:0 auto}
 .optrow{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 14px;border-radius:8px;background:rgba(255,250,236,.55);border:1px solid rgba(120,80,30,.3)}
-.optrow b{font:400 17px var(--f-ui);display:block}.optrow span{font-size:13.5px;color:var(--ink2)}
+.optrow b{font:400 17px var(--f-ui);display:block}
+.optbtns{display:flex;gap:6px;flex-shrink:0}.optrow span{font-size:13.5px;color:var(--ink2)}
 .seg{display:flex;gap:4px;flex:none}
 .tog.on,.segb.on{background:linear-gradient(#a6e85a,#4aa632);color:#fff;border-color:#2f6a1a;text-shadow:0 1px 1px rgba(0,0,0,.5)}
 .deadbox{padding:22px;display:grid;gap:12px;text-align:center}
@@ -3669,6 +3677,9 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:45,date:'4 Nov 2026',title:'Privacy and terms',items:[
+  'A Privacy page and a Terms page are in Options, then Game. In short: your heroes and settings stay on your device, and there are no ads, analytics or tracking.',
+  'The game\'s lettering now loads from the game itself instead of Google, so it also looks right offline.']},
  {id:44,date:'4 Nov 2026',title:'Auroras and glowing plants',items:[
   'On clear nights, green and violet auroras ripple across the sky over Frostfang Reach. Snow and cloud hide them.',
   'After dark, the flowers and bog plants of Gloamwood glow softly. Effect intensity in Options turns the glow down too.']},
@@ -3986,7 +3997,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)+tg('tips','Tips for new players','A short tip the first time you meet something new. Each one shows once.',true)+`<div class="optrow"><div><b>See the tips again</b><span>Show every tip again, from the start.</span></div><button class="cbtn" data-act="tipsreset">Reset tips</button></div>`}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
-   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
+   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Privacy and terms</b><span>What the game stores (only on this device) and the rules for playing.</span></div><div class="optbtns"><button class="cbtn" data-act="page" data-page="privacy.html">Privacy</button> <button class="cbtn" data-act="page" data-page="terms.html">Terms</button></div></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
   h+='</div>'}
  else if(k==='npc'){const n=NPCS[a];title=n.name;const ready=QUESTS.find(q=>qTurn(q)===a&&P.q[q.id]&&P.q[q.id].s==='ready'),active=QUESTS.find(q=>q.giver===a&&P.q[q.id]&&P.q[q.id].s==='active'),av=QUESTS.find(q=>q.giver===a&&qAvail(q));
   const say=ready?qDoneText(ready):av?av.offer:active?active.wait:SERVICES[a]&&SERVICES[a].when()?SERVICES[a].idle:n.idle;
@@ -4038,7 +4049,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='wsel'){if(G.webSel===b.dataset.id&&webCan(b.dataset.id))webLearn(b.dataset.id);else G.webSel=b.dataset.id;G.confirm=null}
  if(act==='wlearn')webLearn(b.dataset.id);
  if(act==='respec'){if(G.confirm!=='respec')G.confirm='respec';else{P.tal={};G.confirm=null;recalc();updateBadges();save();toast('Talents reset. Every point is back to spend.')}}
- if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
  if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='textSize')applyText();if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}

@@ -12,7 +12,7 @@ const BROWSER = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Pr
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(p => fs.existsSync(p));
 if (!BROWSER) { console.error('Chrome or Edge is needed to run the tests.'); process.exit(2); }
 
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webmanifest': 'application/json' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webmanifest': 'application/json', '.woff2': 'font/woff2', '.txt': 'text/plain' };
 const server = http.createServer((q, r) => {
   const p = decodeURIComponent(new URL(q.url, 'http://x').pathname);
   const f = path.join(ROOT, p === '/' ? 'index.html' : p);
@@ -892,6 +892,25 @@ await test('Auroras light the Frostfang night, and Gloamwood plants glow after d
   V.enterMap('gloam');const o=V.glowSpots(G.map)[0];V.CAM.tx=o.x;V.CAM.tz=o.z;T.time='night';const n1=V.drawGlowPlants(G.map,V.sceneEnv());if(!(n1>0))bad.push('no plants glow at night');T.time='day';if(V.drawGlowPlants(G.map,V.sceneEnv())!==0)bad.push('plants glow by day');
   T.time='night';V.OPT.fxLvl=.3;const n2=V.drawGlowPlants(G.map,V.sceneEnv());if(n1>=10&&!(n2<n1))bad.push('Minimal effects did not cut the glow');V.OPT.fxLvl=null;
   for(const id of ['frost','gloam']){V.enterMap(id);await new Promise(r=>setTimeout(r,1500))}T.time=null;T.weather=null;V.enterMap('vale',G.maps.vale.start);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
+// Privacy, terms and self-hosted fonts (21.d).
+await reset();
+await test('Privacy and Terms open from Options, the pages load, and fonts come only from the game itself', async () => {
+  const bad = await ev(`async()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('lumen','Tester');const got=[];const o=window.open;window.open=u=>{got.push(u);return null};
+   G.optTab='game';V.openPanel('options');for(const pg of ['privacy.html','terms.html']){const b=document.querySelector('#book [data-act="page"][data-page="'+pg+'"]');if(!b)bad.push('no button for '+pg);else b.click()}window.open=o;V.closePanel(true);if(got.join()!=='privacy.html,terms.html')bad.push('opened '+got.join());
+   for(const [pg,must] of [['privacy.html',['Hunter Bourgoin','wardensofveylmoor@gmail.com','Netlify','GitHub','Delete','terms.html']],['terms.html',['Hunter Bourgoin','Free to play','Play fair','privacy.html','Open Font License']]]){const r=await fetch(pg,{cache:'no-store'});if(!r.ok){bad.push(pg+' answered '+r.status);continue}const t=await r.text();for(const w of must)if(!t.includes(w))bad.push(pg+' does not mention '+w);if(!t.includes('href="./"'))bad.push(pg+' has no way back to the game');if(/googleapis|gstatic/.test(t))bad.push(pg+' loads from Google')}
+   const fams=[['400 16px Alegreya','Alegreya'],['500 16px Alegreya','Alegreya 500'],['700 16px Alegreya','Alegreya 700'],['700 16px "Alegreya Sans"','Alegreya Sans 700'],['800 16px "Alegreya Sans"','Alegreya Sans 800'],['16px "IM Fell English SC"','IM Fell'],['16px Marcellus','Marcellus']];
+   for(const [f,n] of fams){try{const l=await document.fonts.load(f,'Veylmoor');if(!l.length||l.some(x=>x.status!=='loaded'))bad.push(n+' did not load')}catch(x){bad.push(n+' did not load: '+x.message)}}
+   if(document.querySelector('link[href*="googleapis"],link[href*="gstatic"]'))bad.push('a Google Fonts link is still on the page');
+   const away=performance.getEntriesByType('resource').map(e=>e.name).filter(u=>!u.startsWith(location.origin)&&!u.startsWith('data:')&&!u.startsWith('blob:'));if(away.length)bad.push('requests left the site: '+away.slice(0,3).join(' '));return bad}`);
+  const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+  const core = JSON.parse(sw.slice(sw.indexOf('['), sw.indexOf('];') + 1).replace(/'/g, '"'));
+  for (const f of core) if (f !== './' && !fs.existsSync(path.join(ROOT, f))) bad.push('the offline list names a missing file ' + f);
+  for (const f of ['privacy.html', 'terms.html']) if (!core.includes(f)) bad.push(f + ' is not kept for offline play');
+  if (core.filter(f => f.startsWith('fonts/')).length !== 7) bad.push('the offline list does not hold all seven fonts');
+  for (const fam of ['alegreya', 'alegreya-sans', 'im-fell-english-sc', 'marcellus']) if (!fs.existsSync(path.join(ROOT, 'fonts', 'LICENSE-' + fam + '.txt'))) bad.push('no licence for ' + fam);
+  return bad;
+});
 
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
