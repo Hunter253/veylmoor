@@ -2083,7 +2083,7 @@ function moveEnt(o,dx,dy,r){const m=G.map;if(dx&&!blocked(m,o.x+dx,o.y,r))o.x+=d
 function update(dt){
  G.time+=dt;wearTick(dt);hintTick(dt);if(G.skins)for(const o of G.skins)o.t-=dt;if(G.fishS)for(const o of G.fishS)if(o.t>0)o.t-=dt;moonTick(dt);achTick(dt);storyTick(dt);
  for(let k=G.timers.length-1;k>=0;k--){const t=G.timers[k];t.t-=dt;if(t.t<=0){G.timers.splice(k,1);t.fn()}}
- updatePlayer(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
+ updatePlayer(dt);catTick(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
  for(let k=G.tele.length-1;k>=0;k--){const t=G.tele[k];t.t+=dt;if(t.t>=t.max){G.tele.splice(k,1);t.cb()}}
  updateLoot(dt);
  for(const f of G.fx)f.t+=dt;G.fx=G.fx.filter(f=>f.t<f.max);
@@ -3008,6 +3008,62 @@ function wraithModel(){const c=[150,172,190];const root=part('root',null);
  body.k.push(part('eyes',mk(g=>{for(const s of[-1,1])g.sphere(T3(s*.05,1.56,.15,.022,.022,.015),[255,255,255],5,4)}),[0,0,0],{e:4,t:'#cfe8ff'}));
  const armR=part('armR',mk(g=>{g.cyl(T3(0,-.5,0,1,.5,1),c,6,.03,.06);g.cyl(T3(0,-.75,0,1,.2,1),[190,150,70],8,.12,.05)}),[-.25,1.3,0],{r:[-.5,0,-.3],sp:1});
  root.k.push(body,armR);return{root,kind:'wraith'}}
+/* Warden Tabby, the hero's cat (cosmetic). Adapted from the Gemini design to the game's own shapes and trimmed for phones:
+   about 2,700 triangles in 13 parts instead of 12,600 in 245 pieces. Faces +z, stands on y=0, drawn at CAT.sc. */
+function catModel(){const brown=[146,104,64],tawny=[184,136,86],black=[44,34,26],white=[246,244,238],pink=[222,138,150],earP=[196,122,132],green=[118,214,80],leather=[86,44,22],brass=[214,170,60];
+ const cone=(g,b,d,len,rad,col,seg=4)=>{const l=Math.hypot(d[0],d[1],d[2])||1,dx=d[0]/l,dy=d[1]/l,dz=d[2]/l;g.cyl(T3(b[0],b[1],b[2],1,len,1,Math.atan2(dx,dz),Math.acos(clamp(dy,-1,1)),0),col,seg,rad,0)};
+ const H=[0,.47,-.22],at=(o,x,y,z)=>[x-o[0],y-o[1],z-o[2]];
+ const root=part('root',null);
+ const body=part('body',mk(g=>{const S=(x,y,z,a,b,c,col,s=9,r=7)=>{const p=at(H,x,y,z);g.sphere(T3(p[0],p[1],p[2],a,b,c),col,s,r)};
+  S(0,.50,.18,.27,.26,.30,brown);S(0,.50,-.02,.25,.24,.34,brown);S(0,.51,-.27,.28,.27,.28,brown);S(0,.36,0,.21,.14,.36,white,8,5);S(0,.64,-.04,.19,.12,.42,black,8,5);
+  for(const sd of[-1,1]){for(let k=0;k<4;k++){const p=at(H,sd*.235,.53,.14-k*.13);g.box(T3(p[0],p[1],p[2],.03,.24,.05,0,0,sd*.25),black)}
+   for(let r=0;r<2;r++)for(let c=0;c<3;c++)cone(g,at(H,sd*(.22-r*.02),.46-r*.08,.1-c*.16),[sd*.9,-.5,-.45],.12,.065,(r+c)%2?tawny:brown)}
+  S(0,.52,.36,.26,.25,.17,white,8,6);
+  for(const[n,y,rad,len]of[[7,.5,.21,.14],[5,.4,.16,.15]])for(let i=0;i<n;i++){const a=(i/(n-1)-.5)*2.6;cone(g,at(H,Math.sin(a)*rad,y,.4+Math.cos(a)*.07),[Math.sin(a)*.7,-.65,.55+Math.cos(a)*.3],len,.06,white)}
+  const p=at(H,0,.63,.36),Mc=T3(p[0],p[1],p[2],1,1,1,0,.6,0);g.torus(Mc,leather,.2,.03,14,4);
+  for(let k=0;k<8;k++){const a=k/8*TAU+TAU/16;if(Math.sin(a)>.6)continue;g.box(M4.mul(Mc,T3(Math.cos(a)*.226,0,Math.sin(a)*.226,.026,.026,.026,-a)),brass)}
+  const c=at(H,0,.46,.56);g.ico(T3(c[0],c[1],c[2],.06,.085,.022,0,-.35),brass,0,R,0,0);g.ico(T3(c[0],c[1]+.002,c[2]+.008,.05,.072,.02,0,-.35),black,0,R,0,0);
+  cone(g,at(H,0,.495,.545),[0,-.5,.3],.06,.016,brass,4)}),H);
+ body.k.push(part('rune',mk(g=>{const c=at(H,0,.46,.584),B=(x,y,w,h,rz)=>g.box(T3(c[0]+x,c[1]+y,c[2],w,h,.01,0,-.35,rz),[220,255,255]);B(-.014,0,.012,.075,0);B(.003,.026,.032,.011,-.35);B(.003,.004,.032,.011,.35);B(.006,-.02,.036,.011,-.75)}),[0,0,0],{e:2.4,t:'#47f8ff'}));
+ const N=[0,.66,.42],C=[0,.85,.48],hp=(x,y,z)=>at(N,C[0]+x,C[1]+y,C[2]+z);
+ const head=part('head',mk(g=>{const S=(p,a,b,c,col,s,r)=>g.sphere(T3(p[0],p[1],p[2],a,b,c),col,s,r);
+  S(hp(0,0,0),.25,.22,.23,brown,10,8);
+  for(const sd of[-1,1]){let p=hp(sd*.04,.12,.185);g.box(T3(p[0],p[1],p[2],.025,.11,.06,0,-.45,-sd*.18),black);p=hp(sd*.095,.11,.165);g.box(T3(p[0],p[1],p[2],.028,.12,.07,0,-.45,sd*.25),black);
+   for(const[y,rz]of[[.01,-.2],[-.04,-.32]]){p=hp(sd*.19,y,.12);g.box(T3(p[0],p[1],p[2],.11,.022,.05,sd*.6,0,sd*rz),black)}
+   for(let j=0;j<3;j++)cone(g,hp(sd*(.19-j*.01),-.03-j*.05,.05+j*.02),[sd*.9,-.35-j*.2,-.1],.17-j*.02,.06,j?white:tawny);
+   S(hp(sd*.056,-.065,.21),.08,.065,.075,white,6,4);
+   cone(g,hp(sd*.145,.16,0),[sd*.35,.93,.05],.2,.085,black,4);cone(g,hp(sd*.14,.165,.03),[sd*.33,.93,.12],.15,.05,earP,3);cone(g,hp(sd*.13,.19,.045),[-sd*.45,.85,.3],.11,.02,white,3);
+   for(let w=0;w<3;w++){p=hp(sd*.2,-.07-w*.016,.2);g.box(T3(p[0],p[1],p[2],.24,.009,.009,-sd*.35,0,sd*(.05+w*.12)),[226,228,236])}}
+  cone(g,hp(0,-.08,.222),[0,1,-.18],.19,.06,white,4);S(hp(0,-.12,.195),.078,.045,.062,white,6,4);S(hp(0,-.03,.285),.033,.022,.02,pink,5,3)}),at(H,N[0],N[1],N[2]));
+ head.k.push(part('eyes',mk(g=>{for(const sd of[-1,1]){const p=hp(sd*.1,.035,.2),q=hp(sd*.1,.035,.228);g.sphere(T3(p[0],p[1],p[2],.05,.046,.028,sd*.24),green,6,4);g.sphere(T3(q[0],q[1],q[2],.012,.034,.01,sd*.24),[14,12,10],4,3)}}),[0,0,0],{e:.7}));
+ const legM=(front)=>mk(g=>{g.cyl(T3(0,-.25,0,1,.25,1),brown,6,.068,front?.085:.1);g.torus(T3(0,-.11,0),black,.078,.014,8,3);cone(g,[0,-.13,-.05],[0,-.6,-.8],.1,.035,tawny,3);
+  g.cyl(T3(0,-.37,0,1,.13,1),white,6,.07,.072);g.sphere(T3(0,-.385,.03,.075,.045,.085),white,6,4);for(const x of[-.04,0,.04])g.sphere(T3(x,-.39,.1,.028,.025,.035),white,4,2)});
+ const fL=legM(1),bL=legM(0);
+ body.k.push(part('lf',fL,at(H,.15,.47,.22)),part('rf',fL,at(H,-.15,.47,.22)));
+ const lb=part('lb',bL,[.165,.47,-.25]),rb=part('rb',bL,[-.165,.47,-.25]);
+ const tseg=(len,r0,r1,dark)=>mk(g=>{g.cyl(T3(0,0,0,1,len,1),dark?black:brown,6,r0,r1);for(let k=0;k<4;k++){const a=k/4*TAU+(dark?.4:0);cone(g,[Math.cos(a)*r0*.8,len*.5,Math.sin(a)*r0*.8],[Math.cos(a)*.45,.8,Math.sin(a)*.45],.12,.065,dark?(k%2?black:brown):(k%2?tawny:brown))}});
+ const t1=part('t1',tseg(.22,.08,.1,0),at(H,0,.58,-.5),{r:[-1,0,0]}),t2=part('t2',tseg(.2,.1,.09,1),[0,.22,0],{r:[.35,0,0]}),t3=part('t3',tseg(.18,.09,.03,0),[0,.2,0],{r:[.4,0,0]});
+ t1.k.push(t2);t2.k.push(t3);body.k.push(t1,head);root.k.push(body,lb,rb);return{root,kind:'cat'}}
+/* The cat follows at the hero's heel: it walks, runs to catch up, jumps to the hero when left far behind or after a map change, and sits once things are still. Purely cosmetic; per hero, hidden with Options > Game. */
+const CAT={sc:.56,r:6,back:1.15,side:.55,snap:14,walk:150,run:330};
+function catOn(){return !!P&&!P.petOff&&G.mode==='play'&&!!G.map}
+function catSpot(){const fx=Math.sin(P.rot||0),fy=Math.cos(P.rot||0);return[P.x-fx*CAT.back*TS+fy*CAT.side*TS,P.y-fy*CAT.back*TS-fx*CAT.side*TS]}
+function catTick(dt){if(!catOn()){G.cat=null;return}const m=G.map;let c=G.cat;const[tx,ty]=catSpot();
+ if(!c||c.map!==m.id||Math.hypot(c.x-P.x,c.y-P.y)>CAT.snap*TS){const ok=!blocked(m,tx,ty,CAT.r);G.cat={x:ok?tx:P.x,y:ok?ty:P.y,rot:P.rot||0,map:m.id,ph:0,v:0,still:0,sit:0,stuck:0,px:P.x,py:P.y};return}
+ const pv=dt>0?Math.hypot(P.x-c.px,P.y-c.py)/dt:0;c.px=P.x;c.py=P.y;const dx=tx-c.x,dy=ty-c.y,d=Math.hypot(dx,dy);
+ const want=d<.3*TS?0:clamp((d-.2*TS)*4,0,Math.max(CAT.run,Math.min(pv,900)*1.25));c.v+=(want-c.v)*Math.min(1,dt*6);
+ if(c.v>4&&d>.5){const step=Math.min(d,c.v*dt),ox=c.x,oy=c.y;moveEnt(c,dx/d*step,dy/d*step,CAT.r);const mv=Math.hypot(c.x-ox,c.y-oy);
+  if(mv<step*.3){c.stuck+=dt;if(c.stuck>1.5&&d>2*TS){const ok=!blocked(m,tx,ty,CAT.r);c.x=ok?tx:P.x;c.y=ok?ty:P.y;c.stuck=0}}else c.stuck=0;
+  c.rot-=angDiff(c.rot,Math.atan2(dx,dy))*Math.min(1,dt*8);c.ph+=dt*c.v/TS*(c.v>CAT.walk*1.4?3.2:4.2)}
+ else{c.v=Math.min(c.v,4);c.rot-=angDiff(c.rot,P.rot||0)*Math.min(1,dt*2)}
+ c.still=c.v<8?c.still+dt:0;c.sit=clamp(c.sit+(c.still>1.4?dt*2.5:-dt*6),0,1)}
+function catAnim(c){const sp=c.v/TS,run=clamp((sp-5)/2.5,0,1),walk=clamp(sp/1.5,0,1)*(1-run),k=c.sit,s=Math.sin(c.ph),idle=1-walk-run,t=G.time;
+ const lw=(a,b)=>(a*walk+b*run)*(1-k);
+ return{root:{y:-.2*k},body:{rx:-.45*k+s*.07*run,y:Math.abs(Math.cos(c.ph))*.02*walk},head:{rx:.4*k-.06*s*run,ry:Math.sin(t*.7)*.35*idle*(1-k*.4)},
+  lf:{rx:lw(s*.45,s*.8)+.45*k},rf:{rx:lw(-s*.45,s*.8)+.45*k},lb:{rx:lw(-s*.45,-s*.8)-1.45*k},rb:{rx:lw(s*.45,-s*.8)-1.45*k},
+  t1:{rx:k*1.9+run*.7,ry:Math.sin(t*1.6)*.25*(1-run)},t2:{rx:k*.5,rz:Math.sin(t*1.6+.6)*.2},t3:{rz:Math.sin(t*1.6+1.2)*.25}}}
+function drawCat(){const c=G.cat;if(!c||!catOn())return;const x=c.x*U,z=c.y*U,gy=groundH(x,z);drawPart(MODELS.cat.root,M4.trs(x,gy,z,c.rot,0,0,CAT.sc,CAT.sc,CAT.sc),catAnim(c),0);decal(x,z,gy+.04,.3,.42,c.rot,0,[0,0,0],.45)}
+function catTris(){let n=0,parts=0;const walk=pt=>{parts++;if(pt.m)n+=pt.m.n/3;pt.k.forEach(walk)};walk(MODELS.cat.root);return{tris:n,parts}}
 function loadModels(){
  const H=humanoid;
  MODELS.bulwark=H({top:[150,156,166],chest:[184,190,200],pauldron:[186,192,202],spikes:true,trim:[218,172,70],tasset:[150,156,166],tabard:[164,38,34],bottom:[84,88,96],boots:[86,90,98],knee:[184,190,200],helm:[186,192,202],plume:[196,40,36],cape:[150,32,28],sleeve:[150,156,166],glove:[110,112,120],bracer:[184,190,200],weapon:'sword',shield:true});
@@ -3035,7 +3091,7 @@ function loadModels(){
  MODELS.rusk=H({top:[110,90,70],bottom:[70,56,44],beard:[140,120,100],hair:[140,120,100],collar:[80,60,40],trim:[200,170,90],sleeve:[110,90,70],skin:[196,150,116]});
  MODELS.odette=H({top:[110,140,170],robe:[90,116,146],hood:[236,232,222],collar:[236,232,222],trim:[200,180,140],sleeve:[110,140,170]});
  MODELS.nomad=H({top:[150,96,56],bottom:[110,76,44],hood:[190,150,100],mask:[90,60,40],sleeve:[150,96,56],bracer:[110,76,44],weapon:'sword',cape:[140,40,30]});
- MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
+ MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
  MODELS.portal=mk(g=>{const st=[108,110,104];for(const s of[-1,1]){g.box(T3(s*1.05,1.2,0,.4,2.4,.5),st);g.box(T3(s*1.05,.12,0,.55,.24,.62),[90,92,88])}for(let k=0;k<=8;k++){const a=Math.PI*k/8;g.box(T3(Math.cos(a)*1.05,2.4+Math.sin(a)*1.0,0,.4,.36,.5,0,0,a+Math.PI/2),st)}
   g.box(T3(0,1.4,-.12,1.75,2.8,.06),[6,10,12])});
  MODELS.bars=mk(g=>{for(let k=-3;k<=3;k++)g.box(T3(k*.25,1.5,.1,.05,3,.05),[50,50,46]);g.box(T3(0,2.2,.12,1.8,.07,.06),[50,50,46]);g.box(T3(0,.9,.12,1.8,.07,.06),[50,50,46])});
@@ -3332,6 +3388,7 @@ function renderWorld(dt){
     if(P.cls==='lumen'){const hp=handPos(x,z,P.rot,-.1);sprite(hp[0],hp[1],hp[2],.5,.5,'#ffe0a0',.8)}
 }
    else{const M=M4.trs(x,groundH(x,z)+.15,z,P.rot,-Math.PI/2+.1,0);drawPart(MODELS[P.cls].root,M,{legL:{},legR:{}},0)}}
+  if(G.mode==='play')drawCat();
   // target ring
   if(G.tgt&&!G.tgt.dead){const e=G.tgt,r=e.d.r*U*(e.d.boss?2:1.6)+.25;decal(e.x*U,e.y*U,groundH(e.x*U,e.y*U)+.05,r,r,G.time,1,[.95,.35,.3],.85,.82)}
   // loot
@@ -3677,6 +3734,9 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:46,date:'4 Nov 2026',title:'A Warden cat',items:[
+  'A tabby in a Warden\'s rune collar now follows your hero. It walks at your heel, runs to catch up, and sits down when you stop.',
+  'It is just for company and never fights. Hide it for this hero under Options, then Game.']},
  {id:45,date:'4 Nov 2026',title:'Privacy and terms',items:[
   'A Privacy page and a Terms page are in Options, then Game. In short: your heroes and settings stay on your device, and there are no ads, analytics or tracking.',
   'The game\'s lettering now loads from the game itself instead of Google, so it also looks right offline.']},
@@ -3997,7 +4057,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)+tg('tips','Tips for new players','A short tip the first time you meet something new. Each one shows once.',true)+`<div class="optrow"><div><b>See the tips again</b><span>Show every tip again, from the start.</span></div><button class="cbtn" data-act="tipsreset">Reset tips</button></div>`}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
-   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Privacy and terms</b><span>What the game stores (only on this device) and the rules for playing.</span></div><div class="optbtns"><button class="cbtn" data-act="page" data-page="privacy.html">Privacy</button> <button class="cbtn" data-act="page" data-page="terms.html">Terms</button></div></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
+   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Warden cat</b><span>Your tabby follows this hero around and sits when you rest. Just for company.</span></div><button class="cbtn ${P&&!P.petOff?'on':''}" data-act="pet">${P&&!P.petOff?'Shown':'Hidden'}</button></div><div class="optrow"><div><b>Privacy and terms</b><span>What the game stores (only on this device) and the rules for playing.</span></div><div class="optbtns"><button class="cbtn" data-act="page" data-page="privacy.html">Privacy</button> <button class="cbtn" data-act="page" data-page="terms.html">Terms</button></div></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
   h+='</div>'}
  else if(k==='npc'){const n=NPCS[a];title=n.name;const ready=QUESTS.find(q=>qTurn(q)===a&&P.q[q.id]&&P.q[q.id].s==='ready'),active=QUESTS.find(q=>q.giver===a&&P.q[q.id]&&P.q[q.id].s==='active'),av=QUESTS.find(q=>q.giver===a&&qAvail(q));
   const say=ready?qDoneText(ready):av?av.offer:active?active.wait:SERVICES[a]&&SERVICES[a].when()?SERVICES[a].idle:n.idle;
@@ -4049,7 +4109,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='wsel'){if(G.webSel===b.dataset.id&&webCan(b.dataset.id))webLearn(b.dataset.id);else G.webSel=b.dataset.id;G.confirm=null}
  if(act==='wlearn')webLearn(b.dataset.id);
  if(act==='respec'){if(G.confirm!=='respec')G.confirm='respec';else{P.tal={};G.confirm=null;recalc();updateBadges();save();toast('Talents reset. Every point is back to spend.')}}
- if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='pet'&&P){P.petOff=!P.petOff;G.cat=null;save();toast(P.petOff?'Your cat waits at home.':'Your cat pads over to join you.')}if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
  if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='textSize')applyText();if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
@@ -4261,7 +4321,7 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,petOff:!!P.petOff,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
@@ -4373,7 +4433,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

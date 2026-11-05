@@ -13,6 +13,7 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - Ore, herbs, crystals and wood to gather and beasts to skin for hides, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - Fishing in every zone, with a common, an uncommon and a rare fish in each
 - Storage for each hero at every town shop
+- A Warden tabby cat that follows your hero, runs to keep up and sits when you rest (cosmetic, can be hidden)
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
 ## Report a bug

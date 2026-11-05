@@ -893,6 +893,30 @@ await test('Auroras light the Frostfang night, and Gloamwood plants glow after d
   T.time='night';V.OPT.fxLvl=.3;const n2=V.drawGlowPlants(G.map,V.sceneEnv());if(n1>=10&&!(n2<n1))bad.push('Minimal effects did not cut the glow');V.OPT.fxLvl=null;
   for(const id of ['frost','gloam']){V.enterMap(id);await new Promise(r=>setTimeout(r,1500))}T.time=null;T.weather=null;V.enterMap('vale',G.maps.vale.start);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
 
+// Warden cat (27.a).
+await reset();
+await test('The Warden cat is light enough for phones and has all its moving parts', () => ev(`()=>{const V=window.__veyl,bad=[],c=V.catTris();if(!(c.tris>1500&&c.tris<=3200))bad.push('the cat has '+c.tris+' triangles');
+  const names=[];const w=pt=>{names.push(pt.n);pt.k.forEach(w)};w(V.MODELS.cat.root);for(const n of ['root','body','head','eyes','rune','lf','rf','lb','rb','t1','t2','t3'])if(!names.includes(n))bad.push('no '+n+' part');return bad}`));
+await test('The cat follows, runs to catch up, jumps to you when left behind, and sits when still', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],TS=32;V.startNew('bulwark','Tester');G.enemies=[];V.closePanel(true);const m=G.map;
+  let sp=null;for(let ty=5;ty<m.h-5&&!sp;ty++)for(let tx=5;tx<m.w-5;tx++){let ok=true;for(let dy=-4;dy<=4&&ok;dy++)for(let dx=-4;dx<=4;dx++)if(m.solidAt((tx+dx)*TS,(ty+dy)*TS)){ok=false;break}if(ok){sp=[tx,ty];break}}if(!sp)return['no open ground to test on'];
+  const P=V.P;P.x=sp[0]*TS+16;P.y=sp[1]*TS+16;P.rot=0;G.cat=null;V.catTick(.05);let c=G.cat;if(!c)return['no cat appeared'];const d0=Math.hypot(c.x-P.x,c.y-P.y)/TS;if(!(d0>.8&&d0<1.8))bad.push('the cat appeared '+d0.toFixed(2)+' tiles away');
+  P.y+=3*TS;let top=0;for(let i=0;i<80;i++){V.catTick(.05);top=Math.max(top,G.cat.v)}const [tx,ty]=V.catSpot();if(Math.hypot(G.cat.x-tx,G.cat.y-ty)>.5*TS)bad.push('the cat did not reach your heel');if(!(top>V.CAT.walk))bad.push('the cat never ran to catch up ('+top.toFixed(0)+')');
+  if(Math.abs(V.angDiff?V.angDiff(G.cat.rot,0):0)>.6)bad.push('the cat is not facing your way');for(let i=0;i<60;i++)V.catTick(.05);if(!(G.cat.sit>.9))bad.push('the cat did not sit while still ('+G.cat.sit.toFixed(2)+')');
+  P.x+=1;V.catTick(.05);P.y-=2*TS;for(let i=0;i<5;i++)V.catTick(.05);if(!(G.cat.sit<.5))bad.push('the cat stayed sitting when you walked off');
+  P.x+=1;P.y+=20*TS;V.catTick(.05);if(Math.hypot(G.cat.x-P.x,G.cat.y-P.y)>2*TS)bad.push('the cat did not jump to you when left far behind');
+  V.enterMap('dunes');V.catTick(.05);if(!G.cat||G.cat.map!=='dunes')bad.push('the cat did not follow you to the dunes');if(G.cat&&m.solidAt&&G.map.solidAt(G.cat.x,G.cat.y))bad.push('the cat is inside a wall');
+  const c2=G.cat,an=v=>{c2.v=v;c2.sit=0;c2.ph=Math.PI/2;return V.catAnim(c2)};const wk=an(140),rn=an(320),st=an(0);
+  if(!(Math.abs(wk.lf.rx)>.2&&Math.abs(wk.lf.rx+wk.rf.rx)<.01))bad.push('walking legs do not alternate');if(!(Math.abs(rn.lf.rx-rn.rf.rx)<.01&&Math.abs(rn.lf.rx)>.5))bad.push('running legs do not bound together');if(Math.abs(st.lf.rx)>.01)bad.push('legs move while standing');
+  c2.sit=1;c2.v=0;const si=V.catAnim(c2);if(!(si.root.y<-.15&&si.body.rx<-.3&&si.lb.rx<-1))bad.push('the sitting pose is wrong');
+  V.enterMap('vale',G.maps.vale.start);return bad}`));
+await test('Hiding the cat works per hero, is saved, and old heroes keep their cat', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],before=V.readErrors().length;V.startNew('lumen','Tester');G.enemies=[];V.catTick(.05);if(!G.cat)bad.push('a new hero has no cat');
+  G.optTab='game';V.openPanel('options');let b=document.querySelector('#book [data-act="pet"]');if(!b||!/Shown/.test(b.textContent))bad.push('no Warden cat switch showing Shown');else b.click();if(!V.P.petOff)bad.push('the switch did not hide the cat');
+  b=document.querySelector('#book [data-act="pet"]');if(!b||!/Hidden/.test(b.textContent))bad.push('the switch does not say Hidden');V.closePanel(true);V.catTick(.05);if(G.cat)bad.push('the hidden cat still follows');
+  const d=JSON.parse(JSON.stringify(V.serialize()));if(d.petOff!==true)bad.push('hiding the cat is not saved');V.loadSave(d);V.catTick(.05);if(G.cat)bad.push('the cat came back after loading');
+  G.optTab='game';V.openPanel('options');document.querySelector('#book [data-act="pet"]').click();V.closePanel(true);V.catTick(.05);if(V.P.petOff||!G.cat)bad.push('the cat could not be shown again');
+  delete d.petOff;V.loadSave(d);V.catTick(.05);if(!G.cat)bad.push('an older hero has no cat');
+  await new Promise(r=>setTimeout(r,2500));const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
 // Privacy, terms and self-hosted fonts (21.d).
 await reset();
 await test('Privacy and Terms open from Options, the pages load, and fonts come only from the game itself', async () => {
