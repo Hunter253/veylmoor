@@ -860,6 +860,20 @@ await test('Text size grows menus and messages, and effect intensity cuts partic
   const n=document.querySelector('#book [data-act="oseg"][data-k="textSize"][data-v="1"]');if(n)n.click();if(getComputedStyle(document.documentElement).getPropertyValue('--ts').trim()!=='1')bad.push('text did not return to normal');V.closePanel(true);
   O.textSize=9;V.applyText();if(getComputedStyle(document.documentElement).getPropertyValue('--ts').trim()!=='1.4')bad.push('a huge stored text size was not capped');O.textSize=1;V.applyText();return bad}`));
 
+// Bug reports (37.c).
+await reset();
+await test('Report a bug opens the GitHub form with the game details filled in', async () => {
+  const bad = await ev(`()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('thornstalker','Tester');V.P.lvl=12;let opened=null;const o=window.open;window.open=u=>{opened=u;return null};
+   G.optTab='game';V.openPanel('options');const b=document.querySelector('#book [data-act="bug"]');if(!/wardensofveylmoor@gmail\\.com/.test(document.querySelector('#book').innerText))bad.push('no email for players without GitHub');if(!b)bad.push('no Report a bug button');else b.click();window.open=o;V.closePanel(true);
+   if(!opened)bad.push('the form did not open');else{const u=new URL(opened);if(u.origin+u.pathname!=='https://github.com/Hunter253/veylmoor/issues/new')bad.push('wrong address '+u.pathname);const q=u.searchParams;if(q.get('template')!=='bug_report.yml')bad.push('wrong template');
+    if(!/Update \\d+/.test(q.get('version')||''))bad.push('no version: '+q.get('version'));if(!/Level 12 Thornstalker/.test(q.get('hero')||''))bad.push('no hero: '+q.get('hero'));if(!['Touch','Keyboard and mouse','Controller'].includes(q.get('controls')))bad.push('controls '+q.get('controls'));if(!(q.get('device')||'').includes(','))bad.push('no device')}
+   return bad}`);
+  const form = fs.readFileSync(path.join(ROOT, '.github/ISSUE_TEMPLATE/bug_report.yml'), 'utf8');
+  for (const id of ['did', 'expected', 'happened', 'screenshot', 'device', 'controls', 'version', 'hero', 'errors']) if (!new RegExp('id: ' + id + '\\b').test(form)) bad.push('the form has no ' + id + ' field');
+  for (const opt of ['Touch', 'Keyboard and mouse', 'Controller']) if (!form.includes('- ' + opt)) bad.push('the form has no ' + opt + ' option');
+  return bad;
+});
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

@@ -1,0 +1,70 @@
+name: Bug report
+description: Something in Wardens of Veylmoor went wrong.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. The **Report a bug** button in the game (Options, Game) fills in the version, your device and your hero for you.
+        No GitHub account? Email wardensofveylmoor@gmail.com instead.
+  - type: textarea
+    id: did
+    attributes:
+      label: What did you do?
+      description: The steps just before it went wrong, one per line.
+      placeholder: |
+        Took the waystone to Kellhold
+        Talked to Odette
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag a screenshot or a short video in here, if you have one.
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: Android phone, Chrome
+    validations:
+      required: true
+  - type: dropdown
+    id: controls
+    attributes:
+      label: How were you playing?
+      options:
+        - Touch
+        - Keyboard and mouse
+        - Controller
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Game version
+      description: The newest entry under Updates in the game.
+  - type: input
+    id: hero
+    attributes:
+      label: Hero
+      placeholder: Level 23 Thornstalker in the Sunscar Dunes
+  - type: textarea
+    id: errors
+    attributes:
+      label: Recent errors
+      description: Filled in by the game if it recorded any. Leave it as it is.
+      render: text

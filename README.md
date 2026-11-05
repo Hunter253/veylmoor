@@ -15,6 +15,9 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - Storage for each hero at every town shop
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
+## Report a bug
+In the game, open Options, then Game, and press **Report a bug**. It opens a short form here on GitHub with your version, device and hero filled in. You can also [open a bug report](https://github.com/Hunter253/veylmoor/issues/new?template=bug_report.yml) directly, or email wardensofveylmoor@gmail.com if you don't have a GitHub account.
+
 ## Play on PC
 Open the play link in Chrome, Edge or Firefox. You can keep up to five heroes. They stay in that browser, on that PC, and you can export a hero to a file to back it up or move it to another device.
 
