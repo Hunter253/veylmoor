@@ -874,6 +874,15 @@ await test('Report a bug opens the GitHub form with the game details filled in',
   return bad;
 });
 
+// Choices that count (14.e).
+await reset();
+await test('Burning the camp makes Hassa a friend with a daily gift; sparing, saving and keeping become clues', () => ev(`()=>{const V=window.__veyl,G=V.G,bad=[];const hero=(camp,pup,lan)=>{V.startNew('reaver','T');const P=V.P;P.lvl=25;for(const id of ['d11','f11','g11'])P.q[id]={s:'done',n:1};const f=V.storyS().f;f.camp=camp;f.pup=pup;f.lantern=lan;G.enemies=[];V.closePanel(true);return P};
+  let P=hero('burn','leave','give');V.enterMap('dunes');const h=V.NPCS.hassa;P.x=h.x*32;P.y=h.y*32;V.update(1/30);V.openPanel('npc','hassa');const btn=document.querySelector('#book [data-act="service"][data-k="hassa"]');if(!btn)bad.push('Hassa offers no gift to a friend');else{const t0=P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0);btn.click();const t1=P.bag.filter(x=>x.kind==='tonic').reduce((a,x)=>a+x.qty,0);if(t1!==t0+2)bad.push('the gift gave '+(t1-t0)+' tonics')}
+  if(document.querySelector('#book [data-act="service"]'))bad.push('the gift is offered twice in one day');V.closePanel(true);V.storyS().f.svc_hassa=V.gameDay()-1;if(!V.serviceReady('hassa'))bad.push('the gift did not come back the next day');if(V.storyEvidence().length)bad.push('the other choices gave clues: '+V.storyEvidence());
+  P=hero('spare','save','keep');if(V.serviceReady('hassa'))bad.push('Hassa gives gifts after you spared the camp');const ev=V.storyEvidence();if(ev.join()!=='camp,pup,lantern')bad.push('clues were '+ev);V.openPanel('quests');document.querySelector('#book [data-act="qtab"][data-t="letters"]').click();const txt=document.querySelector('#book').innerText;if(!/Clues/.test(txt)||!/white pup/.test(txt))bad.push('the clues do not show under Letters');V.closePanel(true);
+  P=hero('spare','save','keep');P.q.f11={s:'active',n:0,got:[]};if(V.storyEvidence().includes('pup'))bad.push('a clue counted before its quest was finished');
+  const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);if(V.storyEvidence().join()!=='camp,lantern')bad.push('clues did not survive saving');V.enterMap('vale',G.maps.vale.start);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();
