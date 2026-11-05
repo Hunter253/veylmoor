@@ -2099,6 +2099,8 @@ function updateWade(dt){const m=G.map;if(!m||!m.hgt||P.dead){P.wade=0;return}con
  const was=P.wade||0;P.wade=(P.jz||0)>0.05?0:depth>0.015?Math.min(1,(depth-0.015)/0.14):0;if(P.wade>0)P.wetT=1.6;else P.wetT=Math.max(0,(P.wetT||0)-dt);
  if(P.wade>0&&!was){sfx('splash');if(!P.wadeTold){P.wadeTold=1;msg(m.theme===4?'Lava shallows slow you down.':'Wading slows you down.')}}
  if(P.wade>0&&P.mv>.2){P.splT=(P.splT||0)-dt;if(P.splT<=0){P.splT=.32;const c=m.theme===4?'#ffb060':'#dff4ff';burst(P.x,P.y,c,5,55,.45,2.6,.15);ring(P.x,P.y,16+10*P.wade,m.theme===4?'#ff8a3a':'#cfefff',.5,2);sfx('splash',.45)}}}
+/* Sprint restarts only once stamina is back to this share of the bar, so holding sprint on empty doesn't pulse; speed eases toward its target (per second) so sprint, wading and blocking don't snap */
+const SPRINT_RESTART=.2,SPEED_EASE=12;
 function wadeSlow(){const w=P.wade||0,k=P.mounted?.5:1;return w>0?(.25+.25*w)*k:(P.wetT>0?.12*k:0)}
 function updatePlayer(dt){
  P.hurtFlash=Math.max(0,P.hurtFlash-dt);if(P.dead)return;
@@ -2116,12 +2118,12 @@ function updatePlayer(dt){
  else if(len>0.12&&!pHas('root')&&!pHas('stun')){const n=Math.max(1,len),sx=ix/n,sy=iy/n;
   const fwx=Math.sin(CAM.yaw),fwy=Math.cos(CAM.yaw),rx=-Math.cos(CAM.yaw),ry=Math.sin(CAM.yaw);
   const mx=rx*sx+fwx*(-sy),my=ry*sx+fwy*(-sy);
-  P.sprint=!P.mounted&&!P.blocking&&(input.sprint||(OPT.stickSprint!==false&&Math.hypot(input.sx,input.sy)>1.15))&&P.st>1;let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;sp*=(1-wadeSlow())*(pHas('chill')?.62:1)*(P.blocking?BLOCK.moveMul:1);
+  const wantSprint=!P.mounted&&!P.blocking&&(input.sprint||(OPT.stickSprint!==false&&Math.hypot(input.sx,input.sy)>1.15));P.sprint=wantSprint&&(P.sprint?P.st>0:P.st>=S.maxSt*SPRINT_RESTART);let sp=S.speed*(P.mounted?1.75:P.sprint?1.45:1);for(const b of P.buffs)if(b.spd)sp*=1+b.spd;sp*=(1-wadeSlow())*(pHas('chill')?.62:1)*(P.blocking?BLOCK.moveMul:1);P.spd=P.spd==null?sp:P.spd+(sp-P.spd)*(1-Math.exp(-dt*SPEED_EASE));sp=P.spd;
   if(P.sprint){P.st=Math.max(0,P.st-16*dt);P.stLast=G.time;if(R()<dt*14)burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',2,40,.4,2.5,.05)}
   moveEnt(P,mx*sp*dt,my*sp*dt,10);moving=Math.min(1,len);P.walk+=dt*moving*sp/118;
   if(P.faceLock<=0){const l=Math.hypot(mx,my);P.fx=mx/l;P.fy=my/l}
   const fwd=-sy;if(OPT.follow&&fwd>0.35&&G.time-CAM.lastDrag>1.2){const ty=Math.atan2(mx,my);CAM.yaw+=angDiff(ty,CAM.yaw)*Math.min(1,dt*1.1*fwd)}}
- if(len<=.12||P.dash)P.sprint=false;
+ if(len<=.12||P.dash){P.sprint=false;P.spd=null}
  P.mv+=(moving-P.mv)*Math.min(1,dt*10);
  if(P.jz>0||P.jv>0){P.jz+=P.jv*dt;P.jv-=13*dt;if(P.jz<=0){P.jz=0;P.jv=0;sfx('land');burst(P.x,P.y,G.map.theme===2?'#ffffff':G.map.theme===1?'#e0c890':'#b8a888',8,60,.45,3,.05)}}
  if(P.cast){P.cast.t+=dt;if(len>0.3&&!P.dash){txt(P.x,P.y,2.2,'Interrupted','#ff4a3a',16);P.cast=null}
@@ -4269,11 +4271,11 @@ addEventListener('blur',()=>{input.sprint=false;input.up=input.down=input.left=i
 function cycleTarget(){const L=live().filter(e=>dist(P.x,P.y,e.x,e.y)<320).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));if(!L.length){notReady('No target nearby');return}const i=L.indexOf(G.tgt);G.tgt=L[(i+1)%L.length]}
 function npcHasQuest(k){return QUESTS.some(q=>{const s=P.q[q.id];return(q.giver===k&&(qAvail(q)||(s&&s.s==='active')))||(qTurn(q)===k&&s&&s.s==='ready')})}
 function interact(){const n=G.near;if(!n||P.dead)return;if(n.kind==='npc'){dismount();if(NPCS[n.id].shop&&!npcHasQuest(n.id)){G.shopTab=NPCS[n.id].tab||'buy';openPanel('shop',n.id)}else openPanel('npc',n.id)}else if(n.kind==='node'){dismount();P.auto=false;P.cast={i:-3,t:0,max:1.5,name:(NODEK[n.o.kind]||NODEK.herb).verb+' '+n.o.name,node:n.o};sfx('cast')}else if(n.kind==='beacon'){dismount();startEvent(n.o)}else if(n.kind==='res'){dismount();P.auto=false;P.cast={i:-4,t:0,max:1.6,name:RESF[n.o.fam].verb+' '+n.o.name,res:n.o};sfx('cast')}else if(n.kind==='fish'){dismount();P.auto=false;fishStart(n.o)}else if(n.kind==='skin'){dismount();P.auto=false;P.cast={i:-6,t:0,max:1.2,name:'Skinning the '+n.o.name,skin:n.o};sfx('cast')}else if(n.kind==='moon'){dismount();P.auto=false;P.cast={i:-5,t:0,max:1.2,name:NODEK[n.o.kind].verb+' the '+n.o.name.toLowerCase(),moon:n.o};sfx('cast')}else usePortal(n.p)}
-const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0};
+const zoneEl=$h('stickZone'),base=$h('stickBase'),knob=$h('stickKnob');let stickId=null,so={x:0,y:0},stickOver=false;
 function restStick(){base.style.left='76px';base.style.top=Math.max(60,zoneEl.offsetHeight-76)+'px'}
-function resetStick(){stickId=null;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
+function resetStick(){stickId=null;stickOver=false;input.sx=input.sy=0;knob.style.transform='';base.classList.remove('live','sprint');restStick()}
 zoneEl.addEventListener('pointerdown',e=>{if(stickId!==null)return;stickId=e.pointerId;try{zoneEl.setPointerCapture(e.pointerId)}catch(_){}const q=toLocal(e.clientX,e.clientY);so={x:q[0],y:q[1]};base.style.left=(q[0]-zoneEl.offsetLeft)+'px';base.style.top=(q[1]-zoneEl.offsetTop)+'px';base.classList.add('live');e.preventDefault()});
-zoneEl.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const q=toLocal(e.clientX,e.clientY);let dx=q[0]-so.x,dy=q[1]-so.y;const l=Math.hypot(dx,dy),max=42,over=l>max*1.45;if(l>max){dx=dx/l*max;dy=dy/l*max}knob.style.transform=`translate(${dx}px,${dy}px)`;const k2=over?1.25:1;input.sx=dx/max*k2;input.sy=dy/max*k2;base.classList.toggle('sprint',over&&OPT.stickSprint!==false)});
+zoneEl.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const q=toLocal(e.clientX,e.clientY);let dx=q[0]-so.x,dy=q[1]-so.y;const l=Math.hypot(dx,dy),max=42,over=stickOver=l>max*(stickOver?1.25:1.45);if(l>max){dx=dx/l*max;dy=dy/l*max}knob.style.transform=`translate(${dx}px,${dy}px)`;const k2=over?1.25:1;input.sx=dx/max*k2;input.sy=dy/max*k2;base.classList.toggle('sprint',over&&OPT.stickSprint!==false)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(t=>zoneEl.addEventListener(t,e=>{if(e.pointerId===stickId)resetStick()}));
 addEventListener('resize',restStick);
 const ptrs=new Map();let pinch0=0,zoom0=1,tapStart=null,hoverT=0;
