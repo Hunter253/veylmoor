@@ -1,4 +1,4 @@
-const CACHE='veylmoor-v45';
+const CACHE='veylmoor-v46';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','privacy.html','terms.html',
   'fonts/alegreya-latin-400-normal.woff2','fonts/alegreya-latin-500-normal.woff2','fonts/alegreya-latin-700-normal.woff2','fonts/alegreya-sans-latin-700-normal.woff2','fonts/alegreya-sans-latin-800-normal.woff2','fonts/im-fell-english-sc-latin-400-normal.woff2','fonts/marcellus-latin-400-normal.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});

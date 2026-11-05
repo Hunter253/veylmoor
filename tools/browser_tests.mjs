@@ -917,6 +917,28 @@ await test('Hiding the cat works per hero, is saved, and old heroes keep their c
   delete d.petOff;V.loadSave(d);V.catTick(.05);if(!G.cat)bad.push('an older hero has no cat');
   await new Promise(r=>setTimeout(r,2500));const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
 
+// Performance check (38).
+await reset();
+await test('The performance check runs every scene, reports results, and puts the hero\'s world back exactly', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],before=V.readErrors().length;V.startNew('reaver','Tester');V.closePanel(true);const P=V.P;
+  const B=V.BENCH,keep={warm:B.warm,len:B.len,probe:B.probe,maxMs:B.maxMs};B.warm=.2;B.len=.5;B.probe=.4;B.maxMs=20000;const wait=async(f,ms)=>{const t0=Date.now();while(!f()&&Date.now()-t0<ms)await new Promise(r=>setTimeout(r,100));return f()};
+  const was={map:G.map,mid:G.map.id,en:G.enemies,ne:G.enemies.length,x:P.x,y:P.y,zoom:V.CAM.zoom,bloom:V.OPT.bloom,time:V.TIMEO.time,wx:V.TIMEO.weather,ach:JSON.stringify(P.ach),save:JSON.stringify(V.serialize())};
+  G.optTab='av';V.openPanel('options');const btn=document.querySelector('#book [data-act="bench"]');if(!btn)return['no Run check button in Options'];btn.click();
+  if(!V.bench)bad.push('the check did not start');if(G.panel)bad.push('Options stayed open');if(!document.querySelector('.benchbar'))bad.push('no progress bar');if(document.getElementById('hud').style.visibility!=='hidden')bad.push('the HUD stayed up');
+  const seen=new Set();const ok=await wait(()=>{if(V.bench&&G.map)seen.add(G.map.id);return !V.bench},400000);if(!ok){V.benchEnd(true);Object.assign(B,keep);return bad.concat('the check never finished')}
+  for(const id of ['vale','gloam','frost','ember'])if(!seen.has(id))bad.push('never showed '+id);
+  const r=V.benchLast;if(!r)return bad.concat('no results');if(r.scenes.length!==4)bad.push(r.scenes.length+' scenes measured');for(const sc of r.scenes)if(!(sc.frames>0&&sc.avg>0))bad.push(sc.n+' has no frames');if(r.probes.length!==5)bad.push(r.probes.length+' cost checks');
+  for(const w of ['performance check','Hollowmere by day','A battle in Emberfall','Glow effect off','Overall:','Update '])if(!r.text.includes(w))bad.push('the results do not mention '+w);
+  if(G.map!==was.map||G.map.id!==was.mid)bad.push('the hero\\'s map was not put back');if(G.enemies!==was.en||G.enemies.length!==was.ne)bad.push('the monsters were not put back');if(P.x!==was.x||P.y!==was.y)bad.push('the hero moved');
+  if(V.CAM.zoom!==was.zoom)bad.push('the camera zoom changed');if(V.OPT.bloom!==was.bloom)bad.push('the glow setting changed');if(V.TIMEO.time!==was.time||V.TIMEO.weather!==was.wx)bad.push('time or weather stayed changed');
+  if(JSON.stringify(P.ach)!==was.ach)bad.push('the check counted toward achievements');if(JSON.stringify(V.serialize())!==was.save)bad.push('the hero\\'s save changed');
+  if(document.querySelector('.benchbar'))bad.push('the progress bar stayed');if(document.getElementById('hud').style.visibility)bad.push('the HUD did not come back');
+  if(G.panel!=='options'||!document.querySelector('#book .perfres pre'))bad.push('the results are not shown in Options');
+  let copied='';const cb=navigator.clipboard;try{Object.defineProperty(navigator,'clipboard',{value:{writeText:t=>{copied=t;return Promise.resolve()}},configurable:true})}catch(_){}
+  document.querySelector('#book [data-act="benchcopy"]').click();await new Promise(r=>setTimeout(r,200));if(copied!==r.text)bad.push('Copy did not copy the results');try{Object.defineProperty(navigator,'clipboard',{value:cb,configurable:true})}catch(_){}
+  V.closePanel(true);document.querySelector('[data-act="bench"]');G.optTab='av';V.openPanel('options');document.querySelector('#book [data-act="bench"]').click();await new Promise(r=>setTimeout(r,600));const cancel=document.querySelector('.benchbar button');if(!cancel)bad.push('no Cancel button');else cancel.click();
+  if(V.bench)bad.push('Cancel did not stop the check');if(G.map!==was.map||G.enemies!==was.en)bad.push('Cancel did not put the world back');
+  Object.assign(B,keep);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
 // Privacy, terms and self-hosted fonts (21.d).
 await reset();
 await test('Privacy and Terms open from Options, the pages load, and fonts come only from the game itself', async () => {

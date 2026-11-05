@@ -140,6 +140,9 @@ kbd{display:none}#app.kbm kbd{display:block}
 .profpick{margin-bottom:10px}.profq{margin:0 0 8px;font-size:14px}.ccard.best{border-top-color:#ffd870;box-shadow:0 0 0 1px #ffd870}.profhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:8px;font-size:14px}.profhead b{font:400 17px var(--f-ui);flex:1;min-width:180px}.profhead span:not(.price){flex-basis:100%;order:3;color:var(--ink2)}.profhead .cbtn{font-size:13px;padding:5px 9px}
 #durNote{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 24px);transform:translateX(-50%);padding:2px 10px;background:rgba(16,22,26,.85);border:1px solid #d8a040;color:#ffd890;font:500 13px/1.4 var(--f-body);white-space:nowrap;pointer-events:none}#durNote.broken{border-color:#e05a4a;color:#ffb0a0}#durNote[hidden]{display:none}.islot.eqs.worn{box-shadow:0 0 0 2px #d8a040}.islot.eqs.broken{box-shadow:0 0 0 2px #e05a4a;filter:saturate(.35)}.durtxt{color:var(--ink2)}.durtxt.low{color:#e8a040}.durtxt.bad{color:#f07a68}.replist{display:grid;gap:8px;max-width:620px;margin:0 auto}.reprow{display:flex;align-items:center;gap:10px}.reprow .islot{width:48px;flex:none}.repn{flex:1;display:grid;min-width:0}.repn b{font:400 16px var(--f-ui)}.repn span{font-size:13px;color:var(--ink2)}.reprow .gbar{min-width:130px;flex:none}.repall{display:flex;margin:12px auto 0;min-width:220px}
 .socs{display:grid;gap:4px;margin-top:6px}.socrow{display:flex;align-items:center;gap:6px;font-size:13px}.socrow span:nth-child(2){flex:1}.socic{width:22px;height:22px;flex:none;display:block}.socic.empty{box-sizing:border-box;border:1px dashed currentColor;border-radius:50%;opacity:.6}.socbtn{padding:3px 8px!important;font-size:12px!important}.gemnote{margin:10px 0 0;text-align:center;font-size:14px}.gemlv{position:absolute;left:3px;top:2px;font:800 12px var(--f-num);font-style:normal;color:#fff;text-shadow:0 1px 2px #000}
+.benchbar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:8001;display:flex;gap:12px;align-items:center;padding:6px 8px 6px 16px;border-radius:10px;background:rgba(16,22,26,.86);color:#f0ead8;font:400 15px/1.3 var(--f-ui);white-space:nowrap;box-shadow:0 4px 18px #0008}
+.perfres{margin:4px 0 2px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.22);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.perfres pre{margin:0;white-space:pre-wrap;font:13px/1.45 var(--f-num);color:inherit;user-select:text;-webkit-user-select:text}
 .fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
 .sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
@@ -3259,6 +3262,7 @@ function camDist(){const portrait=VH>VW;return(portrait?10.5:7.4)*CAM.zoom}
 function updateCam(dt,snap){
  let tx,ty,tz;
  if(G.mode==='title'){tx=15;tz=27.8;CAM.yaw=Math.PI;}
+ else if(G.bench&&G.bench.cx!=null){tx=G.bench.cx*U;tz=G.bench.cy*U}
  else{tx=P.x*U;tz=P.y*U}
  ty=groundH(tx,tz)+1.05;
  const k=snap?1:Math.min(1,dt*10);CAM.tx+=(tx-CAM.tx)*k;CAM.ty+=(ty-CAM.ty)*k;CAM.tz+=(tz-CAM.tz)*k;
@@ -3370,7 +3374,7 @@ function renderWorld(dt){
   for(const e of G.enemies)if(!e.dead){const d=Math.hypot(e.x*U-CAM.tx,e.y*U-CAM.tz);if(d<45){drawEnemy(e);drawStatus(e)}}
   if(m.statues){gl.uniform1f(pr.U.uDetail,.45);for(const[sx,sz,sr]of m.statues)if(Math.hypot(sx-CAM.tx,sz-CAM.tz)<30)drawHum(MODELS.statue,sx,sz,sr,0,0,0,0,0,1.35,.4);gl.uniform1f(pr.U.uDetail,0)}
   // player
-  if(P&&G.mode==='play'){const x=P.x*U,z=P.y*U;const fl=P.hurtFlash>0?.35:0;
+  if(P&&G.mode==='play'&&!G.bench){const x=P.x*U,z=P.y*U;const fl=P.hurtFlash>0?.35:0;
    if(!P.dead){const mdl=MODELS[P.cls],wr=P.eq.weapon?P.eq.weapon.rar:0;if(mdl.glow){const gw=mdl.glow;if(gw.t0===undefined){gw.t0=gw.t;gw.e0=gw.e}if(wr>=2){gw.t=lin(RAR[wr].c);gw.e=2.6+Math.sin(G.time*4)*.6}else{gw.t=gw.t0;gw.e=gw.e0}}
     if(wr>=2){const hp=handPos(x,z,P.rot,-.25);sprite(hp[0],hp[1],hp[2],.55,.55,RAR[wr].c,.45)}
     if(P.cls==='ashcaller'){const gy=groundH(x,z);for(let k=0;k<3;k++){const a=G.time*1.8+k*TAU/3,ox=Math.cos(a)*.55,oz=Math.sin(a)*.55,oy=1.25+Math.sin(G.time*3+k)*.1;drawMesh(MODELS.orb,M4.trs(x+ox,gy+oy,z+oz,0,0,0,.055,.055,.055),3,0,0,lin('#ff9a4a'));sprite(x+ox,gy+oy,z+oz,.35,.35,'#ff8a3a',.7)}}
@@ -3388,7 +3392,7 @@ function renderWorld(dt){
     if(P.cls==='lumen'){const hp=handPos(x,z,P.rot,-.1);sprite(hp[0],hp[1],hp[2],.5,.5,'#ffe0a0',.8)}
 }
    else{const M=M4.trs(x,groundH(x,z)+.15,z,P.rot,-Math.PI/2+.1,0);drawPart(MODELS[P.cls].root,M,{legL:{},legR:{}},0)}}
-  if(G.mode==='play')drawCat();
+  if(G.mode==='play'&&!G.bench)drawCat();
   // target ring
   if(G.tgt&&!G.tgt.dead){const e=G.tgt,r=e.d.r*U*(e.d.boss?2:1.6)+.25;decal(e.x*U,e.y*U,groundH(e.x*U,e.y*U)+.05,r,r,G.time,1,[.95,.35,.3],.85,.82)}
   // loot
@@ -3445,7 +3449,7 @@ function renderWorld(dt){
  // blended passes
  gl.enable(gl.BLEND);gl.depthMask(false);
  // water
- {const pr=useProg(PR.water);setLit(pr,env);gl.uniform1f(pr.U.uTime,G.time);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.gfx.shadow);gl.uniform1i(pr.U.uShadow,1);gl.uniform2fv(pr.U.uMapSize,mapSize);
+ if(!(G.bench&&G.bench.off==='water')){const pr=useProg(PR.water);setLit(pr,env);gl.uniform1f(pr.U.uTime,G.time);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.gfx.shadow);gl.uniform1i(pr.U.uShadow,1);gl.uniform2fv(pr.U.uMapSize,mapSize);
   gl.uniform3fv(pr.U.uDeep,lin(m.id==='abbey'?'#0a1416':m.theme===4?'#ff4a08':m.theme===3?'#10141c':m.theme===1?'#1a6a6a':m.theme===2?'#6a8ea0':'#18302c').map(v=>v*env.waterK));gl.uniform3fv(pr.U.uSkyRef,lin(m.id==='abbey'?'#10181a':m.theme===4?'#ffb040':m.theme===3?'#3a3650':m.theme===1?'#a8dce8':m.theme===2?'#eef4fa':'#7e98a8').map(v=>v*env.waterK));gl.uniform1f(pr.U.uAlpha,m.id==='abbey'?.8:.9);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,m.gfx.hmap);gl.uniform1i(pr.U.uHMap,2);gl.uniform2f(pr.U.uHOff,MG+.5,MG+.5);gl.uniform2f(pr.U.uHSz,m.hw,m.hh);gl.uniform1f(pr.U.uWy,m.id!=='abbey'?-0.11:-0.025);gl.uniform1f(pr.U.uFoam,m.id!=='abbey'?1:0);gl.activeTexture(gl.TEXTURE0);
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.water.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.water.n);if(m.gfx.basin){gl.uniform1f(pr.U.uFoam,0);gl.uniform1f(pr.U.uAlpha,.82);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.basin.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.basin.n)}}
  // decals
@@ -3457,7 +3461,7 @@ function renderWorld(dt){
  {const pr=useProg(PR.spr);gl.uniformMatrix4fv(pr.U.uV,false,VIEW);gl.uniformMatrix4fv(pr.U.uP,false,PROJ);bindQuad();
   SPR.sort((a,b)=>b[8]-a[8]);let mode=-1;for(const s of SPR){if(s[8]!==mode){mode=s[8];gl.blendFunc(gl.SRC_ALPHA,mode?gl.ONE_MINUS_SRC_ALPHA:gl.ONE)}const c=hexC(s[5]);gl.uniform3f(pr.U.uC,s[0],s[1],s[2]);gl.uniform2f(pr.U.uS,s[3],s[4]);gl.uniform1f(pr.U.uCyl,s[7]);gl.uniform4f(pr.U.uCol,c[0]/255,c[1]/255,c[2]/255,s[6]);gl.drawArrays(gl.TRIANGLES,0,6)}}
  // particles + ambient motes
- {gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length+WXP.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
+ if(!(G.bench&&G.bench.off==='parts')){gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length+WXP.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
   for(const p of G.parts){const c=hexC(p.c);a[o]=p.x*U;a[o+2]=p.y*U;a[o+1]=groundH(p.x*U,p.y*U)+p.z;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=1-p.t/p.max;a[o+7]=p.s*.06;o+=8}
   for(const p of AMB){const c=hexC(p.c),f=Math.min(1,p.t,p.max-p.t);a[o]=p.x;a[o+2]=p.z;a[o+1]=p.y+Math.sin(p.t*1.7+p.ph)*.12;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=Math.max(0,f)*(p.fly?.45+.55*Math.sin(p.t*3+p.ph):.75);a[o+7]=p.s;o+=8}
   for(const p of SPL){a[o]=p.x;a[o+1]=p.y;a[o+2]=p.z;a[o+3]=.82;a[o+4]=.93;a[o+5]=1;a[o+6]=.5*(1-p.t/p.max);a[o+7]=.05;o+=8}
@@ -3478,7 +3482,7 @@ function renderOverlay(){
  if(G.mode!=='play')return;
  for(const o of G.res||[]){if(o.t>0||Math.hypot(o.x*U-CAM.tx,o.y*U-CAM.tz)>11)continue;const s=proj(o.x*U,groundH(o.x*U,o.y*U)+1.05,o.y*U);if(!s)continue;ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(o.name,s[0],s[1]);ctx.fillStyle=RAR[o.g-1].c2;ctx.fillText(o.name,s[0],s[1])}
  for(const n of[...(G.nodes||[]),...(G.beacons||[]),...(G.moonO||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=proj(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
- if(!P.dead){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';const ttl=achTitle(),ny=s[1]-(ttl?14:0);ctx.strokeText(P.name,s[0],ny);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],ny);if(ttl){ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeText(ttl,s[0],s[1]);ctx.fillStyle='#e8c878';ctx.fillText(ttl,s[0],s[1])}}}
+ if(!P.dead&&!G.bench){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';const ttl=achTitle(),ny=s[1]-(ttl?14:0);ctx.strokeText(P.name,s[0],ny);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],ny);if(ttl){ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeText(ttl,s[0],s[1]);ctx.fillStyle='#e8c878';ctx.fillText(ttl,s[0],s[1])}}}
  for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=proj(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
   const w=46,x=s[0]-w/2,y=s[1];ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(x-1,y-1,w+2,7);ctx.fillStyle=e.state==='chase'?'#d24a3e':'#b89a5a';ctx.fillRect(x,y,w*Math.max(0,e.hp/e.max),5);
   ctx.font='800 11px "Alegreya Sans",sans-serif';ctx.textAlign='right';const hard=e.lvl>=P.lvl+5;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(e.lvl,x-4,y+6);ctx.fillStyle=hard?'#ff7a6b':'#f3ead6';ctx.fillText(e.lvl,x-4,y+6);ctx.textAlign='center';
@@ -3734,6 +3738,9 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:47,date:'4 Nov 2026',title:'Performance check',items:[
+  'Options, Display and sound now has a Performance check. It takes about 40 seconds, flies the camera through four scenes, and shows how smoothly the game runs on your device.',
+  'Press Copy results and send them to us, so the game can be tuned for the phones and computers people really play on.']},
  {id:46,date:'4 Nov 2026',title:'A Warden cat',items:[
   'A tabby in a Warden\'s rune collar now follows your hero. It walks at your heel, runs to catch up, and sits down when you stop.',
   'It is just for company and never fights. Hide it for this hero under Options, then Game.']},
@@ -4052,7 +4059,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   if(tab==='ctl')h+=`<div class="keys pd">${PADKEYS.map(([a,k])=>`<div><span>${a}</span><span class="gpk">${k.split(' ').map(gpg).join('')}</span></div>`).join('')}</div>${sg('padStyle','Controller buttons','Which button names to show.',[['xbox','Xbox'],['ps','PlayStation']],'xbox')}<div class="keys kb">${KEYS.map(([a,k])=>`<div><span>${a}</span><kbd>${k}</kbd></div>`).join('')}</div><div class="optrow"><div><b>Invert look</b><span>Flip the camera for dragging and the right stick.</span></div><div class="seg">${['invX','invY'].map((k,i)=>`<button class="cbtn tog ${OPT[k]?'on':''}" data-act="opt" data-k="${k}" data-d="0" aria-pressed="${!!OPT[k]}">${i?'Vertical':'Horizontal'}: ${OPT[k]?'On':'Off'}</button>`).join('')}</div></div>
    ${sg('sens','Look sensitivity','How fast the camera turns.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
    ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
-  else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
+  else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>${benchHTML()}
    ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)+sg('fxLvl','Effect intensity','How many sparks, flashes, glows and weather specks the game shows.',[[1,'Full'],[.6,'Reduced'],[.3,'Minimal']],REDUCE?.6:1)+sg('textSize','Text size','Text in menus, messages, tips and the quest tracker.',[[1,'Normal'],[1.15,'Large'],[1.3,'Larger']],1)}${tg('fps','Show frame rate','Shows how smoothly the game is running, at the top of the screen.',false)}
    <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)+tg('tips','Tips for new players','A short tip the first time you meet something new. Each one shows once.',true)+`<div class="optrow"><div><b>See the tips again</b><span>Show every tip again, from the start.</span></div><button class="cbtn" data-act="tipsreset">Reset tips</button></div>`}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
@@ -4109,7 +4116,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='wsel'){if(G.webSel===b.dataset.id&&webCan(b.dataset.id))webLearn(b.dataset.id);else G.webSel=b.dataset.id;G.confirm=null}
  if(act==='wlearn')webLearn(b.dataset.id);
  if(act==='respec'){if(G.confirm!=='respec')G.confirm='respec';else{P.tal={};G.confirm=null;recalc();updateBadges();save();toast('Talents reset. Every point is back to spend.')}}
- if(act==='pet'&&P){P.petOff=!P.petOff;G.cat=null;save();toast(P.petOff?'Your cat waits at home.':'Your cat pads over to join you.')}if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='bench'){benchStart();return}if(act==='benchcopy')benchCopy();if(act==='pet'&&P){P.petOff=!P.petOff;G.cat=null;save();toast(P.petOff?'Your cat waits at home.':'Your cat pads over to join you.')}if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
  if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='textSize')applyText();if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
@@ -4413,6 +4420,57 @@ function liftTitle(){const el=$('#title'),btn=el&&!el.hidden&&el.querySelector('
  for(const o of ovRects.map(loc))if(o.l<k.rt&&o.rt>k.l&&o.t<k.b+was&&o.b>k.t+was)up=Math.max(up,k.b+was-o.t+4);
  el.style.setProperty('--up',Math.ceil(Math.min(up,Math.max(0,room)))+'px')}
 setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
+/* Performance check (38): about 40 seconds through four fixed scenes in every zone, then a few switches on the busiest one to see what costs the most.
+   The hero's own world is set aside while it runs and put back exactly afterwards: nothing is entered, spawned into the real map, saved or unlocked. */
+const BENCH={warm:1,len:4,probe:2.5,maxMs:1000,
+ scenes:[{id:'vale',n:'Hollowmere by day',time:'day',wx:'clear'},{id:'gloam',n:'Gloamwood at night',time:'night',wx:'clear'},{id:'frost',n:'Frostfang in a snowstorm',time:'day',wx:'snow'},{id:'ember',n:'A battle in Emberfall',time:'day',wx:'ash',fight:true}],
+ probes:[{k:'all',n:'Everything on'},{k:'res',n:'Screen detail at 62%'},{k:'bloom',n:'Glow effect off'},{k:'parts',n:'Particles and weather off'},{k:'water',n:'Water off'}]};
+const BENCH_ARR=['areas','beacons','enemies','fishS','fx','harm','loot','nodes','moonO','parts','projs','res','skins','spots','tele','texts'];
+let benchLast=null;
+function benchGPU(){try{const x=gl.getExtension('WEBGL_debug_renderer_info');return x?String(gl.getParameter(x.UNMASKED_RENDERER_WEBGL)||''):''}catch(_){return''}}
+function benchStart(){if(G.mode!=='play'||G.bench||!P||!gl)return false;closePanel(true);
+ const sv={map:G.map,yaw:CAM.yaw,zoom:CAM.zoom,pad:CAM.pitchAdj,time:TIMEO.time,wx:TIMEO.weather,bloom:OPT.bloom,rs:RS,event:G.event,tgt:G.tgt,boss:G.boss,arr:{}};
+ for(const k of BENCH_ARR)sv.arr[k]=G[k];
+ const el=document.createElement('div');el.className='benchbar';el.innerHTML='<span></span><button class="cbtn">Cancel</button>';el.querySelector('button').onclick=()=>benchEnd(true);document.body.appendChild(el);
+ G.bench={sv,el,step:-1,ph:'next',t:0,ms:[],scenes:[],probes:[],off:null};$h('hud').style.visibility='hidden';RS=RSMAX;resize();return true}
+function benchLabel(t){const b=G.bench;if(b&&b.el)b.el.querySelector('span').textContent=t}
+function benchScene(sc){const b=G.bench;if(!G.maps[sc.id])G.maps[sc.id]=BUILD[sc.id]();const m=G.maps[sc.id];if(!m.gfx)buildWorld(m);G.map=m;
+ for(const k of BENCH_ARR)G[k]=[];G.event=null;G.tgt=null;G.boss=null;TIMEO.time=sc.time;TIMEO.weather=sc.wx;CAM.zoom=1;CAM.pitchAdj=0;
+ b.cx=m.start.x;b.cy=m.start.y;b.yaw0=CAM.yaw=Math.PI;
+ if(sc.fight&&m.spawns){const types=[...new Set(m.spawns.map(x=>x.type))];for(let k=0;k<8;k++){const a=k/8*TAU,r=(2.6+(k%3)*.9)*TS,x=b.cx+Math.cos(a)*r,y=b.cy+Math.sin(a)*r;if(m.solidAt(x,y))continue;const sp=m.spawns.find(z=>z.type===types[k%types.length]);G.enemies.push(mkEnemy(sp.type,sp.l1||1,x,y))}}}
+function benchStat(ms){const a=ms.slice().sort((x,y)=>x-y),n=a.length;if(!n)return{fps:0,low:0,worst:0,avg:0,frames:0};const avg=a.reduce((x,y)=>x+y,0)/n,p99=a[Math.min(n-1,Math.floor(n*.99))];
+ const r1=v=>v<10?+v.toFixed(1):Math.round(v);return{fps:r1(1000/avg),low:r1(1000/p99),worst:Math.round(a[n-1]),avg:+avg.toFixed(1),frames:n}}
+function benchTick(dt,raw){const b=G.bench;if(!b)return;if(document.hidden){benchEnd(true,'The check stopped because the game was hidden.');return}
+ const scs=BENCH.scenes,last=scs[scs.length-1];b.t+=raw>0&&raw<BENCH.maxMs?Math.min(.25,raw/1000):dt;
+ if(b.ph==='next'){b.step++;b.t=0;b.ms=[];if(b.step<scs.length){benchLabel(`Preparing ${scs[b.step].n}…`);b.ph='load';return}
+  const pi=b.step-scs.length;if(pi<BENCH.probes.length){const pr=BENCH.probes[pi];b.off=pr.k;OPT.bloom=pr.k==='bloom'?false:b.sv.bloom;RS=pr.k==='res'?Math.min(RSMAX,.62):RSMAX;resize();b.ph='probe';benchLabel(`Measuring what costs the most · ${pi+1} of ${BENCH.probes.length}`);return}
+  benchFinish();return}
+ if(b.ph==='load'){benchScene(scs[b.step]);b.ph='scene';b.t=0;b.ms=[];benchLabel(`Measuring ${scs[b.step].n} · ${b.step+1} of ${scs.length}`);return}
+ const sc=b.ph==='scene'?scs[b.step]:last;CAM.yaw=b.yaw0+b.t*.45;
+ if(sc.fight){for(const e of G.enemies)e.anim=(e.anim||0)+dt;const n=Math.max(1,Math.round(dt*24));for(let k=0;k<n;k++){const a=R()*TAU,r=R()*3.5*TS,x=b.cx+Math.cos(a)*r,y=b.cy+Math.sin(a)*r,c=['#ff8a3a','#ffd070','#8fb0ff','#c890ff'][k%4];burst(x,y,c,8);spark(x,y,c,4);rise(x,y,c,3)}
+  for(const p of G.parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vz-=3.2*(p.g??1)*dt;p.vx*=0.93;p.vy*=0.93;if(p.z<0.02){p.z=0.02;p.vz*=-0.3}}G.parts=G.parts.filter(p=>p.t<p.max);if(G.parts.length>900)G.parts.splice(0,G.parts.length-900)}
+ const warm=b.ph==='scene'?BENCH.warm:.5,len=b.ph==='scene'?BENCH.len:BENCH.probe;
+ if(b.t>warm&&raw>0&&raw<BENCH.maxMs)b.ms.push(raw);
+ if(b.t>=warm+len){const st=benchStat(b.ms);if(b.ph==='scene')b.scenes.push(Object.assign({n:sc.n},st));else b.probes.push(Object.assign({k:b.off,n:BENCH.probes[b.step-scs.length].n},st));b.off=null;b.ph='next'}}
+function benchVerdict(low){return low>=50?'Smooth':low>=30?'Playable':'Struggling'}
+function benchFinish(){const b=G.bench,scs=b.scenes,pr=b.probes,base=pr.find(x=>x.k==='all');
+ const dev=`${bugDevice()} · screen ${innerWidth}×${innerHeight} at ${(devicePixelRatio||1).toFixed(2)}x · drawing ${glc.width}×${glc.height}`,gpu=benchGPU();
+ const costs=base?pr.filter(x=>x.k!=='all').map(x=>({n:x.n,save:+(base.avg-x.avg).toFixed(1)})):[];
+ const worst=scs.reduce((a,x)=>Math.min(a,x.low),999),gfx={high:'High',balanced:'Balanced',fast:'Fast'}[OPT.gfx]||'High';
+ const lines=['Wardens of Veylmoor performance check',`${UPDATES[0]?`Update ${UPDATES[0].id} (${UPDATES[0].date})`:''} · Graphics: ${gfx}`,dev+(gpu?` · GPU: ${gpu}`:''),'',
+  ...scs.map(x=>`${x.n}: ${x.fps} fps, slowest 1% ${x.low} fps, worst frame ${x.worst} ms (${benchVerdict(x.low)})`),'',
+  `In the Emberfall battle, a frame takes ${base?base.avg:'?'} ms with everything on. Turning each thing down saves:`,...costs.map(c=>`  ${c.n}: ${c.save>0?c.save:0} ms`),'',
+  `Overall: ${benchVerdict(worst)}`];
+ benchLast={when:Date.now(),scenes:scs,probes:pr,costs,dev,gpu,gfx,verdict:benchVerdict(worst),text:lines.join('\n')};benchEnd(false)}
+function benchEnd(cancel,why){const b=G.bench;if(!b)return;const sv=b.sv;G.map=sv.map;for(const k of BENCH_ARR)G[k]=sv.arr[k];G.event=sv.event;G.tgt=sv.tgt;G.boss=sv.boss;
+ TIMEO.time=sv.time;TIMEO.weather=sv.wx;OPT.bloom=sv.bloom;CAM.yaw=sv.yaw;CAM.zoom=sv.zoom;CAM.pitchAdj=sv.pad;RS=Math.min(sv.rs,RSMAX);resize();
+ if(b.el)b.el.remove();G.bench=null;$h('hud').style.visibility='';snapCam();
+ if(cancel){toast(why||'Performance check cancelled.');return}G.optTab='av';openPanel('options');toast(`Performance check done: <b>${benchLast.verdict}</b>. The results are under Options, Display and sound.`,'lvl')}
+function benchHTML(){const r=benchLast;return`<div class="optrow perfrow"><div><b>Performance check</b><span>About 40 seconds through four scenes, then shows how smoothly the game runs here. Copy the results to share them.</span></div><button class="cbtn" data-act="bench">${r?'Run again':'Run check'}</button></div>`+
+ (r?`<div class="perfres"><pre>${esc(r.text)}</pre><button class="cbtn" data-act="benchcopy">Copy results</button></div>`:'')}
+function benchCopy(){const t=benchLast&&benchLast.text;if(!t)return;const done=()=>toast('Results copied. Paste them into a message.');
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>benchCopyOld(t,done));return}}catch(_){}benchCopyOld(t,done)}
+function benchCopyOld(t,done){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();done()}catch(_){toast('Copying is blocked here. Press and hold the results to copy them.')}}
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
 let pfN=0,pfT=0,pfW=0,pfFps=0,pfWorst=0,pfEl=null;
@@ -4420,10 +4478,10 @@ function perfTick(ms){if(ms>1000){pfN=0;pfT=0;pfW=0;return}pfN++;pfT+=ms;if(ms>p
  if(!OPT.fps){if(pfEl)pfEl.hidden=true;return}if(!pfEl){pfEl=document.createElement('div');pfEl.className='fpsbox';document.body.appendChild(pfEl)}pfEl.hidden=false;pfEl.textContent=`${pfFps} fps · slowest ${pfWorst} ms · ${Math.round(RS*100)}% detail`}
 function frame(now){const rawMs=now-last,dt=Math.min(0.05,(now-last)/1000);last=now;perfTick(rawMs);if(glLost){requestAnimationFrame(frame);return}
  try{pollPad(dt)}catch(err){console.error(err);logError(err,'controller')}
- try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
+ try{if(G.bench)benchTick(dt,rawMs);else if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
   renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits();durBadge()}}catch(err){console.error(err);logError(err,'game loop')}
- frameAvg=frameAvg*.95+dt*1000*.05;if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
- if(frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
+ frameAvg=frameAvg*.95+dt*1000*.05;if(G.bench){slowT=fastT=0}else if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
+ if(!G.bench&&frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
  requestAnimationFrame(frame)}
 function boot(data){cacheEls();
  if(gl){try{initGL();loadModels();G.maps.vale=buildVale();G.map=G.maps.vale;buildWorld(G.maps.vale);snapCam();applyGfx()}catch(err){console.error(err);logError(err,'startup')}}
@@ -4433,7 +4491,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

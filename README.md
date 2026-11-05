@@ -19,6 +19,9 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 ## Report a bug
 In the game, open Options, then Game, and press **Report a bug**. It opens a short form here on GitHub with your version, device and hero filled in. You can also [open a bug report](https://github.com/Hunter253/veylmoor/issues/new?template=bug_report.yml) directly, or email wardensofveylmoor@gmail.com if you don't have a GitHub account.
 
+## Performance check
+In the game, open Options, then Display and sound, and press **Run check**. It takes about 40 seconds and shows how smoothly the game runs on your device, with a **Copy results** button so you can send the numbers along with a bug report or message.
+
 ## Privacy and terms
 Your heroes and settings stay in your own browser; the game has no accounts, ads, analytics or tracking. Read the full [privacy page](privacy.html) and [terms](terms.html), also linked in the game under Options, then Game. The fonts are served with the game under the SIL Open Font License (see `fonts/`).
 
