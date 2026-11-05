@@ -839,6 +839,17 @@ await test('Campaign milestones stay hidden until earned, then show and give a t
   V.openPanel('char');document.querySelector('#book [data-act="ctab"][data-t="ach"]').click();txt=document.querySelector('#book').innerText;if(!txt.includes('The Last Seal'))bad.push('the earned milestone is still hidden');const tb=document.querySelector('#book [data-act="achtitle"][data-k="story_end"]');if(!tb)bad.push('no title for finishing the campaign');V.closePanel(true);
   const d=JSON.parse(JSON.stringify(V.serialize()));delete d.ach;V.loadSave(d);if(!V.achS().got.story_end)bad.push('an old hero who finished was not credited');return bad}`));
 
+// New-player hints (29.e).
+await reset();
+await test('Tips show once each, in the right words for the controls, and can be turned off and reset', () => ev(`()=>{const V=window.__veyl,G=V.G,O=V.OPT,bad=[];V.startNew('reaver','Tester');O.hintsSeen={};O.tips=true;G.enemies=[];V.closePanel(true);const el=()=>document.getElementById('hint'),run=s=>{for(let i=0;i<s*4;i++)V.update(.25)};
+  for(const h of V.HINTS){if(!h.id||typeof h.when!=='function'||typeof h.k!=='function')bad.push('hint '+h.id+' is incomplete');const t=V.hintText(h);if(!t||t.length<20)bad.push(h.id+' has no text')}
+  run(3);if(!el()||el().hidden||el().dataset.id!=='move')bad.push('no movement tip at the start: '+(el()&&el().dataset.id));if(!/W|stick|Drag/.test(el()?el().innerText:''))bad.push('the movement tip names no controls');
+  el().querySelector('[data-hint]').click();if(!el().hidden)bad.push('Got it did not close the tip');run(1);if(!el().hidden&&el().dataset.id==='move')bad.push('the same tip came back');
+  run(20);if(!V.hintSeen().look)bad.push('the look tip never came');V.hintHide();O.hintsSeen={move:1,look:1,use:1,quest:1,talent:1};G.enemies=[V.mkEnemy('rat',1,V.P.x+60,V.P.y)];run(6);if(!V.hintSeen().attack)bad.push('no attack tip with a monster close by');
+  V.hintHide();G.enemies=[];O.tips=false;O.hintsSeen={};run(6);if(el()&&!el().hidden)bad.push('a tip showed with tips turned off');O.tips=true;
+  G.optTab='av';V.openPanel('options');const r=document.querySelector('#book [data-act="tipsreset"]');if(!r)bad.push('no reset button in Options');else{O.hintsSeen={move:1};r.click();if(Object.keys(V.hintSeen()).length)bad.push('reset did not clear the tips')}if(!/Tips for new players/.test(document.querySelector('#book').innerText))bad.push('no tips switch in Options');V.closePanel(true);
+  V.openPanel('quests');O.hintsSeen={};run(4);if(el()&&!el().hidden)bad.push('a tip showed over a menu');V.closePanel(true);return bad}`));
+
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
 ws.close(); browser.kill(); server.close();

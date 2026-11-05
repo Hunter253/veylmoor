@@ -136,6 +136,7 @@ kbd{display:none}#app.kbm kbd{display:block}
 .fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
 .sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
+#hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);width:min(460px,calc(100% - 32px));display:flex;gap:10px;align-items:center;background:rgba(20,14,8,.92);border:1px solid var(--brass2);border-radius:8px;padding:9px 10px 9px 14px;font:500 14.5px/1.35 var(--f-body);color:#f2e6cc;z-index:6;animation:tin .25s ease-out}#hint[hidden]{display:none}#hint span{flex:1}#hint kbd{font:700 12px var(--f-num);padding:1px 5px;border:1px solid #c8a060;border-radius:4px;background:#2a1e12}#hint .cbtn{flex:0 0 auto;font-size:13px}
 .toast{background:rgba(20,12,6,.88);border:1px solid #8a6420;border-radius:6px;padding:7px 12px;font:500 14px/1.3 var(--f-body);text-align:center;animation:tin .25s ease-out}
 .toast.lvl{color:#ffd870;border-color:#ffd870}.toast.q{border-color:#5a8a3a}.toast.warn{border-color:#a0381e}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}}
@@ -2069,7 +2070,7 @@ function moveEnt(o,dx,dy,r){const m=G.map;if(dx&&!blocked(m,o.x+dx,o.y,r))o.x+=d
 
 /* ================= Update ================= */
 function update(dt){
- G.time+=dt;wearTick(dt);if(G.skins)for(const o of G.skins)o.t-=dt;if(G.fishS)for(const o of G.fishS)if(o.t>0)o.t-=dt;moonTick(dt);achTick(dt);storyTick(dt);
+ G.time+=dt;wearTick(dt);hintTick(dt);if(G.skins)for(const o of G.skins)o.t-=dt;if(G.fishS)for(const o of G.fishS)if(o.t>0)o.t-=dt;moonTick(dt);achTick(dt);storyTick(dt);
  for(let k=G.timers.length-1;k>=0;k--){const t=G.timers[k];t.t-=dt;if(t.t<=0){G.timers.splice(k,1);t.fn()}}
  updatePlayer(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
  for(let k=G.tele.length-1;k>=0;k--){const t=G.tele[k];t.t+=dt;if(t.t>=t.max){G.tele.splice(k,1);t.cb()}}
@@ -3601,11 +3602,39 @@ function lettersHTML(){const S=storyS(),got=LETTERS.filter(L=>S.letters[L.id]).s
  return`<div class="pad" style="padding-top:10px">${got.length?got.map(L=>`<button class="qrow ${S.letters[L.id].read?'':'main'}" data-act="letter" data-k="${L.id}"><span class="qi">${EMBERSHIELD}</span><span>${esc(L.title)}${S.letters[L.id].read?'':' · new'}</span><span></span></button>`).join(''):'<p style="text-align:center;margin:20px 0">No letters yet.</p>'}</div>`}
 const qTabs=()=>{const t=G.qTab==='letters',S=P?storyS():null,unread=S&&LETTERS.some(L=>S.letters[L.id]&&!S.letters[L.id].read);
  return`<div class="tabs"><button class="tab ${t?'':'on'}" data-act="qtab" data-t="log">${svg('scroll')}Quests</button><button class="tab ${t?'on':''}" data-act="qtab" data-t="letters">${svg('book')}Letters${unread?' •':''}</button></div>`};
+/* ================= New-player hints (29.e) =================
+   Each hint shows once on this device, the first time its moment comes, in words for the controls in use
+   (k keyboard and mouse, p controller, t touch). They can be switched off, and shown again, in Options. */
+const kbdTag=x=>`<kbd>${x}</kbd>`;
+const HINTS=[
+ {id:'move',when:()=>G.time>2,k:()=>`Move with ${kbdTag('W')} ${kbdTag('A')} ${kbdTag('S')} ${kbdTag('D')}. Hold ${kbdTag('Shift')} to sprint and press ${kbdTag('Space')} to jump.`,p:()=>`Move with the left stick, and click it to sprint. Press ${gpg('a')} to jump.`,t:()=>'Drag on the left side of the screen to move.'},
+ {id:'look',when:()=>G.time>9,k:()=>'Hold a mouse button and drag to look around. The mouse wheel zooms.',p:()=>'Look around with the right stick.',t:()=>'Drag on the right side of the screen to look around.'},
+ {id:'use',when:()=>!!G.near,k:()=>`Press ${kbdTag('E')} to talk to people and use things nearby.`,p:()=>`Press ${gpg('a')} to talk to people and use things nearby.`,t:()=>'Tap the button that appears to talk to people and use things nearby.'},
+ {id:'quest',when:()=>QUESTS.some(q=>P.q[q.id]&&P.q[q.id].s==='active'),k:()=>`Your quests are on the left of the screen. Press ${kbdTag('L')} for the full quest log and ${kbdTag('M')} for the map.`,p:()=>'Your quests are on the left of the screen. The full quest log and the map are in the menu.',t:()=>'Your quests are on the left of the screen. Tap the book button for the full quest log.'},
+ {id:'attack',when:()=>G.enemies.some(e=>!e.dead&&dist(e.x,e.y,P.x,P.y)<260),k:()=>`Click a monster or press ${kbdTag('F')} to attack. Your skills are on ${kbdTag('1')} to ${kbdTag('5')}.`,p:()=>`Press ${gpg('x')} to attack. Your skills are on the shoulder buttons and triggers.`,t:()=>'Tap a monster to attack it, and use the skill buttons at the bottom right.'},
+ {id:'dodge',when:()=>P.lastHurt!=null&&G.time-P.lastHurt<3,k:()=>`Press ${kbdTag('V')} to dodge roll out of danger. A red marking on the ground means something big is coming.`,p:()=>`Press ${gpg('b')} to dodge roll out of danger. A red marking on the ground means something big is coming.`,t:()=>'Tap the roll button to dodge out of danger. A red marking on the ground means something big is coming.'},
+ {id:'talent',when:()=>typeof talentPoints==='function'&&talentPoints()>0,k:()=>`You have a talent point to spend. Press ${kbdTag('K')} and open Talents.`,p:()=>'You have a talent point to spend. Open the menu, then Spells and Talents.',t:()=>'You have a talent point to spend. Open the book, then Spells and Talents.'},
+ {id:'mats',when:()=>P.bag.some(x=>x.slot==='mat'),k:()=>'Ore, herbs, wood and hides go to the forge. Any town shop has a Craft tab: choose a profession there, then forge your own gear.',p:null,t:null},
+ {id:'skin',when:()=>(G.skins||[]).some(o=>o.t>0),k:()=>'Beasts can be skinned for hides for a little while after they fall. Walk to the body and use it.',p:null,t:null},
+ {id:'fish',when:()=>(G.fishS||[]).some(o=>dist(o.x,o.y,P.x,P.y)<8*TS),k:()=>'Ripples and a red float beside the water mark a fishing spot. Walk up and use it, then reel in while the marker is in the bright zone.',p:null,t:null},
+ {id:'bag',when:()=>P.bag.length>=bagCap()-3,k:()=>'Your bag is nearly full. Sell what you do not need at a shop, or keep it in Storage at any town shop.',p:null,t:null}];
+const hintSeen=()=>(OPT.hintsSeen&&typeof OPT.hintsSeen==='object')?OPT.hintsSeen:(OPT.hintsSeen={});
+const hintMode=()=>PAD?'p':KBM?'k':'t';
+function hintText(h){const f=h[hintMode()]||h.k;return f()}
+function hintShow(h){hintSeen()[h.id]=1;saveOpt();const hud=$h('hud');if(!hud)return;let el=$h('hint');if(!el){el=document.createElement('div');el.id='hint';el.setAttribute('role','status');hud.appendChild(el)}
+ el.innerHTML=`<span>${hintText(h)}</span><button class="cbtn" data-hint="close" aria-label="Close tip">Got it</button>`;el.hidden=false;el.dataset.id=h.id;G.hintT=9;G.hintGap=4}
+function hintHide(){const el=$h('hint');if(el)el.hidden=true;G.hintT=0}
+function hintTick(dt){if(G.hintT>0){G.hintT-=dt;if(G.hintT<=0)hintHide();return}if((G.hintGap=(G.hintGap||0)-dt)>0)return;G.hintGap=.5;
+ if(OPT.tips===false||G.panel||P.dead||G.mode!=='play')return;const seen=hintSeen();for(const h of HINTS){if(seen[h.id])continue;let ok=false;try{ok=h.when()}catch(_){}if(ok){hintShow(h);return}}}
 /* ================= Book (menus) ================= */
 /* Update log: what players read under Updates, newest first.
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:40,date:'4 Nov 2026',title:'Tips for new players',items:[
+  'Short tips now appear the first time you meet something new: moving, looking around, using things, quests, fighting, dodging, talents, the forge, skinning, fishing and a full bag.',
+  'Each tip shows once, in the words for whatever you play with: keyboard and mouse, controller or touch. Tap Got it to close one early.',
+  'Turn tips off, or see them all again, in Options under Display and sound.']},
  {id:39,date:'4 Nov 2026',title:'Hidden achievements',items:[
   'Two new achievements under Character, Achievements, are hidden until you earn them. They show as ??? until then, so they give nothing away.',
   'Both come with a title. Heroes who have already earned one are credited the next time they load.']},
@@ -3904,7 +3933,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
    ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
   else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
    ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)}${tg('fps','Show frame rate','Shows how smoothly the game is running, at the top of the screen.',false)}
-   <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)}`;
+   <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)+tg('tips','Tips for new players','A short tip the first time you meet something new. Each one shows once.',true)+`<div class="optrow"><div><b>See the tips again</b><span>Show every tip again, from the start.</span></div><button class="cbtn" data-act="tipsreset">Reset tips</button></div>`}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
    <div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
@@ -3959,7 +3988,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='wsel'){if(G.webSel===b.dataset.id&&webCan(b.dataset.id))webLearn(b.dataset.id);else G.webSel=b.dataset.id;G.confirm=null}
  if(act==='wlearn')webLearn(b.dataset.id);
  if(act==='respec'){if(G.confirm!=='respec')G.confirm='respec';else{P.tal={};G.confirm=null;recalc();updateBadges();save();toast('Talents reset. Every point is back to spend.')}}
- if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
  if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
@@ -4154,6 +4183,7 @@ $h('skillbar').addEventListener('mouseover',e=>{const b=e.target.closest('.sk'),
 $h('skillbar').addEventListener('mouseleave',()=>{$h('skTip').hidden=true});
 $h('micro').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b&&G.mode==='play'&&P&&!P.dead)openPanel(b.dataset.p)});
 $h('hud').addEventListener('click',()=>{const a=document.activeElement;if(a&&a.blur)a.blur()});
+addEventListener('click',e=>{if(e.target.closest('[data-hint]'))hintHide()});
 for(const t of['mousedown','mouseup'])addEventListener(t,e=>{if(e.button===3||e.button===4)e.preventDefault()});
 function toggleFS(){if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});return}document.documentElement.requestFullscreen().then(()=>{if(navigator.keyboard&&navigator.keyboard.lock)return navigator.keyboard.lock(['Escape','Tab'])}).catch(()=>{})}
 document.addEventListener('fullscreenchange',()=>{if(G.panel==='options')renderPanel()});
@@ -4282,7 +4312,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 
