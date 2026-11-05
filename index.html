@@ -14,9 +14,16 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>html,body{margin:0;height:100%;background:#120c06}</style>
 <title>Wardens of Veylmoor</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;500;700&family=Alegreya+Sans:wght@700;800&family=IM+Fell+English+SC&family=Marcellus&display=swap">
+<style>
+/* Fonts are served from this site (fonts/, SIL Open Font License; see fonts/LICENSE-*.txt), so no font request leaves for another company and they work offline. Latin subset, the same weights the game used from Google Fonts. */
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/alegreya-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/alegreya-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-sans-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/alegreya-sans-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'IM Fell English SC';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/im-fell-english-sc-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Marcellus';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/marcellus-latin-400-normal.woff2) format('woff2')}
+</style>
 <style>
 /* Layout: full-bleed 3D world under a 2D label layer. HUD follows the classic mobile-MMO arrangement: portraits top-left, compass and menu top-right, vertical skill bar right, joystick bottom-left. Menus open as a parchment book. Single deliberate theme. */
 :root{
@@ -133,6 +140,9 @@ kbd{display:none}#app.kbm kbd{display:block}
 .profpick{margin-bottom:10px}.profq{margin:0 0 8px;font-size:14px}.ccard.best{border-top-color:#ffd870;box-shadow:0 0 0 1px #ffd870}.profhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:8px;font-size:14px}.profhead b{font:400 17px var(--f-ui);flex:1;min-width:180px}.profhead span:not(.price){flex-basis:100%;order:3;color:var(--ink2)}.profhead .cbtn{font-size:13px;padding:5px 9px}
 #durNote{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 24px);transform:translateX(-50%);padding:2px 10px;background:rgba(16,22,26,.85);border:1px solid #d8a040;color:#ffd890;font:500 13px/1.4 var(--f-body);white-space:nowrap;pointer-events:none}#durNote.broken{border-color:#e05a4a;color:#ffb0a0}#durNote[hidden]{display:none}.islot.eqs.worn{box-shadow:0 0 0 2px #d8a040}.islot.eqs.broken{box-shadow:0 0 0 2px #e05a4a;filter:saturate(.35)}.durtxt{color:var(--ink2)}.durtxt.low{color:#e8a040}.durtxt.bad{color:#f07a68}.replist{display:grid;gap:8px;max-width:620px;margin:0 auto}.reprow{display:flex;align-items:center;gap:10px}.reprow .islot{width:48px;flex:none}.repn{flex:1;display:grid;min-width:0}.repn b{font:400 16px var(--f-ui)}.repn span{font-size:13px;color:var(--ink2)}.reprow .gbar{min-width:130px;flex:none}.repall{display:flex;margin:12px auto 0;min-width:220px}
 .socs{display:grid;gap:4px;margin-top:6px}.socrow{display:flex;align-items:center;gap:6px;font-size:13px}.socrow span:nth-child(2){flex:1}.socic{width:22px;height:22px;flex:none;display:block}.socic.empty{box-sizing:border-box;border:1px dashed currentColor;border-radius:50%;opacity:.6}.socbtn{padding:3px 8px!important;font-size:12px!important}.gemnote{margin:10px 0 0;text-align:center;font-size:14px}.gemlv{position:absolute;left:3px;top:2px;font:800 12px var(--f-num);font-style:normal;color:#fff;text-shadow:0 1px 2px #000}
+.benchbar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:8001;display:flex;gap:12px;align-items:center;padding:6px 8px 6px 16px;border-radius:10px;background:rgba(16,22,26,.86);color:#f0ead8;font:400 15px/1.3 var(--f-ui);white-space:nowrap;box-shadow:0 4px 18px #0008}
+.perfres{margin:4px 0 2px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.22);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.perfres pre{margin:0;white-space:pre-wrap;font:13px/1.45 var(--f-num);color:inherit;user-select:text;-webkit-user-select:text}
 .fpsbox{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 2px);transform:translateX(-50%);z-index:8000;padding:1px 8px;background:rgba(16,22,26,.8);color:#f0ead8;font:500 12px/1.4 Georgia,serif;white-space:nowrap;pointer-events:none}.fpsbox[hidden]{display:none}
 .sysnote{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9000;width:min(560px,calc(100vw - 24px));display:grid;gap:8px;padding:10px 12px;background:rgba(16,22,26,.97);border:1px solid #4a5a62;border-left:3px solid #6fd8ea;color:#f0ead8;font:500 15px/1.35 Georgia,serif;pointer-events:auto;box-sizing:border-box}.sysnote p{margin:0;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}.sysbtns{display:flex;flex-wrap:wrap;gap:8px}.sysbtns button{min-height:38px;padding:6px 14px;background:#2a363c;border:1px solid #6fd8ea;color:#f0ead8;font:inherit;cursor:pointer}
 #toasts{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(440px,calc(56*var(--vw)));display:grid;gap:6px;justify-items:center;pointer-events:none}
@@ -254,7 +264,8 @@ kbd{display:none}#app.kbm kbd{display:block}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;padding:14px 16px 18px}
 .optlist{display:grid;gap:8px;max-width:680px;margin:0 auto}
 .optrow{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 14px;border-radius:8px;background:rgba(255,250,236,.55);border:1px solid rgba(120,80,30,.3)}
-.optrow b{font:400 17px var(--f-ui);display:block}.optrow span{font-size:13.5px;color:var(--ink2)}
+.optrow b{font:400 17px var(--f-ui);display:block}
+.optbtns{display:flex;gap:6px;flex-shrink:0}.optrow span{font-size:13.5px;color:var(--ink2)}
 .seg{display:flex;gap:4px;flex:none}
 .tog.on,.segb.on{background:linear-gradient(#a6e85a,#4aa632);color:#fff;border-color:#2f6a1a;text-shadow:0 1px 1px rgba(0,0,0,.5)}
 .deadbox{padding:22px;display:grid;gap:12px;text-align:center}
@@ -2075,7 +2086,7 @@ function moveEnt(o,dx,dy,r){const m=G.map;if(dx&&!blocked(m,o.x+dx,o.y,r))o.x+=d
 function update(dt){
  G.time+=dt;wearTick(dt);hintTick(dt);if(G.skins)for(const o of G.skins)o.t-=dt;if(G.fishS)for(const o of G.fishS)if(o.t>0)o.t-=dt;moonTick(dt);achTick(dt);storyTick(dt);
  for(let k=G.timers.length-1;k>=0;k--){const t=G.timers[k];t.t-=dt;if(t.t<=0){G.timers.splice(k,1);t.fn()}}
- updatePlayer(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
+ updatePlayer(dt);catTick(dt);updateEnemies(dt);updateEvent(dt);updateRes(dt);updateHarm(dt);updateProjs(dt);updateAreas(dt);
  for(let k=G.tele.length-1;k>=0;k--){const t=G.tele[k];t.t+=dt;if(t.t>=t.max){G.tele.splice(k,1);t.cb()}}
  updateLoot(dt);
  for(const f of G.fx)f.t+=dt;G.fx=G.fx.filter(f=>f.t<f.max);
@@ -2617,11 +2628,13 @@ void main(){vec2 p=vW.xz;float t=uTime;float a=vn(p*2.2+vec2(t*.35,t*.2)),b=vn(p
  col=mix(col,vec3(.9,.95,.93)*(.45+.35*uSunCol.g),clamp(foam,0.,1.)*.8);float al=uFoam>.5?uAlpha*clamp(dep*4.+.25,0.,1.)+foam*.35:uAlpha;
  gl_FragColor=vec4(finish(col,vW),clamp(al,0.,1.));}`;
 const VS_Q=`attribute vec2 aQ;varying vec2 vQ;void main(){vQ=aQ;gl_Position=vec4(aQ,.9999,1.);}`;
-const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight,uMoonK,uMoonS;uniform vec4 uMoon;
+const FS_SKY=FPREC+NOISE+`varying vec2 vQ;uniform vec3 uR,uU,uF,uTop,uHor,uFog,uSun,uSunC,uMtn;uniform vec2 uTan;uniform float uTime,uDay,uNight,uMoonK,uMoonS,uAur;uniform vec4 uMoon;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 void main(){vec3 d=normalize(uF+vQ.x*uTan.x*uR+vQ.y*uTan.y*uU);float y=d.y;vec3 c=mix(uHor,uTop,pow(clamp(y,0.,1.),.5));float sd=max(dot(d,uSun),0.);
  c+=uSunC*(pow(sd,900.)*40.+pow(sd,30.)*.7+pow(sd,5.)*.2)*uDay;
  if(uNight>0.&&y>0.){float st=fract(sin(dot(floor(d*190.),vec3(12.9898,78.233,37.719)))*43758.5453);c+=vec3(.85,.9,1.)*step(.9965,st)*(.5+.5*sin(uTime*2.+st*90.))*uNight*smoothstep(.04,.25,y);}
+ if(uAur>0.&&y>.04){float az=atan(d.x,d.z);float w=fbm(vec2(az*2.4+uTime*.03,uTime*.02))*.9;float band=smoothstep(.1,.24,y-w*.12)*(1.-smoothstep(.34,.62,y-w*.12));float rays=.55+.45*sin(az*38.+fbm(vec2(az*7.,uTime*.05))*9.+uTime*.4);
+  float a=band*rays*smoothstep(.25,.75,fbm(vec2(az*1.3-uTime*.02,7.)));vec3 ac=mix(vec3(.15,1.,.55),vec3(.55,.35,1.),smoothstep(.2,.55,y));c+=ac*a*.55*uAur;}
  if(uMoonK>0.){vec3 md=normalize(uMoon.xyz),mr=normalize(cross(md,vec3(0.,1.,0.))),mu=cross(mr,md);float mz=dot(d,md),sz=uMoonS,u=dot(d,mr)/sz,v=dot(d,mu)/sz,rr=u*u+v*v;
   if(mz>0.){float k=cos(6.2832*uMoon.w),e=k*sqrt(max(0.,1.-v*v)),lit=uMoon.w<.5?step(e,u):step(u,-e);float disc=1.-smoothstep(.9,1.,rr);float tex=.85+.15*fbm(vec2(u,v)*2.2+3.);
   c=mix(c,c*.35+vec3(.04,.05,.08),disc*uMoonK);c+=vec3(1.,.97,.88)*1.25*tex*lit*disc*uMoonK;float il=abs(.5-abs(uMoon.w-.5))*2.;c+=vec3(.55,.65,.85)*pow(max(mz,0.),400.)*.35*il*uMoonK;}}
@@ -2998,6 +3011,62 @@ function wraithModel(){const c=[150,172,190];const root=part('root',null);
  body.k.push(part('eyes',mk(g=>{for(const s of[-1,1])g.sphere(T3(s*.05,1.56,.15,.022,.022,.015),[255,255,255],5,4)}),[0,0,0],{e:4,t:'#cfe8ff'}));
  const armR=part('armR',mk(g=>{g.cyl(T3(0,-.5,0,1,.5,1),c,6,.03,.06);g.cyl(T3(0,-.75,0,1,.2,1),[190,150,70],8,.12,.05)}),[-.25,1.3,0],{r:[-.5,0,-.3],sp:1});
  root.k.push(body,armR);return{root,kind:'wraith'}}
+/* Warden Tabby, the hero's cat (cosmetic). Adapted from the Gemini design to the game's own shapes and trimmed for phones:
+   about 2,700 triangles in 13 parts instead of 12,600 in 245 pieces. Faces +z, stands on y=0, drawn at CAT.sc. */
+function catModel(){const brown=[146,104,64],tawny=[184,136,86],black=[44,34,26],white=[246,244,238],pink=[222,138,150],earP=[196,122,132],green=[118,214,80],leather=[86,44,22],brass=[214,170,60];
+ const cone=(g,b,d,len,rad,col,seg=4)=>{const l=Math.hypot(d[0],d[1],d[2])||1,dx=d[0]/l,dy=d[1]/l,dz=d[2]/l;g.cyl(T3(b[0],b[1],b[2],1,len,1,Math.atan2(dx,dz),Math.acos(clamp(dy,-1,1)),0),col,seg,rad,0)};
+ const H=[0,.47,-.22],at=(o,x,y,z)=>[x-o[0],y-o[1],z-o[2]];
+ const root=part('root',null);
+ const body=part('body',mk(g=>{const S=(x,y,z,a,b,c,col,s=9,r=7)=>{const p=at(H,x,y,z);g.sphere(T3(p[0],p[1],p[2],a,b,c),col,s,r)};
+  S(0,.50,.18,.27,.26,.30,brown);S(0,.50,-.02,.25,.24,.34,brown);S(0,.51,-.27,.28,.27,.28,brown);S(0,.36,0,.21,.14,.36,white,8,5);S(0,.64,-.04,.19,.12,.42,black,8,5);
+  for(const sd of[-1,1]){for(let k=0;k<4;k++){const p=at(H,sd*.235,.53,.14-k*.13);g.box(T3(p[0],p[1],p[2],.03,.24,.05,0,0,sd*.25),black)}
+   for(let r=0;r<2;r++)for(let c=0;c<3;c++)cone(g,at(H,sd*(.22-r*.02),.46-r*.08,.1-c*.16),[sd*.9,-.5,-.45],.12,.065,(r+c)%2?tawny:brown)}
+  S(0,.52,.36,.26,.25,.17,white,8,6);
+  for(const[n,y,rad,len]of[[7,.5,.21,.14],[5,.4,.16,.15]])for(let i=0;i<n;i++){const a=(i/(n-1)-.5)*2.6;cone(g,at(H,Math.sin(a)*rad,y,.4+Math.cos(a)*.07),[Math.sin(a)*.7,-.65,.55+Math.cos(a)*.3],len,.06,white)}
+  const p=at(H,0,.63,.36),Mc=T3(p[0],p[1],p[2],1,1,1,0,.6,0);g.torus(Mc,leather,.2,.03,14,4);
+  for(let k=0;k<8;k++){const a=k/8*TAU+TAU/16;if(Math.sin(a)>.6)continue;g.box(M4.mul(Mc,T3(Math.cos(a)*.226,0,Math.sin(a)*.226,.026,.026,.026,-a)),brass)}
+  const c=at(H,0,.46,.56);g.ico(T3(c[0],c[1],c[2],.06,.085,.022,0,-.35),brass,0,R,0,0);g.ico(T3(c[0],c[1]+.002,c[2]+.008,.05,.072,.02,0,-.35),black,0,R,0,0);
+  cone(g,at(H,0,.495,.545),[0,-.5,.3],.06,.016,brass,4)}),H);
+ body.k.push(part('rune',mk(g=>{const c=at(H,0,.46,.584),B=(x,y,w,h,rz)=>g.box(T3(c[0]+x,c[1]+y,c[2],w,h,.01,0,-.35,rz),[220,255,255]);B(-.014,0,.012,.075,0);B(.003,.026,.032,.011,-.35);B(.003,.004,.032,.011,.35);B(.006,-.02,.036,.011,-.75)}),[0,0,0],{e:2.4,t:'#47f8ff'}));
+ const N=[0,.66,.42],C=[0,.85,.48],hp=(x,y,z)=>at(N,C[0]+x,C[1]+y,C[2]+z);
+ const head=part('head',mk(g=>{const S=(p,a,b,c,col,s,r)=>g.sphere(T3(p[0],p[1],p[2],a,b,c),col,s,r);
+  S(hp(0,0,0),.25,.22,.23,brown,10,8);
+  for(const sd of[-1,1]){let p=hp(sd*.04,.12,.185);g.box(T3(p[0],p[1],p[2],.025,.11,.06,0,-.45,-sd*.18),black);p=hp(sd*.095,.11,.165);g.box(T3(p[0],p[1],p[2],.028,.12,.07,0,-.45,sd*.25),black);
+   for(const[y,rz]of[[.01,-.2],[-.04,-.32]]){p=hp(sd*.19,y,.12);g.box(T3(p[0],p[1],p[2],.11,.022,.05,sd*.6,0,sd*rz),black)}
+   for(let j=0;j<3;j++)cone(g,hp(sd*(.19-j*.01),-.03-j*.05,.05+j*.02),[sd*.9,-.35-j*.2,-.1],.17-j*.02,.06,j?white:tawny);
+   S(hp(sd*.056,-.065,.21),.08,.065,.075,white,6,4);
+   cone(g,hp(sd*.145,.16,0),[sd*.35,.93,.05],.2,.085,black,4);cone(g,hp(sd*.14,.165,.03),[sd*.33,.93,.12],.15,.05,earP,3);cone(g,hp(sd*.13,.19,.045),[-sd*.45,.85,.3],.11,.02,white,3);
+   for(let w=0;w<3;w++){p=hp(sd*.2,-.07-w*.016,.2);g.box(T3(p[0],p[1],p[2],.24,.009,.009,-sd*.35,0,sd*(.05+w*.12)),[226,228,236])}}
+  cone(g,hp(0,-.08,.222),[0,1,-.18],.19,.06,white,4);S(hp(0,-.12,.195),.078,.045,.062,white,6,4);S(hp(0,-.03,.285),.033,.022,.02,pink,5,3)}),at(H,N[0],N[1],N[2]));
+ head.k.push(part('eyes',mk(g=>{for(const sd of[-1,1]){const p=hp(sd*.1,.035,.2),q=hp(sd*.1,.035,.228);g.sphere(T3(p[0],p[1],p[2],.05,.046,.028,sd*.24),green,6,4);g.sphere(T3(q[0],q[1],q[2],.012,.034,.01,sd*.24),[14,12,10],4,3)}}),[0,0,0],{e:.7}));
+ const legM=(front)=>mk(g=>{g.cyl(T3(0,-.25,0,1,.25,1),brown,6,.068,front?.085:.1);g.torus(T3(0,-.11,0),black,.078,.014,8,3);cone(g,[0,-.13,-.05],[0,-.6,-.8],.1,.035,tawny,3);
+  g.cyl(T3(0,-.37,0,1,.13,1),white,6,.07,.072);g.sphere(T3(0,-.385,.03,.075,.045,.085),white,6,4);for(const x of[-.04,0,.04])g.sphere(T3(x,-.39,.1,.028,.025,.035),white,4,2)});
+ const fL=legM(1),bL=legM(0);
+ body.k.push(part('lf',fL,at(H,.15,.47,.22)),part('rf',fL,at(H,-.15,.47,.22)));
+ const lb=part('lb',bL,[.165,.47,-.25]),rb=part('rb',bL,[-.165,.47,-.25]);
+ const tseg=(len,r0,r1,dark)=>mk(g=>{g.cyl(T3(0,0,0,1,len,1),dark?black:brown,6,r0,r1);for(let k=0;k<4;k++){const a=k/4*TAU+(dark?.4:0);cone(g,[Math.cos(a)*r0*.8,len*.5,Math.sin(a)*r0*.8],[Math.cos(a)*.45,.8,Math.sin(a)*.45],.12,.065,dark?(k%2?black:brown):(k%2?tawny:brown))}});
+ const t1=part('t1',tseg(.22,.08,.1,0),at(H,0,.58,-.5),{r:[-1,0,0]}),t2=part('t2',tseg(.2,.1,.09,1),[0,.22,0],{r:[.35,0,0]}),t3=part('t3',tseg(.18,.09,.03,0),[0,.2,0],{r:[.4,0,0]});
+ t1.k.push(t2);t2.k.push(t3);body.k.push(t1,head);root.k.push(body,lb,rb);return{root,kind:'cat'}}
+/* The cat follows at the hero's heel: it walks, runs to catch up, jumps to the hero when left far behind or after a map change, and sits once things are still. Purely cosmetic; per hero, hidden with Options > Game. */
+const CAT={sc:.56,r:6,back:1.15,side:.55,snap:14,walk:150,run:330};
+function catOn(){return !!P&&!P.petOff&&G.mode==='play'&&!!G.map}
+function catSpot(){const fx=Math.sin(P.rot||0),fy=Math.cos(P.rot||0);return[P.x-fx*CAT.back*TS+fy*CAT.side*TS,P.y-fy*CAT.back*TS-fx*CAT.side*TS]}
+function catTick(dt){if(!catOn()){G.cat=null;return}const m=G.map;let c=G.cat;const[tx,ty]=catSpot();
+ if(!c||c.map!==m.id||Math.hypot(c.x-P.x,c.y-P.y)>CAT.snap*TS){const ok=!blocked(m,tx,ty,CAT.r);G.cat={x:ok?tx:P.x,y:ok?ty:P.y,rot:P.rot||0,map:m.id,ph:0,v:0,still:0,sit:0,stuck:0,px:P.x,py:P.y};return}
+ const pv=dt>0?Math.hypot(P.x-c.px,P.y-c.py)/dt:0;c.px=P.x;c.py=P.y;const dx=tx-c.x,dy=ty-c.y,d=Math.hypot(dx,dy);
+ const want=d<.3*TS?0:clamp((d-.2*TS)*4,0,Math.max(CAT.run,Math.min(pv,900)*1.25));c.v+=(want-c.v)*Math.min(1,dt*6);
+ if(c.v>4&&d>.5){const step=Math.min(d,c.v*dt),ox=c.x,oy=c.y;moveEnt(c,dx/d*step,dy/d*step,CAT.r);const mv=Math.hypot(c.x-ox,c.y-oy);
+  if(mv<step*.3){c.stuck+=dt;if(c.stuck>1.5&&d>2*TS){const ok=!blocked(m,tx,ty,CAT.r);c.x=ok?tx:P.x;c.y=ok?ty:P.y;c.stuck=0}}else c.stuck=0;
+  c.rot-=angDiff(c.rot,Math.atan2(dx,dy))*Math.min(1,dt*8);c.ph+=dt*c.v/TS*(c.v>CAT.walk*1.4?3.2:4.2)}
+ else{c.v=Math.min(c.v,4);c.rot-=angDiff(c.rot,P.rot||0)*Math.min(1,dt*2)}
+ c.still=c.v<8?c.still+dt:0;c.sit=clamp(c.sit+(c.still>1.4?dt*2.5:-dt*6),0,1)}
+function catAnim(c){const sp=c.v/TS,run=clamp((sp-5)/2.5,0,1),walk=clamp(sp/1.5,0,1)*(1-run),k=c.sit,s=Math.sin(c.ph),idle=1-walk-run,t=G.time;
+ const lw=(a,b)=>(a*walk+b*run)*(1-k);
+ return{root:{y:-.2*k},body:{rx:-.45*k+s*.07*run,y:Math.abs(Math.cos(c.ph))*.02*walk},head:{rx:.4*k-.06*s*run,ry:Math.sin(t*.7)*.35*idle*(1-k*.4)},
+  lf:{rx:lw(s*.45,s*.8)+.45*k},rf:{rx:lw(-s*.45,s*.8)+.45*k},lb:{rx:lw(-s*.45,-s*.8)-1.45*k},rb:{rx:lw(s*.45,-s*.8)-1.45*k},
+  t1:{rx:k*1.9+run*.7,ry:Math.sin(t*1.6)*.25*(1-run)},t2:{rx:k*.5,rz:Math.sin(t*1.6+.6)*.2},t3:{rz:Math.sin(t*1.6+1.2)*.25}}}
+function drawCat(){const c=G.cat;if(!c||!catOn())return;const x=c.x*U,z=c.y*U,gy=groundH(x,z);drawPart(MODELS.cat.root,M4.trs(x,gy,z,c.rot,0,0,CAT.sc,CAT.sc,CAT.sc),catAnim(c),0);decal(x,z,gy+.04,.3,.42,c.rot,0,[0,0,0],.45)}
+function catTris(){let n=0,parts=0;const walk=pt=>{parts++;if(pt.m)n+=pt.m.n/3;pt.k.forEach(walk)};walk(MODELS.cat.root);return{tris:n,parts}}
 function loadModels(){
  const H=humanoid;
  MODELS.bulwark=H({top:[150,156,166],chest:[184,190,200],pauldron:[186,192,202],spikes:true,trim:[218,172,70],tasset:[150,156,166],tabard:[164,38,34],bottom:[84,88,96],boots:[86,90,98],knee:[184,190,200],helm:[186,192,202],plume:[196,40,36],cape:[150,32,28],sleeve:[150,156,166],glove:[110,112,120],bracer:[184,190,200],weapon:'sword',shield:true});
@@ -3025,7 +3094,7 @@ function loadModels(){
  MODELS.rusk=H({top:[110,90,70],bottom:[70,56,44],beard:[140,120,100],hair:[140,120,100],collar:[80,60,40],trim:[200,170,90],sleeve:[110,90,70],skin:[196,150,116]});
  MODELS.odette=H({top:[110,140,170],robe:[90,116,146],hood:[236,232,222],collar:[236,232,222],trim:[200,180,140],sleeve:[110,140,170]});
  MODELS.nomad=H({top:[150,96,56],bottom:[110,76,44],hood:[190,150,100],mask:[90,60,40],sleeve:[150,96,56],bracer:[110,76,44],weapon:'sword',cape:[140,40,30]});
- MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
+ MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
  MODELS.portal=mk(g=>{const st=[108,110,104];for(const s of[-1,1]){g.box(T3(s*1.05,1.2,0,.4,2.4,.5),st);g.box(T3(s*1.05,.12,0,.55,.24,.62),[90,92,88])}for(let k=0;k<=8;k++){const a=Math.PI*k/8;g.box(T3(Math.cos(a)*1.05,2.4+Math.sin(a)*1.0,0,.4,.36,.5,0,0,a+Math.PI/2),st)}
   g.box(T3(0,1.4,-.12,1.75,2.8,.06),[6,10,12])});
  MODELS.bars=mk(g=>{for(let k=-3;k<=3;k++)g.box(T3(k*.25,1.5,.1,.05,3,.05),[50,50,46]);g.box(T3(0,2.2,.12,1.8,.07,.06),[50,50,46]);g.box(T3(0,.9,.12,1.8,.07,.06),[50,50,46])});
@@ -3193,6 +3262,7 @@ function camDist(){const portrait=VH>VW;return(portrait?10.5:7.4)*CAM.zoom}
 function updateCam(dt,snap){
  let tx,ty,tz;
  if(G.mode==='title'){tx=15;tz=27.8;CAM.yaw=Math.PI;}
+ else if(G.bench&&G.bench.cx!=null){tx=G.bench.cx*U;tz=G.bench.cy*U}
  else{tx=P.x*U;tz=P.y*U}
  ty=groundH(tx,tz)+1.05;
  const k=snap?1:Math.min(1,dt*10);CAM.tx+=(tx-CAM.tx)*k;CAM.ty+=(ty-CAM.ty)*k;CAM.tz+=(tz-CAM.tz)*k;
@@ -3225,6 +3295,15 @@ function drawHum(model,x,z,rot,ph,mv,atk,cast,fl,scale=1,yOff=0,tint=null){const
  drawPart(model.root,M,anim,fl,tint)}
 const DEC=[];const SPR=[];
 function decal(x,z,y,sx,sz,rot,kind,col,a,p=0,arc=0){DEC.push([x,y,z,sx,sz,rot,kind,col,a,p,arc])}
+/* ================= Night finishing touches (25.b) =================
+   NIGHTFX.aurora: which map themes get auroras, and how strong. Weather dims them.
+   NIGHTFX.glow: Gloamwood's flowers and bog plants glow after dark; spots are fixed per map, and only the nearest few are drawn. */
+const NIGHTFX={aurora:{2:1},glow:{theme:3,tiles:[T.FLOWER,T.BOG],per:3,max:90,range:22,cols:['#9fffd8','#c8a0ff','#e4ff8a'],size:.22}};
+function auroraK(m,env){const k=m&&NIGHTFX.aurora[m.theme];if(!k||m.id==='abbey'||!env)return 0;return k*env.night*(env.wx?1-.8*env.wx.s:1)}
+function glowSpots(m){if(!m||m.theme!==NIGHTFX.glow.theme)return[];if(m.glowSpots)return m.glowSpots;const G0=NIGHTFX.glow,Rn=rng(m.w*131+m.h),out=[];
+ for(let y=0;y<m.h;y++)for(let x=0;x<m.w;x++){if(!G0.tiles.includes(m.get(x,y)))continue;if(Rn()>.55)continue;for(let k=0;k<G0.per;k++)out.push({x:(x+Rn())*U*TS,z:(y+Rn())*U*TS,c:G0.cols[Math.floor(Rn()*G0.cols.length)],p:Rn()*6.28})}return m.glowSpots=out}
+function drawGlowPlants(m,env){if(!env||env.night<=0||!m||m.theme!==NIGHTFX.glow.theme)return 0;const G0=NIGHTFX.glow,cx=CAM.tx,cz=CAM.tz,near=[];for(const o of glowSpots(m)){const d=Math.abs(o.x-cx)+Math.abs(o.z-cz);if(d<G0.range)near.push(o)}
+ const n=Math.min(near.length,Math.round(G0.max*fxK()));for(let i=0;i<n;i++){const o=near[i],y=groundH(o.x,o.z)+.12,a=env.night*(.45+.35*Math.sin(G.time*1.6+o.p));sprite(o.x,y,o.z,G0.size,G0.size,o.c,a)}return n}
 function sprite(x,y,z,sx,sy,col,a,cyl=0,al=0){SPR.push([x,y,z,sx,sy,col,a,cyl,al])}
 function drawStatus(e){if(e.fade>0||e.ghostT>0)return;const x=e.x*U,z=e.y*U,gy=groundH(x,z),h=e.d.h*(e.d.boss?1.75:1),r=e.d.r*U*(e.d.boss?2:1.5);
  if(e.stun>0)for(let k=0;k<3;k++){const a=G.time*5+k*TAU/3;sprite(x+Math.cos(a)*.38,gy+h+.3,z+Math.sin(a)*.38,.2,.2,'#ffe070',.95)}
@@ -3272,7 +3351,7 @@ function renderWorld(dt){
  {const pr=useProg(PR.sky);gl.depthMask(false);gl.disable(gl.DEPTH_TEST);bindQuad();const V=VIEW;
   gl.uniform3f(pr.U.uR,V[0],V[4],V[8]);gl.uniform3f(pr.U.uU,V[1],V[5],V[9]);gl.uniform3f(pr.U.uF,-V[2],-V[6],-V[10]);gl.uniform2f(pr.U.uTan,1/PROJ[0],1/PROJ[5]);
   gl.uniform3fv(pr.U.uTop,env.top);gl.uniform3fv(pr.U.uHor,env.hor);gl.uniform3fv(pr.U.uFog,env.fog);gl.uniform3fv(pr.U.uSun,SUN);gl.uniform3fv(pr.U.uSunC,env.sunC);gl.uniform3fv(pr.U.uMtn,env.mtn);gl.uniform1f(pr.U.uTime,G.time);gl.uniform1f(pr.U.uDay,m.id!=='abbey'?1:0);gl.uniform1f(pr.U.uNight,env.night);
-  {const mc=moonNow(),D=MOON.sky.dir;gl.uniform4f(pr.U.uMoon,D[0],D[1],D[2],mc.p);gl.uniform1f(pr.U.uMoonS,MOON.sky.size);gl.uniform1f(pr.U.uMoonK,m.id!=='abbey'?env.night*(env.wx?1-.7*env.wx.s:1):0)}
+  {const mc=moonNow(),D=MOON.sky.dir;gl.uniform4f(pr.U.uMoon,D[0],D[1],D[2],mc.p);gl.uniform1f(pr.U.uMoonS,MOON.sky.size);gl.uniform1f(pr.U.uMoonK,m.id!=='abbey'?env.night*(env.wx?1-.7*env.wx.s:1):0);gl.uniform1f(pr.U.uAur,auroraK(m,env))}
   gl.drawArrays(gl.TRIANGLES,0,6);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
  const mapSize=[m.w,m.h];
  // terrain
@@ -3295,7 +3374,7 @@ function renderWorld(dt){
   for(const e of G.enemies)if(!e.dead){const d=Math.hypot(e.x*U-CAM.tx,e.y*U-CAM.tz);if(d<45){drawEnemy(e);drawStatus(e)}}
   if(m.statues){gl.uniform1f(pr.U.uDetail,.45);for(const[sx,sz,sr]of m.statues)if(Math.hypot(sx-CAM.tx,sz-CAM.tz)<30)drawHum(MODELS.statue,sx,sz,sr,0,0,0,0,0,1.35,.4);gl.uniform1f(pr.U.uDetail,0)}
   // player
-  if(P&&G.mode==='play'){const x=P.x*U,z=P.y*U;const fl=P.hurtFlash>0?.35:0;
+  if(P&&G.mode==='play'&&!G.bench){const x=P.x*U,z=P.y*U;const fl=P.hurtFlash>0?.35:0;
    if(!P.dead){const mdl=MODELS[P.cls],wr=P.eq.weapon?P.eq.weapon.rar:0;if(mdl.glow){const gw=mdl.glow;if(gw.t0===undefined){gw.t0=gw.t;gw.e0=gw.e}if(wr>=2){gw.t=lin(RAR[wr].c);gw.e=2.6+Math.sin(G.time*4)*.6}else{gw.t=gw.t0;gw.e=gw.e0}}
     if(wr>=2){const hp=handPos(x,z,P.rot,-.25);sprite(hp[0],hp[1],hp[2],.55,.55,RAR[wr].c,.45)}
     if(P.cls==='ashcaller'){const gy=groundH(x,z);for(let k=0;k<3;k++){const a=G.time*1.8+k*TAU/3,ox=Math.cos(a)*.55,oz=Math.sin(a)*.55,oy=1.25+Math.sin(G.time*3+k)*.1;drawMesh(MODELS.orb,M4.trs(x+ox,gy+oy,z+oz,0,0,0,.055,.055,.055),3,0,0,lin('#ff9a4a'));sprite(x+ox,gy+oy,z+oz,.35,.35,'#ff8a3a',.7)}}
@@ -3313,11 +3392,13 @@ function renderWorld(dt){
     if(P.cls==='lumen'){const hp=handPos(x,z,P.rot,-.1);sprite(hp[0],hp[1],hp[2],.5,.5,'#ffe0a0',.8)}
 }
    else{const M=M4.trs(x,groundH(x,z)+.15,z,P.rot,-Math.PI/2+.1,0);drawPart(MODELS[P.cls].root,M,{legL:{},legR:{}},0)}}
+  if(G.mode==='play'&&!G.bench)drawCat();
   // target ring
   if(G.tgt&&!G.tgt.dead){const e=G.tgt,r=e.d.r*U*(e.d.boss?2:1.6)+.25;decal(e.x*U,e.y*U,groundH(e.x*U,e.y*U)+.05,r,r,G.time,1,[.95,.35,.3],.85,.82)}
   // loot
   for(const l of G.loot){const x=l.x*U,z=l.y*U,y=groundH(x,z);drawMesh(MODELS.chest,M4.trs(x,y,z,l.t*.5+l.x));const c=RAR[l.it.rar].c;sprite(x,y+.3,z,.6,.6,c,.6);if(l.it.rar>=2)sprite(x,y,z,.18,3.5,c,.7,1);decal(x,z,y+.04,.4,.4,0,0,[0,0,0],.4)}
   // quest objects
+  drawGlowPlants(m,env);
   for(const o of G.fishS||[]){const x=o.x*U,z=o.y*U;if(Math.hypot(x-CAM.tx,z-CAM.tz)>30)continue;const y=groundH(x,z),up=o.t<=0;decal(x,z,y+.05,.8,.8,G.time*.6,6,[.7,.85,1],up?.5:.2,.55);if(up)sprite(x,y+.35+Math.sin(G.time*3+o.i)*.06,z,.18,.18,'#ff6040',.9)}
   for(const o of G.skins||[]){if(o.t<=0)continue;const x=o.x*U,z=o.y*U,y=groundH(x,z),c=RESF.hide.c[o.g-1];sprite(x,y+.25,z,.55,.55,c,.28);decal(x,z,y+.04,.5,.5,G.time,4,hexC(c).map(v=>v/255),.45,.6)}
   for(const n of[...(G.nodes||[]),...(G.moonO||[])]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
@@ -3368,7 +3449,7 @@ function renderWorld(dt){
  // blended passes
  gl.enable(gl.BLEND);gl.depthMask(false);
  // water
- {const pr=useProg(PR.water);setLit(pr,env);gl.uniform1f(pr.U.uTime,G.time);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.gfx.shadow);gl.uniform1i(pr.U.uShadow,1);gl.uniform2fv(pr.U.uMapSize,mapSize);
+ if(!(G.bench&&G.bench.off==='water')){const pr=useProg(PR.water);setLit(pr,env);gl.uniform1f(pr.U.uTime,G.time);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.gfx.shadow);gl.uniform1i(pr.U.uShadow,1);gl.uniform2fv(pr.U.uMapSize,mapSize);
   gl.uniform3fv(pr.U.uDeep,lin(m.id==='abbey'?'#0a1416':m.theme===4?'#ff4a08':m.theme===3?'#10141c':m.theme===1?'#1a6a6a':m.theme===2?'#6a8ea0':'#18302c').map(v=>v*env.waterK));gl.uniform3fv(pr.U.uSkyRef,lin(m.id==='abbey'?'#10181a':m.theme===4?'#ffb040':m.theme===3?'#3a3650':m.theme===1?'#a8dce8':m.theme===2?'#eef4fa':'#7e98a8').map(v=>v*env.waterK));gl.uniform1f(pr.U.uAlpha,m.id==='abbey'?.8:.9);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,m.gfx.hmap);gl.uniform1i(pr.U.uHMap,2);gl.uniform2f(pr.U.uHOff,MG+.5,MG+.5);gl.uniform2f(pr.U.uHSz,m.hw,m.hh);gl.uniform1f(pr.U.uWy,m.id!=='abbey'?-0.11:-0.025);gl.uniform1f(pr.U.uFoam,m.id!=='abbey'?1:0);gl.activeTexture(gl.TEXTURE0);
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.water.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.water.n);if(m.gfx.basin){gl.uniform1f(pr.U.uFoam,0);gl.uniform1f(pr.U.uAlpha,.82);gl.bindBuffer(gl.ARRAY_BUFFER,m.gfx.basin.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);gl.drawArrays(gl.TRIANGLES,0,m.gfx.basin.n)}}
  // decals
@@ -3380,7 +3461,7 @@ function renderWorld(dt){
  {const pr=useProg(PR.spr);gl.uniformMatrix4fv(pr.U.uV,false,VIEW);gl.uniformMatrix4fv(pr.U.uP,false,PROJ);bindQuad();
   SPR.sort((a,b)=>b[8]-a[8]);let mode=-1;for(const s of SPR){if(s[8]!==mode){mode=s[8];gl.blendFunc(gl.SRC_ALPHA,mode?gl.ONE_MINUS_SRC_ALPHA:gl.ONE)}const c=hexC(s[5]);gl.uniform3f(pr.U.uC,s[0],s[1],s[2]);gl.uniform2f(pr.U.uS,s[3],s[4]);gl.uniform1f(pr.U.uCyl,s[7]);gl.uniform4f(pr.U.uCol,c[0]/255,c[1]/255,c[2]/255,s[6]);gl.drawArrays(gl.TRIANGLES,0,6)}}
  // particles + ambient motes
- {gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length+WXP.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
+ if(!(G.bench&&G.bench.off==='parts')){gl.blendFunc(gl.SRC_ALPHA,gl.ONE);const pr=useProg(PR.pt);const n=G.parts.length+AMB.length+SPL.length+WXP.length,a=new Float32Array(Math.max(1,n)*8);let o=0;
   for(const p of G.parts){const c=hexC(p.c);a[o]=p.x*U;a[o+2]=p.y*U;a[o+1]=groundH(p.x*U,p.y*U)+p.z;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=1-p.t/p.max;a[o+7]=p.s*.06;o+=8}
   for(const p of AMB){const c=hexC(p.c),f=Math.min(1,p.t,p.max-p.t);a[o]=p.x;a[o+2]=p.z;a[o+1]=p.y+Math.sin(p.t*1.7+p.ph)*.12;a[o+3]=c[0]/255;a[o+4]=c[1]/255;a[o+5]=c[2]/255;a[o+6]=Math.max(0,f)*(p.fly?.45+.55*Math.sin(p.t*3+p.ph):.75);a[o+7]=p.s;o+=8}
   for(const p of SPL){a[o]=p.x;a[o+1]=p.y;a[o+2]=p.z;a[o+3]=.82;a[o+4]=.93;a[o+5]=1;a[o+6]=.5*(1-p.t/p.max);a[o+7]=.05;o+=8}
@@ -3401,7 +3482,7 @@ function renderOverlay(){
  if(G.mode!=='play')return;
  for(const o of G.res||[]){if(o.t>0||Math.hypot(o.x*U-CAM.tx,o.y*U-CAM.tz)>11)continue;const s=proj(o.x*U,groundH(o.x*U,o.y*U)+1.05,o.y*U);if(!s)continue;ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(o.name,s[0],s[1]);ctx.fillStyle=RAR[o.g-1].c2;ctx.fillText(o.name,s[0],s[1])}
  for(const n of[...(G.nodes||[]),...(G.beacons||[]),...(G.moonO||[])]){if(Math.hypot(n.x*U-CAM.tx,n.y*U-CAM.tz)>16)continue;const s=proj(n.x*U,groundH(n.x*U,n.y*U)+1.55,n.y*U);if(!s)continue;ctx.font='13px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(n.name,s[0],s[1]);ctx.fillStyle='#ffe08a';ctx.fillText(n.name,s[0],s[1])}
- if(!P.dead){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';const ttl=achTitle(),ny=s[1]-(ttl?14:0);ctx.strokeText(P.name,s[0],ny);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],ny);if(ttl){ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeText(ttl,s[0],s[1]);ctx.fillStyle='#e8c878';ctx.fillText(ttl,s[0],s[1])}}}
+ if(!P.dead&&!G.bench){const s=proj(P.x*U,groundH(P.x*U,P.y*U)+(P.mounted?2.45:1.66)+(P.jz||0),P.y*U);if(s){ctx.font='14px Marcellus,serif';ctx.lineWidth=3.5;ctx.strokeStyle='rgba(0,0,0,.85)';const ttl=achTitle(),ny=s[1]-(ttl?14:0);ctx.strokeText(P.name,s[0],ny);ctx.fillStyle='#f6f0dc';ctx.fillText(P.name,s[0],ny);if(ttl){ctx.font='12px Marcellus,serif';ctx.lineWidth=3;ctx.strokeText(ttl,s[0],s[1]);ctx.fillStyle='#e8c878';ctx.fillText(ttl,s[0],s[1])}}}
  for(const e of G.enemies){if(e.dead||e.fade>0||e.d.boss)continue;if(!(e.hp<e.max||e.state==='chase'||e===G.tgt||e.d.elite))continue;const s=proj(e.x*U,groundH(e.x*U,e.y*U)+e.d.h+.25,e.y*U);if(!s||s[2]>30)continue;
   const w=46,x=s[0]-w/2,y=s[1];ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(x-1,y-1,w+2,7);ctx.fillStyle=e.state==='chase'?'#d24a3e':'#b89a5a';ctx.fillRect(x,y,w*Math.max(0,e.hp/e.max),5);
   ctx.font='800 11px "Alegreya Sans",sans-serif';ctx.textAlign='right';const hard=e.lvl>=P.lvl+5;ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.strokeText(e.lvl,x-4,y+6);ctx.fillStyle=hard?'#ff7a6b':'#f3ead6';ctx.fillText(e.lvl,x-4,y+6);ctx.textAlign='center';
@@ -3657,6 +3738,18 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:47,date:'4 Nov 2026',title:'Performance check',items:[
+  'Options, Display and sound now has a Performance check. It takes about 40 seconds, flies the camera through four scenes, and shows how smoothly the game runs on your device.',
+  'Press Copy results and send them to us, so the game can be tuned for the phones and computers people really play on.']},
+ {id:46,date:'4 Nov 2026',title:'A Warden cat',items:[
+  'A tabby in a Warden\'s rune collar now follows your hero. It walks at your heel, runs to catch up, and sits down when you stop.',
+  'It is just for company and never fights. Hide it for this hero under Options, then Game.']},
+ {id:45,date:'4 Nov 2026',title:'Privacy and terms',items:[
+  'A Privacy page and a Terms page are in Options, then Game. In short: your heroes and settings stay on your device, and there are no ads, analytics or tracking.',
+  'The game\'s lettering now loads from the game itself instead of Google, so it also looks right offline.']},
+ {id:44,date:'4 Nov 2026',title:'Auroras and glowing plants',items:[
+  'On clear nights, green and violet auroras ripple across the sky over Frostfang Reach. Snow and cloud hide them.',
+  'After dark, the flowers and bog plants of Gloamwood glow softly. Effect intensity in Options turns the glow down too.']},
  {id:43,date:'4 Nov 2026',title:'Choices that count',items:[
   'Your choices in the story now matter beyond a single conversation. If Hassa counts you as a friend, visit her at the well each day for water and a couple of tonics.',
   'Some choices are remembered as clues. Find them under Quests, Letters. They will matter later in the story.']},
@@ -3966,12 +4059,12 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('bkGold
   if(tab==='ctl')h+=`<div class="keys pd">${PADKEYS.map(([a,k])=>`<div><span>${a}</span><span class="gpk">${k.split(' ').map(gpg).join('')}</span></div>`).join('')}</div>${sg('padStyle','Controller buttons','Which button names to show.',[['xbox','Xbox'],['ps','PlayStation']],'xbox')}<div class="keys kb">${KEYS.map(([a,k])=>`<div><span>${a}</span><kbd>${k}</kbd></div>`).join('')}</div><div class="optrow"><div><b>Invert look</b><span>Flip the camera for dragging and the right stick.</span></div><div class="seg">${['invX','invY'].map((k,i)=>`<button class="cbtn tog ${OPT[k]?'on':''}" data-act="opt" data-k="${k}" data-d="0" aria-pressed="${!!OPT[k]}">${i?'Vertical':'Horizontal'}: ${OPT[k]?'On':'Off'}</button>`).join('')}</div></div>
    ${sg('sens','Look sensitivity','How fast the camera turns.',[[.6,'Low'],[1,'Normal'],[1.5,'High'],[2.2,'Max']],1)}${sg('camD','Camera distance','How far the camera sits behind you.',[[.75,'Close'],[1,'Normal'],[1.3,'Far']],1)}
    ${tg('follow','Camera follow','The camera swings in behind you as you run.',true)}<div class="tch">${tg('stickSprint','Sprint with the stick','Push the joystick past its ring to sprint.',true)}</div>`;
-  else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>
+  else if(tab==='av')h+=`${document.fullscreenEnabled?`<div class="optrow kb"><div><b>Fullscreen</b><span>Fill the whole screen. F11 also works.</span></div><button class="cbtn tog ${document.fullscreenElement?'on':''}" data-act="fs">${document.fullscreenElement?'On':'Off'}</button></div>`:''}<div class="optrow"><div><b>Graphics</b><span>Lower settings run smoother on older devices.</span></div><div class="seg">${['high','balanced','fast'].map(g=>`<button class="cbtn segb ${OPT.gfx===g?'on':''}" data-act="gfx" data-g="${g}">${{high:'High',balanced:'Balanced',fast:'Fast'}[g]}</button>`).join('')}</div></div>${benchHTML()}
    ${sg('vol','Sound volume','Spell, combat and menu sounds.',[[0,'Off'],[.35,'Low'],[.7,'Medium'],[1,'High']],.7)}${tg('shake','Screen shake','The screen shakes on heavy hits and spells.',true)+sg('fxLvl','Effect intensity','How many sparks, flashes, glows and weather specks the game shows.',[[1,'Full'],[.6,'Reduced'],[.3,'Minimal']],REDUCE?.6:1)+sg('textSize','Text size','Text in menus, messages, tips and the quest tracker.',[[1,'Normal'],[1.15,'Large'],[1.3,'Larger']],1)}${tg('fps','Show frame rate','Shows how smoothly the game is running, at the top of the screen.',false)}
    <div class="tch pdv">${tg('vib','Vibration','Buzz or rumble when you take a heavy hit (Android phones and controllers).',true)}</div>${tg('nums','Combat numbers','Show damage and healing numbers over heads.',true)}${tg('tracker','Quest tracker','Show your active quests on the left of the screen.',true)+tg('tips','Tips for new players','A short tip the first time you meet something new. Each one shows once.',true)+`<div class="optrow"><div><b>See the tips again</b><span>Show every tip again, from the start.</span></div><button class="cbtn" data-act="tipsreset">Reset tips</button></div>`}`;
   else h+=`${installEv?'<div class="optrow"><div><b>Install as an app</b><span>Adds a desktop icon, opens in its own window and plays offline.</span></div><button class="cbtn" data-act="install">Install</button></div>':''}<div class="optrow"><div><b>Reset settings</b><span>Put every option back to its default.</span></div><button class="cbtn" data-act="oreset">Reset</button></div>
    <div class="optrow"><div><b>Hero select</b><span>Leave to the hero select screen. Your progress is saved.</span></div><button class="cbtn" data-act="quit">Leave</button></div>
-   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
+   <div class="optrow"><div><b>Report a bug</b><span>Opens a short form on GitHub with your version, device and hero filled in. No GitHub account? Email ${BUGMAIL}.</span></div><button class="cbtn" data-act="bug">Report a bug</button></div><div class="optrow"><div><b>Warden cat</b><span>Your tabby follows this hero around and sits when you rest. Just for company.</span></div><button class="cbtn ${P&&!P.petOff?'on':''}" data-act="pet">${P&&!P.petOff?'Shown':'Hidden'}</button></div><div class="optrow"><div><b>Privacy and terms</b><span>What the game stores (only on this device) and the rules for playing.</span></div><div class="optbtns"><button class="cbtn" data-act="page" data-page="privacy.html">Privacy</button> <button class="cbtn" data-act="page" data-page="terms.html">Terms</button></div></div><div class="optrow"><div><b>Delete hero</b><span>Erase this hero and start again.</span></div><button class="cbtn ${G.confirm==='del'?'warn':''}" data-act="del">${G.confirm==='del'?'Press again to delete':'Delete'}</button></div>`;
   h+='</div>'}
  else if(k==='npc'){const n=NPCS[a];title=n.name;const ready=QUESTS.find(q=>qTurn(q)===a&&P.q[q.id]&&P.q[q.id].s==='ready'),active=QUESTS.find(q=>q.giver===a&&P.q[q.id]&&P.q[q.id].s==='active'),av=QUESTS.find(q=>q.giver===a&&qAvail(q));
   const say=ready?qDoneText(ready):av?av.offer:active?active.wait:SERVICES[a]&&SERVICES[a].when()?SERVICES[a].idle:n.idle;
@@ -4023,7 +4116,7 @@ $h('book').addEventListener('click',ev=>{const t=ev.target;if(t.id==='book'){clo
  if(act==='wsel'){if(G.webSel===b.dataset.id&&webCan(b.dataset.id))webLearn(b.dataset.id);else G.webSel=b.dataset.id;G.confirm=null}
  if(act==='wlearn')webLearn(b.dataset.id);
  if(act==='respec'){if(G.confirm!=='respec')G.confirm='respec';else{P.tal={};G.confirm=null;recalc();updateBadges();save();toast('Talents reset. Every point is back to spend.')}}
- if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
+ if(act==='bench'){benchStart();return}if(act==='benchcopy')benchCopy();if(act==='pet'&&P){P.petOff=!P.petOff;G.cat=null;save();toast(P.petOff?'Your cat waits at home.':'Your cat pads over to join you.')}if(act==='page'){const pg=b.dataset.page;if(/^(privacy|terms)\.html$/.test(pg)){try{window.open(pg,'_blank','noopener')}catch(_){}}}if(act==='bug'){try{window.open(bugURL(),'_blank','noopener')}catch(_){}toast('The bug form opens in a new tab. Thank you!')}if(act==='tipsreset'){OPT.hintsSeen={};saveOpt();toast('Tips will show again as you play.')}if(act==='opt'){const k=b.dataset.k,cur=OPT[k]==null?b.dataset.d==='1':!!OPT[k];OPT[k]=!cur;saveOpt();updateTracker()}
  if(act==='oseg'){const k=b.dataset.k,v=k==='padStyle'?b.dataset.v:+b.dataset.v;OPT[k]=v;if(k==='padStyle'){setupButtons();lastNear=undefined}if(k==='camD')CAM.zoom=v;if(k==='textSize')applyText();if(k==='vol'){OPT.sound=v>0;sfx('loot')}saveOpt()}
  if(act==='otab'){G.optTab=b.dataset.t;G.confirm=null}
  if(act==='oreset'){for(const k of['invX','invY','sens','camD','stickSprint','shake','vib','vol','sound','padStyle'])delete OPT[k];Object.assign(OPT,{follow:true,nums:true,tracker:true});CAM.zoom=1;saveOpt();updateTracker();toast('Settings reset to default.')}
@@ -4235,7 +4328,7 @@ $h('lootwin').addEventListener('click',e=>{const b=e.target.closest('[data-l]');
 document.addEventListener('contextmenu',e=>{if(e.target.tagName!=='INPUT')e.preventDefault()});
 
 /* ================= Save & hero select ================= */
-function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
+function serialize(){if(!P)return null;const inAb=P.map==='abbey',mid=inAb||!BUILD[P.map]?'vale':P.map,st=(G.maps[mid]&&G.maps[mid].start)||{x:14.5*TS,y:27*TS};return{v:5,petOff:!!P.petOff,stash:P.stash||[],stashMax:P.stashMax||STASH.start,story:P.story||{},ach:P.ach||{},moon:P.moon||{},prof:P.prof||null,profXp:P.profXp||0,gems:P.gems,map:mid,bagMax:P.bagMax,name:P.name,cls:P.cls,lvl:P.lvl,xp:P.xp,gold:P.gold,bag:P.bag,eq:P.eq,tal:P.tal,q:P.q,bosses:P.bosses,nid:P.nid,x:inAb||P.dead?st.x:P.x,y:inAb||P.dead?st.y:P.y}}
 let saveWarnT=-1e9,saveBad=false;const BADKEY='veylmoor-save-unreadable';
 function save(){if(G.mode!=='play')return;ensureSlots();try{localStorage.setItem(slotKey(curSlot),JSON.stringify(serialize()))}catch(err){logError(err,'save',true);const n=Date.now();if(n-saveWarnT>60000){saveWarnT=n;try{toast("<b>Your progress couldn't be saved.</b> Your browser's storage may be full or blocked.",'warn')}catch(_){}}}}
 function keepBadSave(s){saveBad=true;try{if(s&&localStorage.getItem(BADKEY)!==s)localStorage.setItem(BADKEY,s)}catch(_){}}
@@ -4327,6 +4420,57 @@ function liftTitle(){const el=$('#title'),btn=el&&!el.hidden&&el.querySelector('
  for(const o of ovRects.map(loc))if(o.l<k.rt&&o.rt>k.l&&o.t<k.b+was&&o.b>k.t+was)up=Math.max(up,k.b+was-o.t+4);
  el.style.setProperty('--up',Math.ceil(Math.min(up,Math.max(0,room)))+'px')}
 setTimeout(scanOverlays,1500);let ovN=0;const ovT=setInterval(()=>{scanOverlays();if(++ovN>20)clearInterval(ovT)},2500);addEventListener('resize',()=>setTimeout(scanOverlays,300));
+/* Performance check (38): about 40 seconds through four fixed scenes in every zone, then a few switches on the busiest one to see what costs the most.
+   The hero's own world is set aside while it runs and put back exactly afterwards: nothing is entered, spawned into the real map, saved or unlocked. */
+const BENCH={warm:1,len:4,probe:2.5,maxMs:1000,
+ scenes:[{id:'vale',n:'Hollowmere by day',time:'day',wx:'clear'},{id:'gloam',n:'Gloamwood at night',time:'night',wx:'clear'},{id:'frost',n:'Frostfang in a snowstorm',time:'day',wx:'snow'},{id:'ember',n:'A battle in Emberfall',time:'day',wx:'ash',fight:true}],
+ probes:[{k:'all',n:'Everything on'},{k:'res',n:'Screen detail at 62%'},{k:'bloom',n:'Glow effect off'},{k:'parts',n:'Particles and weather off'},{k:'water',n:'Water off'}]};
+const BENCH_ARR=['areas','beacons','enemies','fishS','fx','harm','loot','nodes','moonO','parts','projs','res','skins','spots','tele','texts'];
+let benchLast=null;
+function benchGPU(){try{const x=gl.getExtension('WEBGL_debug_renderer_info');return x?String(gl.getParameter(x.UNMASKED_RENDERER_WEBGL)||''):''}catch(_){return''}}
+function benchStart(){if(G.mode!=='play'||G.bench||!P||!gl)return false;closePanel(true);
+ const sv={map:G.map,yaw:CAM.yaw,zoom:CAM.zoom,pad:CAM.pitchAdj,time:TIMEO.time,wx:TIMEO.weather,bloom:OPT.bloom,rs:RS,event:G.event,tgt:G.tgt,boss:G.boss,arr:{}};
+ for(const k of BENCH_ARR)sv.arr[k]=G[k];
+ const el=document.createElement('div');el.className='benchbar';el.innerHTML='<span></span><button class="cbtn">Cancel</button>';el.querySelector('button').onclick=()=>benchEnd(true);document.body.appendChild(el);
+ G.bench={sv,el,step:-1,ph:'next',t:0,ms:[],scenes:[],probes:[],off:null};$h('hud').style.visibility='hidden';RS=RSMAX;resize();return true}
+function benchLabel(t){const b=G.bench;if(b&&b.el)b.el.querySelector('span').textContent=t}
+function benchScene(sc){const b=G.bench;if(!G.maps[sc.id])G.maps[sc.id]=BUILD[sc.id]();const m=G.maps[sc.id];if(!m.gfx)buildWorld(m);G.map=m;
+ for(const k of BENCH_ARR)G[k]=[];G.event=null;G.tgt=null;G.boss=null;TIMEO.time=sc.time;TIMEO.weather=sc.wx;CAM.zoom=1;CAM.pitchAdj=0;
+ b.cx=m.start.x;b.cy=m.start.y;b.yaw0=CAM.yaw=Math.PI;
+ if(sc.fight&&m.spawns){const types=[...new Set(m.spawns.map(x=>x.type))];for(let k=0;k<8;k++){const a=k/8*TAU,r=(2.6+(k%3)*.9)*TS,x=b.cx+Math.cos(a)*r,y=b.cy+Math.sin(a)*r;if(m.solidAt(x,y))continue;const sp=m.spawns.find(z=>z.type===types[k%types.length]);G.enemies.push(mkEnemy(sp.type,sp.l1||1,x,y))}}}
+function benchStat(ms){const a=ms.slice().sort((x,y)=>x-y),n=a.length;if(!n)return{fps:0,low:0,worst:0,avg:0,frames:0};const avg=a.reduce((x,y)=>x+y,0)/n,p99=a[Math.min(n-1,Math.floor(n*.99))];
+ const r1=v=>v<10?+v.toFixed(1):Math.round(v);return{fps:r1(1000/avg),low:r1(1000/p99),worst:Math.round(a[n-1]),avg:+avg.toFixed(1),frames:n}}
+function benchTick(dt,raw){const b=G.bench;if(!b)return;if(document.hidden){benchEnd(true,'The check stopped because the game was hidden.');return}
+ const scs=BENCH.scenes,last=scs[scs.length-1];b.t+=raw>0&&raw<BENCH.maxMs?Math.min(.25,raw/1000):dt;
+ if(b.ph==='next'){b.step++;b.t=0;b.ms=[];if(b.step<scs.length){benchLabel(`Preparing ${scs[b.step].n}…`);b.ph='load';return}
+  const pi=b.step-scs.length;if(pi<BENCH.probes.length){const pr=BENCH.probes[pi];b.off=pr.k;OPT.bloom=pr.k==='bloom'?false:b.sv.bloom;RS=pr.k==='res'?Math.min(RSMAX,.62):RSMAX;resize();b.ph='probe';benchLabel(`Measuring what costs the most · ${pi+1} of ${BENCH.probes.length}`);return}
+  benchFinish();return}
+ if(b.ph==='load'){benchScene(scs[b.step]);b.ph='scene';b.t=0;b.ms=[];benchLabel(`Measuring ${scs[b.step].n} · ${b.step+1} of ${scs.length}`);return}
+ const sc=b.ph==='scene'?scs[b.step]:last;CAM.yaw=b.yaw0+b.t*.45;
+ if(sc.fight){for(const e of G.enemies)e.anim=(e.anim||0)+dt;const n=Math.max(1,Math.round(dt*24));for(let k=0;k<n;k++){const a=R()*TAU,r=R()*3.5*TS,x=b.cx+Math.cos(a)*r,y=b.cy+Math.sin(a)*r,c=['#ff8a3a','#ffd070','#8fb0ff','#c890ff'][k%4];burst(x,y,c,8);spark(x,y,c,4);rise(x,y,c,3)}
+  for(const p of G.parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vz-=3.2*(p.g??1)*dt;p.vx*=0.93;p.vy*=0.93;if(p.z<0.02){p.z=0.02;p.vz*=-0.3}}G.parts=G.parts.filter(p=>p.t<p.max);if(G.parts.length>900)G.parts.splice(0,G.parts.length-900)}
+ const warm=b.ph==='scene'?BENCH.warm:.5,len=b.ph==='scene'?BENCH.len:BENCH.probe;
+ if(b.t>warm&&raw>0&&raw<BENCH.maxMs)b.ms.push(raw);
+ if(b.t>=warm+len){const st=benchStat(b.ms);if(b.ph==='scene')b.scenes.push(Object.assign({n:sc.n},st));else b.probes.push(Object.assign({k:b.off,n:BENCH.probes[b.step-scs.length].n},st));b.off=null;b.ph='next'}}
+function benchVerdict(low){return low>=50?'Smooth':low>=30?'Playable':'Struggling'}
+function benchFinish(){const b=G.bench,scs=b.scenes,pr=b.probes,base=pr.find(x=>x.k==='all');
+ const dev=`${bugDevice()} · screen ${innerWidth}×${innerHeight} at ${(devicePixelRatio||1).toFixed(2)}x · drawing ${glc.width}×${glc.height}`,gpu=benchGPU();
+ const costs=base?pr.filter(x=>x.k!=='all').map(x=>({n:x.n,save:+(base.avg-x.avg).toFixed(1)})):[];
+ const worst=scs.reduce((a,x)=>Math.min(a,x.low),999),gfx={high:'High',balanced:'Balanced',fast:'Fast'}[OPT.gfx]||'High';
+ const lines=['Wardens of Veylmoor performance check',`${UPDATES[0]?`Update ${UPDATES[0].id} (${UPDATES[0].date})`:''} · Graphics: ${gfx}`,dev+(gpu?` · GPU: ${gpu}`:''),'',
+  ...scs.map(x=>`${x.n}: ${x.fps} fps, slowest 1% ${x.low} fps, worst frame ${x.worst} ms (${benchVerdict(x.low)})`),'',
+  `In the Emberfall battle, a frame takes ${base?base.avg:'?'} ms with everything on. Turning each thing down saves:`,...costs.map(c=>`  ${c.n}: ${c.save>0?c.save:0} ms`),'',
+  `Overall: ${benchVerdict(worst)}`];
+ benchLast={when:Date.now(),scenes:scs,probes:pr,costs,dev,gpu,gfx,verdict:benchVerdict(worst),text:lines.join('\n')};benchEnd(false)}
+function benchEnd(cancel,why){const b=G.bench;if(!b)return;const sv=b.sv;G.map=sv.map;for(const k of BENCH_ARR)G[k]=sv.arr[k];G.event=sv.event;G.tgt=sv.tgt;G.boss=sv.boss;
+ TIMEO.time=sv.time;TIMEO.weather=sv.wx;OPT.bloom=sv.bloom;CAM.yaw=sv.yaw;CAM.zoom=sv.zoom;CAM.pitchAdj=sv.pad;RS=Math.min(sv.rs,RSMAX);resize();
+ if(b.el)b.el.remove();G.bench=null;$h('hud').style.visibility='';snapCam();
+ if(cancel){toast(why||'Performance check cancelled.');return}G.optTab='av';openPanel('options');toast(`Performance check done: <b>${benchLast.verdict}</b>. The results are under Options, Display and sound.`,'lvl')}
+function benchHTML(){const r=benchLast;return`<div class="optrow perfrow"><div><b>Performance check</b><span>About 40 seconds through four scenes, then shows how smoothly the game runs here. Copy the results to share them.</span></div><button class="cbtn" data-act="bench">${r?'Run again':'Run check'}</button></div>`+
+ (r?`<div class="perfres"><pre>${esc(r.text)}</pre><button class="cbtn" data-act="benchcopy">Copy results</button></div>`:'')}
+function benchCopy(){const t=benchLast&&benchLast.text;if(!t)return;const done=()=>toast('Results copied. Paste them into a message.');
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>benchCopyOld(t,done));return}}catch(_){}benchCopyOld(t,done)}
+function benchCopyOld(t,done){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();done()}catch(_){toast('Copying is blocked here. Press and hold the results to copy them.')}}
 /* ================= Loop & boot ================= */
 let last=performance.now(),slowT=0,fastT=0;
 let pfN=0,pfT=0,pfW=0,pfFps=0,pfWorst=0,pfEl=null;
@@ -4334,10 +4478,10 @@ function perfTick(ms){if(ms>1000){pfN=0;pfT=0;pfW=0;return}pfN++;pfT+=ms;if(ms>p
  if(!OPT.fps){if(pfEl)pfEl.hidden=true;return}if(!pfEl){pfEl=document.createElement('div');pfEl.className='fpsbox';document.body.appendChild(pfEl)}pfEl.hidden=false;pfEl.textContent=`${pfFps} fps · slowest ${pfWorst} ms · ${Math.round(RS*100)}% detail`}
 function frame(now){const rawMs=now-last,dt=Math.min(0.05,(now-last)/1000);last=now;perfTick(rawMs);if(glLost){requestAnimationFrame(frame);return}
  try{pollPad(dt)}catch(err){console.error(err);logError(err,'controller')}
- try{if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
+ try{if(G.bench)benchTick(dt,rawMs);else if(G.mode==='play'&&!G.panel){update(dt);CAM.yaw+=(camKeys.right-camKeys.left)*dt*2.2*(OPT.sens||1)*(OPT.invX?-1:1)}else G.time+=dt;
   renderWorld(dt);renderOverlay();if(G.mode==='play'){hud();portraits();durBadge()}}catch(err){console.error(err);logError(err,'game loop')}
- frameAvg=frameAvg*.95+dt*1000*.05;if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
- if(frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
+ frameAvg=frameAvg*.95+dt*1000*.05;if(G.bench){slowT=fastT=0}else if(frameAvg>27){slowT+=dt;if(slowT>2&&RS>.6){RS=Math.max(.6,RS-.12);resize();slowT=0}}else slowT=0;
+ if(!G.bench&&frameAvg<15){fastT+=dt;if(fastT>4&&RS<RSMAX){RS=Math.min(RSMAX,RS+.1);resize();fastT=0}}else fastT=0;
  requestAnimationFrame(frame)}
 function boot(data){cacheEls();
  if(gl){try{initGL();loadModels();G.maps.vale=buildVale();G.map=G.maps.vale;buildWorld(G.maps.vale);snapCam();applyGfx()}catch(err){console.error(err);logError(err,'startup')}}
@@ -4347,7 +4491,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

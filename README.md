@@ -13,10 +13,17 @@ A third-person 3D fantasy action RPG that runs in the browser on PC and phone, p
 - Ore, herbs, crystals and wood to gather and beasts to skin for hides, graded by zone from Common to Legendary, for brewing tonics and forging gear at any shop
 - Fishing in every zone, with a common, an uncommon and a rare fish in each
 - Storage for each hero at every town shop
+- A Warden tabby cat that follows your hero, runs to keep up and sits when you rest (cosmetic, can be hidden)
 - 50 quests, drawn gear for each class's weapon types and armor family (plate, leather, cloth) with five rarities and five material tiers, mounts, a minimap and the Sunken Abbey dungeon
 
 ## Report a bug
 In the game, open Options, then Game, and press **Report a bug**. It opens a short form here on GitHub with your version, device and hero filled in. You can also [open a bug report](https://github.com/Hunter253/veylmoor/issues/new?template=bug_report.yml) directly, or email wardensofveylmoor@gmail.com if you don't have a GitHub account.
+
+## Performance check
+In the game, open Options, then Display and sound, and press **Run check**. It takes about 40 seconds and shows how smoothly the game runs on your device, with a **Copy results** button so you can send the numbers along with a bug report or message.
+
+## Privacy and terms
+Your heroes and settings stay in your own browser; the game has no accounts, ads, analytics or tracking. Read the full [privacy page](privacy.html) and [terms](terms.html), also linked in the game under Options, then Game. The fonts are served with the game under the SIL Open Font License (see `fonts/`).
 
 ## Play on PC
 Open the play link in Chrome, Edge or Firefox. You can keep up to five heroes. They stay in that browser, on that PC, and you can export a hero to a file to back it up or move it to another device.

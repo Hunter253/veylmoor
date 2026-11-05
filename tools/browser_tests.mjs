@@ -12,7 +12,7 @@ const BROWSER = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Pr
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(p => fs.existsSync(p));
 if (!BROWSER) { console.error('Chrome or Edge is needed to run the tests.'); process.exit(2); }
 
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webmanifest': 'application/json' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.webmanifest': 'application/json', '.woff2': 'font/woff2', '.txt': 'text/plain' };
 const server = http.createServer((q, r) => {
   const p = decodeURIComponent(new URL(q.url, 'http://x').pathname);
   const f = path.join(ROOT, p === '/' ? 'index.html' : p);
@@ -335,7 +335,7 @@ await test('Rank bonuses stay within the rules', () => ev(`()=>{const V=window._
   const mk=(rar,s,n)=>{const i={slot:s,rar};if(n!=null)i.soc=Array(n).fill(null);return i},S=V.forgeSocket;
   if(S(mk(2,'weapon'),0,0))bad.push('a Novice got an extra socket');let a=mk(2,'weapon');if(!S(a,4,0)||a.soc.length!==1)bad.push('Master got no socket on Rare');a=mk(2,'weapon',1);if(S(a,4,0)||a.soc.length!==1)bad.push('Rare went past 1 socket');a=mk(3,'charm',2);if(S(a,4,0))bad.push('Epic went past 2 sockets');a=mk(4,'cloak',3);if(S(a,4,0))bad.push('Legendary went past 3 sockets');a=mk(4,'cloak',2);if(!S(a,4,0)||a.soc.length!==3)bad.push('Legendary could not reach 3 sockets');
   if(S(mk(4,'helm'),4,0))bad.push('a helm got a socket');if(S(mk(1,'weapon'),4,0))bad.push('Uncommon gear got a socket');if(S(mk(2,'weapon'),4,R.socket[4]))bad.push('socket chance boundary is wrong');
-  const P=V.P;P.prof='metal';P.gold=1e7;P.profXp=R.xp[4];const seen={};for(let i=0;i<400;i++){V.addMat('ore',1,6);V.addMat('herb',1,3);P.bag=P.bag.filter(x=>x.slot==='mat');V.forge(1,'weapon');const it=P.bag.find(x=>x.slot==='weapon');if(it){seen[it.rar]=(seen[it.rar]||0)+1;if(it.rar===2&&(it.soc||[]).length>1)bad.push('forged a Rare with too many sockets');if(it.rar===1&&it.soc)bad.push('forged an Uncommon with a socket')}}if(!seen[1]||!seen[2])bad.push('a Master never saw the bonus: '+JSON.stringify(seen));return [...new Set(bad)]}`));
+  const P=V.P;P.prof='metal';P.gold=1e7;P.profXp=R.xp[4];const seen={};for(let i=0;i<400;i++){V.addMat('ore',1,6);V.addMat('herb',1,3);V.addMat('wood',1,V.FORGEWOOD[1]);P.bag=P.bag.filter(x=>x.slot==='mat');V.forge(1,'weapon');const it=P.bag.find(x=>x.slot==='weapon');if(it){seen[it.rar]=(seen[it.rar]||0)+1;if(it.rar===2&&(it.soc||[]).length>1)bad.push('forged a Rare with too many sockets');if(it.rar===1&&it.soc)bad.push('forged an Uncommon with a socket')}}if(!seen[1]||!seen[2])bad.push('a Master never saw the bonus: '+JSON.stringify(seen));return [...new Set(bad)]}`));
 
 await reset();
 await test('Rank shows on the Craft tab and survives saves and hero files', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('lumen','Saver');const P=V.P,R=V.PROFRANK;P.prof='cloth';P.profXp=R.xp[2];V.openPanel('shop','pell');const q=x=>document.querySelector('#book '+x);q('[data-act="shtab"][data-t="craft"]').click();const tx=q('.profhead').innerText;if(!/Journeyman/.test(tx))bad.push('rank not shown: '+tx);P.gold=1e5;V.closePanel();V.openPanel('shop','pell');const sw=q('[data-act="profswitch"][data-k="metal"]');sw.click();if(!/rank resets/.test(q('[data-act="profswitch"][data-k="metal"]').innerText))bad.push('no warning before rank resets');V.closePanel();
@@ -882,6 +882,81 @@ await test('Burning the camp makes Hassa a friend with a daily gift; sparing, sa
   P=hero('spare','save','keep');if(V.serviceReady('hassa'))bad.push('Hassa gives gifts after you spared the camp');const ev=V.storyEvidence();if(ev.join()!=='camp,pup,lantern')bad.push('clues were '+ev);V.openPanel('quests');document.querySelector('#book [data-act="qtab"][data-t="letters"]').click();const txt=document.querySelector('#book').innerText;if(!/Clues/.test(txt)||!/white pup/.test(txt))bad.push('the clues do not show under Letters');V.closePanel(true);
   P=hero('spare','save','keep');P.q.f11={s:'active',n:0,got:[]};if(V.storyEvidence().includes('pup'))bad.push('a clue counted before its quest was finished');
   const d=JSON.parse(JSON.stringify(V.serialize()));V.loadSave(d);if(V.storyEvidence().join()!=='camp,lantern')bad.push('clues did not survive saving');V.enterMap('vale',G.maps.vale.start);return bad}`));
+
+// Night finishing touches (25.b).
+await reset();
+await test('Auroras light the Frostfang night, and Gloamwood plants glow after dark, without errors', () => ev(`async()=>{const V=window.__veyl,G=V.G,T=V.TIMEO,bad=[],before=V.readErrors().length;V.startNew('lumen','Tester');T.weather='clear';
+  const ak=id=>{V.enterMap(id);return V.auroraK(G.map,V.sceneEnv())};T.time='night';if(!(ak('frost')>.9))bad.push('no aurora on a clear Frostfang night');for(const id of ['vale','dunes','gloam','ember','abbey'])if(ak(id)>0)bad.push('an aurora over '+id);T.time='day';if(ak('frost')>0)bad.push('an aurora by day');
+  T.time='night';T.weather='snow';if(!(ak('frost')<.5))bad.push('snow does not dim the aurora');T.weather='clear';
+  V.enterMap('gloam');const sp=V.glowSpots(G.map);if(sp.length<20)bad.push('only '+sp.length+' glowing plants in Gloamwood');for(const id of ['vale','frost']){V.enterMap(id);if(V.glowSpots(G.map).length)bad.push(id+' has glowing plants')}
+  V.enterMap('gloam');const o=V.glowSpots(G.map)[0];V.CAM.tx=o.x;V.CAM.tz=o.z;T.time='night';const n1=V.drawGlowPlants(G.map,V.sceneEnv());if(!(n1>0))bad.push('no plants glow at night');T.time='day';if(V.drawGlowPlants(G.map,V.sceneEnv())!==0)bad.push('plants glow by day');
+  T.time='night';V.OPT.fxLvl=.3;const n2=V.drawGlowPlants(G.map,V.sceneEnv());if(n1>=10&&!(n2<n1))bad.push('Minimal effects did not cut the glow');V.OPT.fxLvl=null;
+  for(const id of ['frost','gloam']){V.enterMap(id);await new Promise(r=>setTimeout(r,1500))}T.time=null;T.weather=null;V.enterMap('vale',G.maps.vale.start);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
+// Warden cat (27.a).
+await reset();
+await test('The Warden cat is light enough for phones and has all its moving parts', () => ev(`()=>{const V=window.__veyl,bad=[],c=V.catTris();if(!(c.tris>1500&&c.tris<=3200))bad.push('the cat has '+c.tris+' triangles');
+  const names=[];const w=pt=>{names.push(pt.n);pt.k.forEach(w)};w(V.MODELS.cat.root);for(const n of ['root','body','head','eyes','rune','lf','rf','lb','rb','t1','t2','t3'])if(!names.includes(n))bad.push('no '+n+' part');return bad}`));
+await test('The cat follows, runs to catch up, jumps to you when left behind, and sits when still', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],TS=32;V.startNew('bulwark','Tester');G.enemies=[];V.closePanel(true);const m=G.map;
+  let sp=null;for(let ty=5;ty<m.h-5&&!sp;ty++)for(let tx=5;tx<m.w-5;tx++){let ok=true;for(let dy=-4;dy<=4&&ok;dy++)for(let dx=-4;dx<=4;dx++)if(m.solidAt((tx+dx)*TS,(ty+dy)*TS)){ok=false;break}if(ok){sp=[tx,ty];break}}if(!sp)return['no open ground to test on'];
+  const P=V.P;P.x=sp[0]*TS+16;P.y=sp[1]*TS+16;P.rot=0;G.cat=null;V.catTick(.05);let c=G.cat;if(!c)return['no cat appeared'];const d0=Math.hypot(c.x-P.x,c.y-P.y)/TS;if(!(d0>.8&&d0<1.8))bad.push('the cat appeared '+d0.toFixed(2)+' tiles away');
+  P.y+=3*TS;let top=0;for(let i=0;i<80;i++){V.catTick(.05);top=Math.max(top,G.cat.v)}const [tx,ty]=V.catSpot();if(Math.hypot(G.cat.x-tx,G.cat.y-ty)>.5*TS)bad.push('the cat did not reach your heel');if(!(top>V.CAT.walk))bad.push('the cat never ran to catch up ('+top.toFixed(0)+')');
+  if(Math.abs(V.angDiff?V.angDiff(G.cat.rot,0):0)>.6)bad.push('the cat is not facing your way');for(let i=0;i<60;i++)V.catTick(.05);if(!(G.cat.sit>.9))bad.push('the cat did not sit while still ('+G.cat.sit.toFixed(2)+')');
+  P.x+=1;V.catTick(.05);P.y-=2*TS;for(let i=0;i<5;i++)V.catTick(.05);if(!(G.cat.sit<.5))bad.push('the cat stayed sitting when you walked off');
+  P.x+=1;P.y+=20*TS;V.catTick(.05);if(Math.hypot(G.cat.x-P.x,G.cat.y-P.y)>2*TS)bad.push('the cat did not jump to you when left far behind');
+  V.enterMap('dunes');V.catTick(.05);if(!G.cat||G.cat.map!=='dunes')bad.push('the cat did not follow you to the dunes');if(G.cat&&m.solidAt&&G.map.solidAt(G.cat.x,G.cat.y))bad.push('the cat is inside a wall');
+  const c2=G.cat,an=v=>{c2.v=v;c2.sit=0;c2.ph=Math.PI/2;return V.catAnim(c2)};const wk=an(140),rn=an(320),st=an(0);
+  if(!(Math.abs(wk.lf.rx)>.2&&Math.abs(wk.lf.rx+wk.rf.rx)<.01))bad.push('walking legs do not alternate');if(!(Math.abs(rn.lf.rx-rn.rf.rx)<.01&&Math.abs(rn.lf.rx)>.5))bad.push('running legs do not bound together');if(Math.abs(st.lf.rx)>.01)bad.push('legs move while standing');
+  c2.sit=1;c2.v=0;const si=V.catAnim(c2);if(!(si.root.y<-.15&&si.body.rx<-.3&&si.lb.rx<-1))bad.push('the sitting pose is wrong');
+  V.enterMap('vale',G.maps.vale.start);return bad}`));
+await test('Hiding the cat works per hero, is saved, and old heroes keep their cat', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],before=V.readErrors().length;V.startNew('lumen','Tester');G.enemies=[];V.catTick(.05);if(!G.cat)bad.push('a new hero has no cat');
+  G.optTab='game';V.openPanel('options');let b=document.querySelector('#book [data-act="pet"]');if(!b||!/Shown/.test(b.textContent))bad.push('no Warden cat switch showing Shown');else b.click();if(!V.P.petOff)bad.push('the switch did not hide the cat');
+  b=document.querySelector('#book [data-act="pet"]');if(!b||!/Hidden/.test(b.textContent))bad.push('the switch does not say Hidden');V.closePanel(true);V.catTick(.05);if(G.cat)bad.push('the hidden cat still follows');
+  const d=JSON.parse(JSON.stringify(V.serialize()));if(d.petOff!==true)bad.push('hiding the cat is not saved');V.loadSave(d);V.catTick(.05);if(G.cat)bad.push('the cat came back after loading');
+  G.optTab='game';V.openPanel('options');document.querySelector('#book [data-act="pet"]').click();V.closePanel(true);V.catTick(.05);if(V.P.petOff||!G.cat)bad.push('the cat could not be shown again');
+  delete d.petOff;V.loadSave(d);V.catTick(.05);if(!G.cat)bad.push('an older hero has no cat');
+  await new Promise(r=>setTimeout(r,2500));const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
+// Performance check (38).
+await reset();
+await test('The performance check runs every scene, reports results, and puts the hero\'s world back exactly', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],before=V.readErrors().length;V.startNew('reaver','Tester');V.closePanel(true);const P=V.P;
+  const B=V.BENCH,keep={warm:B.warm,len:B.len,probe:B.probe,maxMs:B.maxMs};B.warm=.2;B.len=.5;B.probe=.4;B.maxMs=20000;const wait=async(f,ms)=>{const t0=Date.now();while(!f()&&Date.now()-t0<ms)await new Promise(r=>setTimeout(r,100));return f()};
+  const was={map:G.map,mid:G.map.id,en:G.enemies,ne:G.enemies.length,x:P.x,y:P.y,zoom:V.CAM.zoom,bloom:V.OPT.bloom,time:V.TIMEO.time,wx:V.TIMEO.weather,ach:JSON.stringify(P.ach),save:JSON.stringify(V.serialize())};
+  G.optTab='av';V.openPanel('options');const btn=document.querySelector('#book [data-act="bench"]');if(!btn)return['no Run check button in Options'];btn.click();
+  if(!V.bench)bad.push('the check did not start');if(G.panel)bad.push('Options stayed open');if(!document.querySelector('.benchbar'))bad.push('no progress bar');if(document.getElementById('hud').style.visibility!=='hidden')bad.push('the HUD stayed up');
+  const seen=new Set();const ok=await wait(()=>{if(V.bench&&G.map)seen.add(G.map.id);return !V.bench},400000);if(!ok){V.benchEnd(true);Object.assign(B,keep);return bad.concat('the check never finished')}
+  for(const id of ['vale','gloam','frost','ember'])if(!seen.has(id))bad.push('never showed '+id);
+  const r=V.benchLast;if(!r)return bad.concat('no results');if(r.scenes.length!==4)bad.push(r.scenes.length+' scenes measured');for(const sc of r.scenes)if(!(sc.frames>0&&sc.avg>0))bad.push(sc.n+' has no frames');if(r.probes.length!==5)bad.push(r.probes.length+' cost checks');
+  for(const w of ['performance check','Hollowmere by day','A battle in Emberfall','Glow effect off','Overall:','Update '])if(!r.text.includes(w))bad.push('the results do not mention '+w);
+  if(G.map!==was.map||G.map.id!==was.mid)bad.push('the hero\\'s map was not put back');if(G.enemies!==was.en||G.enemies.length!==was.ne)bad.push('the monsters were not put back');if(P.x!==was.x||P.y!==was.y)bad.push('the hero moved');
+  if(V.CAM.zoom!==was.zoom)bad.push('the camera zoom changed');if(V.OPT.bloom!==was.bloom)bad.push('the glow setting changed');if(V.TIMEO.time!==was.time||V.TIMEO.weather!==was.wx)bad.push('time or weather stayed changed');
+  if(JSON.stringify(P.ach)!==was.ach)bad.push('the check counted toward achievements');if(JSON.stringify(V.serialize())!==was.save)bad.push('the hero\\'s save changed');
+  if(document.querySelector('.benchbar'))bad.push('the progress bar stayed');if(document.getElementById('hud').style.visibility)bad.push('the HUD did not come back');
+  if(G.panel!=='options'||!document.querySelector('#book .perfres pre'))bad.push('the results are not shown in Options');
+  let copied='';const cb=navigator.clipboard;try{Object.defineProperty(navigator,'clipboard',{value:{writeText:t=>{copied=t;return Promise.resolve()}},configurable:true})}catch(_){}
+  document.querySelector('#book [data-act="benchcopy"]').click();await new Promise(r=>setTimeout(r,200));if(copied!==r.text)bad.push('Copy did not copy the results');try{Object.defineProperty(navigator,'clipboard',{value:cb,configurable:true})}catch(_){}
+  V.closePanel(true);document.querySelector('[data-act="bench"]');G.optTab='av';V.openPanel('options');document.querySelector('#book [data-act="bench"]').click();await new Promise(r=>setTimeout(r,600));const cancel=document.querySelector('.benchbar button');if(!cancel)bad.push('no Cancel button');else cancel.click();
+  if(V.bench)bad.push('Cancel did not stop the check');if(G.map!==was.map||G.enemies!==was.en)bad.push('Cancel did not put the world back');
+  Object.assign(B,keep);const e=V.readErrors();if(e.length>before)bad.push(e.slice(before).join(' | ').slice(0,300));return bad}`));
+
+// Privacy, terms and self-hosted fonts (21.d).
+await reset();
+await test('Privacy and Terms open from Options, the pages load, and fonts come only from the game itself', async () => {
+  const bad = await ev(`async()=>{const V=window.__veyl,G=V.G,bad=[];V.startNew('lumen','Tester');const got=[];const o=window.open;window.open=u=>{got.push(u);return null};
+   G.optTab='game';V.openPanel('options');for(const pg of ['privacy.html','terms.html']){const b=document.querySelector('#book [data-act="page"][data-page="'+pg+'"]');if(!b)bad.push('no button for '+pg);else b.click()}window.open=o;V.closePanel(true);if(got.join()!=='privacy.html,terms.html')bad.push('opened '+got.join());
+   for(const [pg,must] of [['privacy.html',['Hunter Bourgoin','wardensofveylmoor@gmail.com','Netlify','GitHub','Delete','terms.html']],['terms.html',['Hunter Bourgoin','Free to play','Play fair','privacy.html','Open Font License']]]){const r=await fetch(pg,{cache:'no-store'});if(!r.ok){bad.push(pg+' answered '+r.status);continue}const t=await r.text();for(const w of must)if(!t.includes(w))bad.push(pg+' does not mention '+w);if(!t.includes('href="./"'))bad.push(pg+' has no way back to the game');if(/googleapis|gstatic/.test(t))bad.push(pg+' loads from Google')}
+   const fams=[['400 16px Alegreya','Alegreya'],['500 16px Alegreya','Alegreya 500'],['700 16px Alegreya','Alegreya 700'],['700 16px "Alegreya Sans"','Alegreya Sans 700'],['800 16px "Alegreya Sans"','Alegreya Sans 800'],['16px "IM Fell English SC"','IM Fell'],['16px Marcellus','Marcellus']];
+   for(const [f,n] of fams){try{const l=await document.fonts.load(f,'Veylmoor');if(!l.length||l.some(x=>x.status!=='loaded'))bad.push(n+' did not load')}catch(x){bad.push(n+' did not load: '+x.message)}}
+   if(document.querySelector('link[href*="googleapis"],link[href*="gstatic"]'))bad.push('a Google Fonts link is still on the page');
+   const away=performance.getEntriesByType('resource').map(e=>e.name).filter(u=>!u.startsWith(location.origin)&&!u.startsWith('data:')&&!u.startsWith('blob:'));if(away.length)bad.push('requests left the site: '+away.slice(0,3).join(' '));return bad}`);
+  const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+  const core = JSON.parse(sw.slice(sw.indexOf('['), sw.indexOf('];') + 1).replace(/'/g, '"'));
+  for (const f of core) if (f !== './' && !fs.existsSync(path.join(ROOT, f))) bad.push('the offline list names a missing file ' + f);
+  for (const f of ['privacy.html', 'terms.html']) if (!core.includes(f)) bad.push(f + ' is not kept for offline play');
+  if (core.filter(f => f.startsWith('fonts/')).length !== 7) bad.push('the offline list does not hold all seven fonts');
+  for (const fam of ['alegreya', 'alegreya-sans', 'im-fell-english-sc', 'marcellus']) if (!fs.existsSync(path.join(ROOT, 'fonts', 'LICENSE-' + fam + '.txt'))) bad.push('no licence for ' + fam);
+  return bad;
+});
 
 const failed = results.filter(r => r.problems.length).length;
 console.log(`\n${results.length - failed} of ${results.length} tests passed.`);
