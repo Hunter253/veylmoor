@@ -45,6 +45,23 @@ Do at most five assets per brief. If something is unclear, ask one short questio
 
 You may be asked to change an asset, with a reason. Claude's measured triangle count replaces your estimate. If you disagree with feedback, say why and let Hunter decide.
 
+### Review in the Studio before you commit
+
+Hunter watches each asset in the Asset Studio, turns it in 3D and decides there. Send every new or revised asset through it, and commit only what Hunter approves.
+
+1. Save the asset in `gemini-assets/`.
+2. Run:
+   `node gemini-assets/studio-review.mjs gemini-assets/<name>.js --prompt "<what it is, in a few words>" --zone <veylmoor|dunes|frost|gloam|ember> --budget <small|medium|house|landmark|pet|monster|mount|npc|hero|boss>`
+3. The command waits until Hunter decides, which can take a while. Leave it running. If it stops early, run the `--wait <number>` command it printed to go back to waiting.
+4. Do what the answer says:
+   - **APPROVED**: commit that file, and pass on Hunter's note if there is one.
+   - **REJECTED**: revise the same file using Hunter's note, then run the command again. Don't commit it yet.
+   - **DROPPED**: delete the file and don't commit it.
+   - **FAILED THE CHECK**: the asset breaks the engine rules, and the message says how. Fix it and run the command again.
+   - **STUDIO NOT REACHABLE**: tell Hunter the Studio needs opening. Don't commit until the asset is approved.
+
+Send one asset at a time and wait for each answer. The Studio only reads your file and never changes it, so what Hunter approves is exactly what you commit.
+
 ## Asset rules
 
 If a request conflicts with a rule, say so and suggest the closest version that fits.
