@@ -1,0 +1,382 @@
+{
+  "project": "The Wardens of Veylmoor",
+  "note": "Kept up to date by the asset pipeline. Triangle counts are measured with the game's own shape code.",
+  "assets": [
+    {
+      "name": "dune-dungeon-arch",
+      "file": "gemini-assets/dune-dungeon-arch.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneDungeonArchProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 196,
+        "size": {
+          "w": 3.1,
+          "h": 3.49,
+          "d": 0.82
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "dune-dungeon-pillar",
+      "file": "gemini-assets/dune-dungeon-pillar.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneDungeonPillarProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 120,
+        "size": {
+          "w": 0.9,
+          "h": 3.2,
+          "d": 0.9
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "dune-dungeon-wall",
+      "file": "gemini-assets/dune-dungeon-wall.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneDungeonWallProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 36,
+        "size": {
+          "w": 1.06,
+          "h": 2.86,
+          "d": 1.06
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "dune-fire-bowl",
+      "file": "gemini-assets/dune-fire-bowl.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneFireBowlProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 92,
+        "size": {
+          "w": 0.6,
+          "h": 1.28,
+          "d": 0.6
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "dune-round-shield",
+      "file": "gemini-assets/dune-round-shield.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneRoundShieldProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 92,
+        "size": {
+          "w": 0.56,
+          "h": 0.62,
+          "d": 0.14
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "dune-sand-rubble",
+      "file": "gemini-assets/dune-sand-rubble.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "duneSandRubbleProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 96,
+        "size": {
+          "w": 1.15,
+          "h": 0.45,
+          "d": 0.93
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "ember-glass-shield",
+      "file": "gemini-assets/ember-glass-shield.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "emberGlassShieldProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 92,
+        "size": {
+          "w": 0.45,
+          "h": 0.8,
+          "d": 0.11
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "fishing-rod",
+      "file": "gemini-assets/fishing-rod.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "fishingRodProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 120,
+        "size": {
+          "w": 0.11,
+          "h": 1.4,
+          "d": 0.16
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "frost-tower-shield",
+      "file": "gemini-assets/frost-tower-shield.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "frostTowerShieldProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 96,
+        "size": {
+          "w": 0.48,
+          "h": 0.79,
+          "d": 0.16
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "gloam-thorn-shield",
+      "file": "gemini-assets/gloam-thorn-shield.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "gloamThornShieldProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 96,
+        "size": {
+          "w": 0.59,
+          "h": 0.68,
+          "d": 0.08
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "miner-pick",
+      "file": "gemini-assets/miner-pick.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "minerPickProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 120,
+        "size": {
+          "w": 0.09,
+          "h": 0.7,
+          "d": 0.55
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "moor-heater-shield",
+      "file": "gemini-assets/moor-heater-shield.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "moorHeaterShieldProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 90,
+        "size": {
+          "w": 0.48,
+          "h": 0.62,
+          "d": 0.13
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "raider-war-banner",
+      "file": "gemini-assets/raider-war-banner.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "raiderWarBannerProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 104,
+        "size": {
+          "w": 0.44,
+          "h": 1.54,
+          "d": 0.12
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "skinning-knife",
+      "file": "gemini-assets/skinning-knife.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "skinningKnifeProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 60,
+        "size": {
+          "w": 0.08,
+          "h": 0.34,
+          "d": 0.12
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    },
+    {
+      "name": "wood-axe",
+      "file": "gemini-assets/wood-axe.js",
+      "category": null,
+      "zone": null,
+      "use": null,
+      "format": "js (shape function)",
+      "function": "woodAxeProp",
+      "generatedAt": null,
+      "source": "before the pipeline",
+      "status": "existing",
+      "validation": {
+        "tris": 120,
+        "size": {
+          "w": 0.09,
+          "h": 0.75,
+          "d": 0.29
+        },
+        "errors": []
+      },
+      "optimization": null,
+      "commit": null,
+      "pushed": null,
+      "integrated": false
+    }
+  ],
+  "updatedAt": "2026-11-06T04:08:31.113Z"
+}
