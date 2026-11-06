@@ -958,9 +958,9 @@ await test('Privacy and Terms open from Options, the pages load, and fonts come 
   return bad;
 });
 
-await test('A hero file keeps storage, achievements, story and the cat setting', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Mover');const P=V.P;
+await test('A hero file keeps storage, achievements, story and the cat setting', () => ev(`()=>{const V=window.__veyl,bad=[];localStorage.clear();V.startNew('reaver','Mover');const P=V.P;
   P.stash=[V.rollItem(5,1,'weapon',0),V.rollItem(4,1,'helm',0)];P.stashMax=V.STASH.start+V.STASH.step;const a=V.achS();const ak=V.ACH[0].id;a.got[ak]=Date.now();a.c.kills=7;if(V.ACH[0].t)a.title=ak;V.storyS().f.testChoice='kept';P.moon={seen:3};P.petOff=true;
-  dispatchEvent(new Event('pagehide'));const f=V.heroFileText(V.readSlot(0)),r=V.importHeroText(f);if(r.err){bad.push('import refused: '+r.err);return bad}const d=V.readSlot(r.slot);
+  dispatchEvent(new Event('pagehide'));const f=V.heroFileText(V.readSave()),r=V.importHeroText(f);if(r.err){bad.push('import refused: '+r.err);return bad}const d=V.readSlot(r.slot);
   if(!d.stash||d.stash.length!==2)bad.push('storage was lost');if(d.stashMax!==V.STASH.start+V.STASH.step)bad.push('storage size was lost');if(!d.ach||!d.ach.got||!d.ach.got[ak]||d.ach.c.kills!==7)bad.push('achievements were lost');
   if(!d.story||!d.story.f||d.story.f.testChoice!=='kept')bad.push('story choices were lost');if(!d.moon||d.moon.seen!==3)bad.push('moon progress was lost');if(d.petOff!==true)bad.push('the hidden cat came back');
   V.loadSave(d);if(V.stashS().length!==2)bad.push('imported storage did not load');
