@@ -253,6 +253,46 @@
       "integrated": false
     },
     {
+      "name": "kellhold-firewood-stack",
+      "file": "gemini-assets/kellhold-firewood-stack.js",
+      "category": "small-prop",
+      "zone": "Frostfang Reach",
+      "use": "A waist-high stack of split logs against the cold, with a thin layer of snow on top. Dark timber ends, pale snow, a couple of logs sticking out unevenly.",
+      "mount": "ground",
+      "format": "js (shape function)",
+      "function": "kellholdFirewoodStackProp",
+      "generatedAt": "2026-11-06T04:14:02.610Z",
+      "generator": "antigravity-cli (default)",
+      "source": "starter",
+      "status": "validated",
+      "validation": {
+        "tris": 96,
+        "budget": 120,
+        "size": {
+          "w": 0.82,
+          "h": 0.71,
+          "d": 0.64
+        },
+        "glowTris": 0,
+        "warnings": [],
+        "review": {
+          "score": 4,
+          "matches_brief": false,
+          "issues": [
+            "Reads as four large stacked crates rather than firewood; replace the 4 huge blocks with more numerous, thinner elongated logs (e.g. 6-8 narrower logs stacked in 2-3 tiers)",
+            "Keep the logs mostly horizontal and resting stably on each other instead of big tilted cubes with gaps between them, shifting 1-2 logs forward/back along their length so they stick out unevenly",
+            "Add visual contrast between dark bark sides and split timber ends or use distinct log cross-sections so the front clearly reads as log ends",
+            "Shape the snow into a cohesive cap across the top of the pile rather than two separate flat rectangular slabs that look like pillows"
+          ],
+          "by": "default"
+        }
+      },
+      "optimization": "within the 20%-under target",
+      "commit": "pending",
+      "pushed": false,
+      "integrated": false
+    },
+    {
       "name": "miner-pick",
       "file": "gemini-assets/miner-pick.js",
       "category": null,
@@ -378,5 +418,5 @@
       "integrated": false
     }
   ],
-  "updatedAt": "2026-11-06T04:08:31.113Z"
+  "updatedAt": "2026-11-06T04:14:02.610Z"
 }
