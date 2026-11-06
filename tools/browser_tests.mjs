@@ -478,6 +478,59 @@ await test('Bosses, defend waves and the chase limit behave as before', () => ev
   G.enemies=[];let n=0;const many=[];for(let i=0;i<5;i++){const e=add('ghoul',30*Math.cos(i),30*Math.sin(i),{state:'chase',cd:0,ev:true,taunt:99});many.push(e)}step(3,()=>{n=Math.max(n,many.filter(e=>e.wind>0).length)});if(n<4)bad.push('the attack limit held back defend waves: '+n);
   G.enemies=[];const r=add('rat',0,30,{state:'chase',hx:P.x+900,hy:P.y});step(2);if(r.state!=='return')bad.push('the chase limit no longer works, state '+r.state);return done()}`));
 
+// Attack choice, guard and sidestep (7.b.3). hurt() measures what one blow costs a hero with no dodge chance, shield or block.
+const TAC3 = `${TAC_SETUP}const A=V.TACTICS.attack,hurt=f=>{P.iframes=0;V.S.dodge=0;P.shield=0;P.blocking=false;P.mounted=false;P.hp=1e7;f();const l=1e7-P.hp;P.hp=1e7;P.iframes=1e9;return l},face=e=>{const r=Math.atan2(P.x-e.x,P.y-e.y);e.rot=r;e.trot=r;return e};`;
+
+await reset();
+await test('Monsters choose light or heavy swings by archetype; bosses and waves keep the plain swing', () => ev(`()=>{${TAC3}
+  P.cast=null;const share=(t,o)=>{G.enemies=[];const e=add(t,20,0,o);let h=0;for(let i=0;i<600;i++){e.heavyCd=0;V.tacSwing(e);if(e.heavy===1)h++;V.tacSwingEnd(e)}return h/600};
+  for(const[t,o,lo,hi]of[['ghoul',null,.27,.43],['ghoul',{enr:1},.52,.68],['wolf',null,.1,.21],['rat',null,.1,.21],['acolyte',null,.23,.37]]){const s=share(t,o);if(s<lo||s>hi)bad.push(t+(o?' enraged':'')+' swung heavy '+(s*100).toFixed(0)+'% of the time')}
+  for(const t of['wraith','wisp'])if(share(t)>0)bad.push('ranged '+t+' swung heavy');
+  G.enemies=[];const e=add('ghoul',20,0);let after=0;for(let i=0;i<200&&e.heavy!==1;i++){e.heavyCd=0;V.tacSwing(e)}if(e.heavy!==1)bad.push('no heavy swing came');else{const tel=e.tel;if(!G.tele.includes(tel)||tel.team!=='e'||Math.abs(tel.max-A.heavy.wind)>.001)bad.push('the heavy swing has no red marking');V.tacSwingEnd(e);if(G.tele.includes(tel))bad.push('the marking stayed after the swing');for(let i=0;i<100;i++){V.tacSwing(e);if(e.heavy===1)after++;V.tacSwingEnd(e)}if(after)bad.push(after+' heavy swings during the cooldown')}
+  G.enemies=[];const boss=add('qassar',20,0),wave=add('ghoul',20,0,{ev:true}),pet=add('ghoul',20,0,{taunt:99}),sum=add('acolyte',20,0,{summoned:true});P.cast={i:1,t:0,max:9};let odd=0;for(let i=0;i<200;i++)for(const f of[boss,wave,pet,sum]){f.heavyCd=f.bashCd=0;const w=V.tacSwing(f);if(f.heavy)odd++;if(Math.abs(w-(f===boss?.45:A.light))>.001)odd++}P.cast=null;if(odd)bad.push('bosses, waves, taunted or summoned foes changed swing '+odd+' times');
+  G.enemies=[];const g=add('ghoul',20,0,{cd:0,state:'chase'});let seen=0;step(300,()=>{if(g.heavy===1)seen++});if(!seen)bad.push('no heavy swing in ten seconds of fighting');G.tele=[];return done()}`));
+
+await reset();
+await test('A heavy swing hits hard, and rolling, stepping out or a stun avoids it', () => ev(`()=>{${TAC3}
+  const e=add('ghoul',20,0),near=20,go=k=>{for(let i=0;i<200&&e.heavy!==k;i++){e.heavyCd=0;V.tacSwing(e)}if(k===0){V.tacSwingEnd(e)}};let L=0,H=0;
+  for(let i=0;i<30;i++){go(0);L+=hurt(()=>V.tacLand(e,near));go(1);H+=hurt(()=>V.tacLand(e,near))}const k=H/L;if(k<A.heavy.mul-.25||k>A.heavy.mul+.25||k<1.4)bad.push('heavy hit '+k.toFixed(2)+' times as hard');
+  go(1);if(hurt(()=>{P.iframes=1;V.tacLand(e,near)}))bad.push('rolling did not avoid it');go(1);if(hurt(()=>V.tacLand(e,e.d.range+e.d.r+A.heavy.reach+6)))bad.push('stepping out did not avoid it');
+  go(1);if(!hurt(()=>V.tacLand(e,e.d.range+e.d.r+A.heavy.reach-6)))bad.push('the edge of the marking did not hit');
+  go(1);e.wind=A.heavy.wind;const tel=e.tel;e.stun=1;V.update(1/30);if(e.heavy||e.wind>0||G.tele.includes(tel))bad.push('a stun did not cancel the heavy swing');e.stun=0;
+  go(1);const t2=e.tel;e.hp=1;V.hitEnemy(e,{a:50,crit:false},{noArm:true});if(G.tele.includes(t2))bad.push('the marking outlived the monster');G.tele=[];return done()}`));
+
+await reset();
+await test('A Sentinel guards against hits from the front only, and turns slowly while it does', () => ev(`()=>{${TAC3}
+  const s=face(add('acolyte',30,0)),hit=()=>{const h=s.hp;V.hitEnemy(s,{a:100,crit:false},{noArm:true});return h-s.hp};
+  const open=hit();s.guardT=A.guard.time;const front=hit();s.rot+=Math.PI;s.trot=s.rot;const back=hit();s.rot+=Math.PI/2;const side=hit();
+  if(open!==100)bad.push('an open hit did '+open);if(Math.abs(front-100*(1-A.guard.dr))>1||front>70)bad.push('a guarded front hit did '+front);if(back!==100)bad.push('a hit from behind did '+back);if(side!==100)bad.push('a hit from the side did '+side);
+  face(s);s.guardT=A.guard.time;s.ev=true;if(V.tacGuarded(s))bad.push('a defend-wave Sentinel guarded');s.ev=false;s.stun=1;if(V.tacGuarded(s))bad.push('a stunned Sentinel guarded');s.stun=0;
+  let up=0;for(let i=0;i<400;i++){s.guardT=0;s.guardCd=0;V.tacLand(s,999);if(s.guardT>0)up++}if(up<140||up>260)bad.push('raised its guard after '+up+' of 400 swings');s.guardT=0;for(let i=0;i<50&&!(s.guardT>0);i++){s.guardCd=0;V.tacLand(s,999)}if(!(s.guardCd>0))bad.push('no cooldown after a guard');let again=0;for(let i=0;i<50;i++){s.guardT=0;V.tacLand(s,999);if(s.guardT>0)again++}if(again)bad.push(again+' guards during the cooldown');s.guardT=0;
+  const g=add('ghoul',-30,0);let gu=0;for(let i=0;i<200;i++){g.guardCd=0;V.tacLand(g,999);if(g.guardT>0)gu++}if(gu)bad.push('a Ravager guarded');
+  G.enemies=[];const w=face(add('acolyte',30,0,{cd:0}));w.guardT=A.guard.time;w.guardCd=99;let struck=0;step(30,()=>{if(w.wind>0)struck++});if(struck)bad.push('struck with its guard up');
+  G.enemies=[];const t=add('acolyte',30,0,{guardT:9,guardCd:99,cd:9});t.rot=Math.atan2(P.x-t.x,P.y-t.y)+Math.PI;t.trot=t.rot;step(6);const lag=Math.abs(Math.atan2(Math.sin(t.rot-Math.atan2(P.x-t.x,P.y-t.y)),Math.cos(t.rot-Math.atan2(P.x-t.x,P.y-t.y))));if(lag<1.5)bad.push('turned too fast while guarding, '+lag.toFixed(2)+' left');return done()}`));
+
+await reset();
+await test('Quick monsters sometimes sidestep a basic attack, then must wait', () => ev(`()=>{${TAC3}
+  const e=add('wolf',30,0),hp0=e.hp,tries=(o,n,f)=>{let miss=0;for(let i=0;i<n;i++){e.x=P.x+30;e.y=P.y;e.hp=hp0;if(f)f();const r=Object.assign({a:10,crit:false},o.r);V.hitEnemy(e,r,Object.assign({noArm:true},o.o));if(e.hp===hp0)miss++}return miss};
+  const ms=tries({r:{i:0}},500,()=>{e.dodgeCd=0;e.state='chase'});if(ms<40||ms>110)bad.push('sidestepped '+ms+' of 500 basic attacks');
+  let moved=0;for(let i=0;i<200;i++){e.dodgeCd=0;e.x=P.x+30;e.y=P.y;e.hp=hp0;V.hitEnemy(e,{a:10,crit:false,i:0},{noArm:true});if(e.hp===hp0){moved=Math.hypot(e.x-P.x-30,e.y-P.y);break}}if(moved<A.dodge.step*.5)bad.push('a sidestep moved it only '+moved.toFixed(0));
+  if(!(e.dodgeCd>0))bad.push('no cooldown after a sidestep');else{const c=tries({r:{i:0}},100);if(c)bad.push(c+' sidesteps during the cooldown')}
+  if(tries({r:{i:2}},300,()=>{e.dodgeCd=0}))bad.push('a skill was sidestepped');if(tries({r:{},o:{dot:'bleed'}},300,()=>{e.dodgeCd=0}))bad.push('bleeding was sidestepped');
+  if(tries({r:{i:0}},300,()=>{e.dodgeCd=0;e.state='idle'}))bad.push('an unaware wolf sidestepped');if(tries({r:{i:0}},300,()=>{e.dodgeCd=0;e.state='chase';e.stun=1}))bad.push('a stunned wolf sidestepped');e.stun=0;
+  if(tries({r:{i:0}},300,()=>{e.dodgeCd=0;e.state='chase';e.ev=true}))bad.push('a defend-wave wolf sidestepped');e.ev=false;
+  G.enemies=[];const g=add('ghoul',30,0),gh=g.hp;let gm=0;for(let i=0;i<300;i++){g.dodgeCd=0;g.hp=gh;V.hitEnemy(g,{a:10,crit:false,i:0},{noArm:true});if(g.hp===gh)gm++}if(gm)bad.push('a Ravager sidestepped');return done()}`));
+
+await reset();
+await test('A Sentinel shield bash stops a spell being cast', () => ev(`()=>{${TAC3}
+  const s=add('acolyte',25,0),spell=()=>({i:1,t:0,max:9,tgt:null,name:'Test'});P.cast=spell();s.bashCd=0;const w=V.tacSwing(s);if(s.heavy!==2||Math.abs(w-A.bash.wind)>.001)bad.push('no bash at a casting hero');
+  hurt(()=>V.tacLand(s,25));if(P.cast)bad.push('the bash did not stop the spell');
+  P.cast=spell();V.tacSwing(s);if(s.heavy===2)bad.push('bashed again during the cooldown');V.tacSwingEnd(s);
+  s.bashCd=0;V.tacSwing(s);if(s.heavy!==2)bad.push('no bash after the cooldown');P.iframes=1;V.tacLand(s,25);if(!P.cast)bad.push('a rolling hero lost the spell');
+  P.cast=null;let b=0;for(let i=0;i<200;i++){s.bashCd=0;V.tacSwing(s);if(s.heavy===2)b++;V.tacSwingEnd(s)}if(b)bad.push('bashed a hero who was not casting');
+  P.cast={i:-1,t:0,max:1};s.bashCd=0;V.tacSwing(s);if(s.heavy===2)bad.push('bashed a hero mounting up');V.tacSwingEnd(s);
+  P.cast=spell();const g=add('ghoul',-25,0);let gb=0;for(let i=0;i<200;i++){g.bashCd=0;V.tacSwing(g);if(g.heavy===2)gb++;V.tacSwingEnd(g)}if(gb)bad.push('a Ravager bashed');P.cast=null;G.tele=[];return done()}`));
+
 await reset();
 await test('Fights run without errors in every zone', () => ev(`async()=>{const V=window.__veyl,bad=[];V.startNew('bulwark','Tester');const P=V.P,G=V.G,before=V.readErrors().length;for(const id of['vale','dunes','frost','gloam','ember','abbey']){V.enterMap(id);const L=G.enemies.filter(e=>!e.d.boss);if(!L.length){bad.push(id+' has no monsters');continue}P.x=L[0].x+40;P.y=L[0].y;for(let i=0;i<240;i++){P.hp=1e7;P.dead=false;V.update(1/30);if(i===120)for(const e of G.enemies)if(!e.d.boss&&e.state==='chase')e.hp=e.max*.2}}V.enterMap('vale',G.maps.vale.start);V.update(1/30);await new Promise(r=>setTimeout(r,300));if(V.readErrors().length>before)bad.push('errors: '+V.readErrors().slice(before).join(' | ').slice(0,300));return bad}`));
 
