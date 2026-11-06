@@ -52,7 +52,10 @@ const reset = async () => { await load(); await ev(`()=>{localStorage.clear()}`)
 await send('Runtime.enable'); await send('Page.enable');
 
 const results = [];
+// Set VEYL_ONLY to a pattern to run only matching tests (quick checks); unset runs them all.
+const ONLY = process.env.VEYL_ONLY ? new RegExp(process.env.VEYL_ONLY, 'i') : null;
 const test = async (name, fn) => {
+  if (ONLY && !ONLY.test(name)) return;
   try { const problems = (await fn()) || []; results.push({ name, problems }); }
   catch (e) { results.push({ name, problems: ['Test crashed: ' + e.message] }); }
   const r = results[results.length - 1];
@@ -1000,6 +1003,21 @@ await test('Auroras light the Frostfang night, and Gloamwood plants glow after d
 await reset();
 await test('The Warden cat is light enough for phones and has all its moving parts', () => ev(`()=>{const V=window.__veyl,bad=[],c=V.catTris();if(!(c.tris>1500&&c.tris<=3200))bad.push('the cat has '+c.tris+' triangles');
   const names=[];const w=pt=>{names.push(pt.n);pt.k.forEach(w)};w(V.MODELS.cat.root);for(const n of ['root','body','head','eyes','rune','lf','rf','lb','rb','t1','t2','t3'])if(!names.includes(n))bad.push('no '+n+' part');return bad}`));
+await test('Monsters with their own model are light enough, keep their moving parts, and draw without errors', () => ev(`async()=>{const V=window.__veyl,{EN,MODELS,G}=V,bad=[];
+  const PARTS={wolf:['body','head','tail','lf','rf','lb','rb'],wraith:['body','armR'],scorp:['body','clawL','clawR','tail'],wisp:['body']},HUM=['armL','armR','legL','legR'];
+  const LIMIT={wolf:1200,wraith:1200,scorp:1200,wisp:600},own=Object.entries(EN).filter(([k,d])=>d.model);
+  if(own.length<13)bad.push('only '+own.length+' monsters have their own model');
+  for(const [k,d] of own){const m=MODELS[d.model];if(!m||!m.root){bad.push(k+': no model '+d.model);continue}
+   let tris=0;const names=[];const w=pt=>{names.push(pt.n);if(pt.m)tris+=pt.m.n/3;pt.k.forEach(w)};w(m.root);
+   const lim=LIMIT[d.shape]||2500;if(!(tris>50&&tris<=lim))bad.push(k+' has '+tris+' triangles (limit '+lim+')');
+   for(const n of (PARTS[d.shape]||HUM))if(!names.includes(n))bad.push(k+': no '+n+' part to animate');
+   if(d.tint)bad.push(k+' still has the old recolour tint')}
+  V.startNew('bulwark','Tester');V.closePanel(true);const P=V.P,before=V.readErrors().length;G.enemies=[];
+  own.forEach(([k],i)=>{const e=V.mkEnemy(k,20,P.x+((i%5)-2)*48,P.y+60+Math.floor(i/5)*48);e.aggro=0;G.enemies.push(e)});
+  for(let i=0;i<30;i++)await new Promise(r=>requestAnimationFrame(r));
+  const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing them logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
+  if(G.enemies.filter(e=>!e.dead).length<own.length)bad.push('some monsters disappeared while being drawn');
+  G.enemies=[];return bad}`));
 await test('The cat follows, runs to catch up, jumps to you when left behind, and sits when still', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],TS=32;V.startNew('bulwark','Tester');G.enemies=[];V.closePanel(true);const m=G.map;
   let sp=null;for(let ty=5;ty<m.h-5&&!sp;ty++)for(let tx=5;tx<m.w-5;tx++){let ok=true;for(let dy=-4;dy<=4&&ok;dy++)for(let dx=-4;dx<=4;dx++)if(m.solidAt((tx+dx)*TS,(ty+dy)*TS)){ok=false;break}if(ok){sp=[tx,ty];break}}if(!sp)return['no open ground to test on'];
   const P=V.P;P.x=sp[0]*TS+16;P.y=sp[1]*TS+16;P.rot=0;G.cat=null;V.catTick(.05);let c=G.cat;if(!c)return['no cat appeared'];const d0=Math.hypot(c.x-P.x,c.y-P.y)/TS;if(!(d0>.8&&d0<1.8))bad.push('the cat appeared '+d0.toFixed(2)+' tiles away');

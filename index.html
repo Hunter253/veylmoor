@@ -1248,14 +1248,14 @@ const EN={
  wolf:{name:'Thornback Wolf',hp:72,dmg:9,spd:98,range:26,cd:1.1,r:12,xp:16,col:'#6f6a5e',shape:'wolf',aggro:160,h:1.05},
  ghoul:{name:'Bog Ghoul',hp:96,dmg:11,spd:62,range:26,cd:1.4,r:13,xp:20,col:'#7d9a62',shape:'ghoul',aggro:150,h:1.45},
  wisp:{name:'Will-wisp',hp:60,dmg:10,spd:60,range:170,cd:1.9,r:9,xp:20,col:'#bfe6c8',shape:'wisp',aggro:190,ranged:true,proj:'#cfeee0',h:1.55},
- acolyte:{name:'Drowned Acolyte',hp:112,dmg:12,spd:74,range:26,cd:1.3,r:13,xp:26,col:'#6f9aa2',shape:'acolyte',aggro:170,h:1.5},
+ acolyte:{name:'Drowned Acolyte',hp:112,dmg:12,spd:74,range:26,cd:1.3,r:13,xp:26,col:'#6f9aa2',shape:'acolyte',model:'drownedAcolyte',aggro:170,h:1.5},
  wraith:{name:'Bell Wraith',hp:86,dmg:12,spd:58,range:190,cd:2.0,r:12,xp:28,col:'#9fb6c9',shape:'wraith',aggro:210,ranged:true,proj:'#b9d4ea',h:2.0},
  scorp:{name:'Dune Scorpion',hp:96,dmg:12,spd:82,range:30,cd:1.2,r:13,xp:22,col:'#c08a4a',shape:'scorp',aggro:160,h:.8},
- nomad:{name:'Dune Raider',hp:112,dmg:13,spd:86,range:26,cd:1.2,r:12,xp:24,col:'#b0703a',shape:'nomad',aggro:170,h:1.5},
- sandsh:{name:'Sand Shade',hp:90,dmg:13,spd:58,range:190,cd:1.9,r:12,xp:26,col:'#e0c080',shape:'wraith',aggro:200,ranged:true,proj:'#ffd090',h:2.0,tint:[1.7,1.3,.75],glow:'#ffb060'},
- frostwolf:{name:'Frostfang Wolf',hp:104,dmg:14,spd:104,range:26,cd:1.1,r:12,xp:26,col:'#d8e4f0',shape:'wolf',aggro:170,h:1.05,tint:[1.9,2.0,2.3]},
- rimedead:{name:'Frostbitten Dead',hp:130,dmg:15,spd:62,range:26,cd:1.4,r:13,xp:28,col:'#a8c8e0',shape:'ghoul',aggro:150,h:1.45,tint:[1.2,1.5,1.9]},
- rimewr:{name:'Rime Wraith',hp:100,dmg:15,spd:58,range:200,cd:1.8,r:12,xp:30,col:'#bfe8ff',shape:'wraith',aggro:210,ranged:true,proj:'#bfe8ff',h:2.0,tint:[1.0,1.35,1.8],glow:'#8fd8ff'},
+ nomad:{name:'Dune Raider',hp:112,dmg:13,spd:86,range:26,cd:1.2,r:12,xp:24,col:'#b0703a',shape:'nomad',model:'duneRaider',aggro:170,h:1.5},
+ sandsh:{name:'Sand Shade',hp:90,dmg:13,spd:58,range:190,cd:1.9,r:12,xp:26,col:'#e0c080',shape:'wraith',model:'sandShade',aggro:200,ranged:true,proj:'#ffd090',h:2.0,glow:'#ffb060'},
+ frostwolf:{name:'Frostfang Wolf',hp:104,dmg:14,spd:104,range:26,cd:1.1,r:12,xp:26,col:'#d8e4f0',shape:'wolf',model:'frostfangWolf',aggro:170,h:1.05},
+ rimedead:{name:'Frostbitten Dead',hp:130,dmg:15,spd:62,range:26,cd:1.4,r:13,xp:28,col:'#a8c8e0',shape:'ghoul',model:'frostbittenDead',aggro:150,h:1.45},
+ rimewr:{name:'Rime Wraith',hp:100,dmg:15,spd:58,range:200,cd:1.8,r:12,xp:30,col:'#bfe8ff',shape:'wraith',model:'rimeWraith',aggro:210,ranged:true,proj:'#bfe8ff',h:2.0,glow:'#8fd8ff'},
  prior:{name:'The Drowned Prior',hp:1300,dmg:20,spd:70,range:30,cd:1.6,r:24,xp:120,col:'#7fc8d8',shape:'prior',aggro:250,boss:true,h:2.6},
 };
 let eid=0;
@@ -1279,14 +1279,14 @@ const NPCS={
  odette:{name:'Odette',title:'Furrier',col:'#7a9ab0',x:38.6,y:31.8,town:'Kellhold',idle:'Furs, tonics, warm boots. Gold spends the same up here.',shop:true},
 };
 Object.assign(EN,{
- gloomwolf:{name:'Gloom Stalker',hp:110,dmg:15,spd:106,range:26,cd:1.1,r:12,xp:30,col:'#5a4a7a',shape:'wolf',aggro:170,h:1.05,tint:[.55,.45,.85]},
- hexwisp:{name:'Hexlight',hp:90,dmg:16,spd:62,range:180,cd:1.8,r:10,xp:30,col:'#c080ff',shape:'wisp',aggro:200,ranged:true,proj:'#d0a0ff',h:1.55,glow:'#c080ff'},
- blightghoul:{name:'Blighted Dead',hp:150,dmg:17,spd:64,range:26,cd:1.4,r:13,xp:32,col:'#7a6a8a',shape:'ghoul',aggro:150,h:1.45,tint:[.85,.7,1.15]},
+ gloomwolf:{name:'Gloom Stalker',hp:110,dmg:15,spd:106,range:26,cd:1.1,r:12,xp:30,col:'#5a4a7a',shape:'wolf',model:'gloomStalker',aggro:170,h:1.05},
+ hexwisp:{name:'Hexlight',hp:90,dmg:16,spd:62,range:180,cd:1.8,r:10,xp:30,col:'#c080ff',shape:'wisp',model:'hexlight',aggro:200,ranged:true,proj:'#d0a0ff',h:1.55,glow:'#c080ff'},
+ blightghoul:{name:'Blighted Dead',hp:150,dmg:17,spd:64,range:26,cd:1.4,r:13,xp:32,col:'#7a6a8a',shape:'ghoul',model:'blightedDead',aggro:150,h:1.45},
  thornwitch:{name:'Thorn Witch',hp:130,dmg:18,spd:66,range:190,cd:1.9,r:12,xp:34,col:'#8a4aa0',shape:'acolyte',aggro:200,ranged:true,proj:'#b070ff',h:1.5,tint:[1.05,.6,1.35]},
- ashhound:{name:'Ash Hound',hp:130,dmg:18,spd:110,range:26,cd:1.1,r:12,xp:34,col:'#c0603a',shape:'wolf',aggro:180,h:1.05,tint:[1.25,.55,.32]},
- cinderdead:{name:'Cinder Husk',hp:170,dmg:20,spd:64,range:26,cd:1.4,r:13,xp:36,col:'#a0503a',shape:'ghoul',aggro:150,h:1.45,tint:[1.15,.5,.3]},
- flameshade:{name:'Flame Shade',hp:120,dmg:20,spd:58,range:200,cd:1.8,r:12,xp:36,col:'#ff8a3a',shape:'wraith',aggro:210,ranged:true,proj:'#ffb060',h:2.0,tint:[1.3,.42,.14],glow:'#ff8a3a'},
- magmascorp:{name:'Magma Scuttler',hp:160,dmg:21,spd:84,range:30,cd:1.2,r:13,xp:38,col:'#d0502a',shape:'scorp',aggro:160,h:.8,tint:[1.35,.45,.28]},
+ ashhound:{name:'Ash Hound',hp:130,dmg:18,spd:110,range:26,cd:1.1,r:12,xp:34,col:'#c0603a',shape:'wolf',model:'ashHound',aggro:180,h:1.05},
+ cinderdead:{name:'Cinder Husk',hp:170,dmg:20,spd:64,range:26,cd:1.4,r:13,xp:36,col:'#a0503a',shape:'ghoul',model:'cinderHusk',aggro:150,h:1.45},
+ flameshade:{name:'Flame Shade',hp:120,dmg:20,spd:58,range:200,cd:1.8,r:12,xp:36,col:'#ff8a3a',shape:'wraith',model:'flameShade',aggro:210,ranged:true,proj:'#ffb060',h:2.0,glow:'#ff8a3a'},
+ magmascorp:{name:'Magma Scuttler',hp:160,dmg:21,spd:84,range:30,cd:1.2,r:13,xp:38,col:'#d0502a',shape:'scorp',model:'magmaScuttler',aggro:160,h:.8},
  qassar:{name:'Qassar the Sun-King',hp:1400,dmg:22,spd:82,range:38,cd:1.5,r:26,xp:150,col:'#e0b060',shape:'nomad',aggro:240,boss:true,h:1.9,sc:2,tint:[1.4,1.15,.7],glow:'#ffc060',proj:'#ffd090',area:'dunes',adds:'nomad',moves:['charge','barrage','slam'],
   intro:'<b>Qassar the Sun-King</b> rises from his throne. Watch for his charge, and step out of the red.',summonMsg:'Raiders answer their king\'s horn.',deathMsg:'The Sun-King falls, gasping: You have opened the second door. Behind his throne, a broken inscription reads: V-GATH, SEALED BY HIS BROTHER\'S OWN.'},
  hrimfang:{name:'Hrimfang, the Pale Mother',hp:1700,dmg:24,spd:100,range:44,cd:1.4,r:30,xp:170,col:'#e8f0ff',shape:'wolf',aggro:240,boss:true,h:1.7,sc:2.6,tint:[2.1,2.2,2.5],glow:'#bfe8ff',proj:'#bfe8ff',area:'frost',adds:'frostwolf',moves:['charge','nova','rain'],
@@ -3215,7 +3215,7 @@ function loadModels(){
  MODELS.rusk=H({top:[110,90,70],bottom:[70,56,44],beard:[140,120,100],hair:[140,120,100],collar:[80,60,40],trim:[200,170,90],sleeve:[110,90,70],skin:[196,150,116]});
  MODELS.odette=H({top:[110,140,170],robe:[90,116,146],hood:[236,232,222],collar:[236,232,222],trim:[200,180,140],sleeve:[110,140,170]});
  MODELS.nomad=H({top:[150,96,56],bottom:[110,76,44],hood:[190,150,100],mask:[90,60,40],sleeve:[150,96,56],bracer:[110,76,44],weapon:'sword',cape:[140,40,30]});
- MODELS.tools=toolModels();MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();
+ MODELS.tools=toolModels();MODELS.cat=catModel();MODELS.wolf=wolfModel();MODELS.steed=steedModel();MODELS.wings=wingsMesh();MODELS.rat=ratModel();MODELS.wisp=wispModel();MODELS.wraith=wraithModel();MODELS.drownedAcolyte=drownedAcolyteModel();MODELS.duneRaider=duneRaiderModel();MODELS.sandShade=sandShadeModel();MODELS.frostfangWolf=frostfangWolfModel();MODELS.frostbittenDead=frostbittenDeadModel();MODELS.rimeWraith=rimeWraithModel();MODELS.gloomStalker=gloomStalkerModel();MODELS.hexlight=hexlightModel();MODELS.blightedDead=blightedDeadModel();MODELS.ashHound=ashHoundModel();MODELS.cinderHusk=cinderHuskModel();MODELS.flameShade=flameShadeModel();MODELS.magmaScuttler=magmaScuttlerModel();
  MODELS.portal=mk(g=>{const st=[108,110,104];for(const s of[-1,1]){g.box(T3(s*1.05,1.2,0,.4,2.4,.5),st);g.box(T3(s*1.05,.12,0,.55,.24,.62),[90,92,88])}for(let k=0;k<=8;k++){const a=Math.PI*k/8;g.box(T3(Math.cos(a)*1.05,2.4+Math.sin(a)*1.0,0,.4,.36,.5,0,0,a+Math.PI/2),st)}
   g.box(T3(0,1.4,-.12,1.75,2.8,.06),[6,10,12])});
  MODELS.bars=mk(g=>{for(let k=-3;k<=3;k++)g.box(T3(k*.25,1.5,.1,.05,3,.05),[50,50,46]);g.box(T3(0,2.2,.12,1.8,.07,.06),[50,50,46]);g.box(T3(0,.9,.12,1.8,.07,.06),[50,50,46])});
@@ -3242,6 +3242,597 @@ function loadModels(){
  MODELS.spike=mk(g=>{for(let k=0;k<12;k++){const a=k/12*TAU+.3,r=.4+(k%3)*.18;g.cyl(T3(Math.cos(a)*r,0,Math.sin(a)*r,1,.35+(k%2)*.2,1,0,(k%2?.2:-.2)),[90,120,52],4,.05,0,false)}});
 }
 
+/* Monster models made for update 54 (Claude, checked by the Asset Studio QC; files in gemini-assets on the gemini branch).
+   Each keeps its family's part names (wolf: body/head/eyes/tail/lf/rf/lb/rb; wraith: body/eyes/armL/armR; scorpion: body/clawL/clawR/tail;
+   wisp: body/nucleus; humanoid: torso/head/armL/armR/legL/legR), so the existing animation in drawEnemy drives them.
+   An enemy uses one through EN[k].model; it replaces the old recoloured stand-in, so those entries have no tint. */
+// Veylmoor: Drowned Acolyte, hunched waterlogged cultist with a rusted bell | Tris: 0 / 2500 budget (hero or humanoid monster)
+// Solid: 0 + Glow: 0 = 0 tris
+// Size: 0 W x 0 H x 0 D. Stands on y=0, faces +z.
+function drownedAcolyteModel(){
+  const robe=[86,112,110],robeDk=[58,78,80],hem=[44,58,58],rope=[150,124,84],weed=[66,98,54],
+        skin=[146,158,148],face=[34,40,42],rust=[142,84,50],rustDk=[96,58,38],eye=[150,236,224];
+  const root=part('root',null);
+
+  // Soaked robe body: wide dragging hem, narrower chest, rope belt and hanging weed
+  const torso=part('torso',mk(g=>{
+    g.cyl(T3(0,-0.5,0,1,0.06,0.92),hem,8,0.29,0.28);
+    g.cyl(T3(0,-0.44,0,1,0.54,0.9),robe,8,0.27,0.19);
+    g.cyl(T3(0,0.1,-0.02,1,0.36,0.82),robeDk,8,0.19,0.15);
+    g.torus(T3(0,0.1,-0.01,1,0.6,0.86),rope,0.19,0.025,8,3);
+    g.box(T3(0.09,0.0,0.15,0.035,0.18,0.03),rope);
+    g.box(T3(-0.14,-0.06,0.12,0.05,0.26,0.04,0,0,0.12),weed);
+    g.box(T3(0.17,-0.12,0.05,0.05,0.3,0.04,0.5,0,-0.1),weed);
+    g.box(T3(-0.02,-0.2,-0.2,0.06,0.32,0.04,0,0.1,0),weed);
+    g.box(T3(0,0.42,-0.04,0.3,0.08,0.2),robe);
+  }),[0,0.54,0],{r:[0.12,0,0]});
+
+  // Hooded head bowed forward: deep hood, shadowed face, two pale eyes
+  const head=part('head',mk(g=>{
+    g.cyl(T3(0,-0.02,-0.02,1,0.3,1),robe,7,0.15,0.03);
+    g.sphere(T3(0,0.09,0.06,0.1,0.11,0.07),face,7,5);
+    g.box(T3(0,-0.03,0.08,0.2,0.05,0.07),robeDk);
+  }),[0,0.52,0.06],{r:[0.32,0,0]});
+  head.k.push(part('eyes',mk(ge=>{
+    for(const s of[-1,1]) ge.box(T3(s*0.035,0.1,0.12,0.03,0.03,0.03),eye);
+  }),[0,0,0],{e:1.8,t:'#96ece0'}));
+  torso.k.push(head);
+
+  // Arms: one shared wet sleeve (mirrored for the right), plus a rusted bell in the right hand
+  const sleeve=mk(g=>{
+    g.cyl(T3(0,-0.34,0,1,0.34,1),robe,6,0.075,0.05);
+    g.cyl(T3(0,-0.38,0,1,0.06,1),robeDk,6,0.08,0.08);
+    g.sphere(T3(0,-0.42,0.01,0.045,0.05,0.04),skin,5,4);
+  });
+  torso.k.push(part('armL',sleeve,[0.2,0.34,0.02],{r:[0.25,0,0.08]}));
+  const armR=part('armR',sleeve,[-0.2,0.34,0.02],{r:[0.45,0,-0.08],s:[-1,1,1]});
+  armR.k.push(part('bell',mk(g=>{
+    g.cyl(T3(0,-0.47,0.03,1,0.04,1),rustDk,6,0.02,0.02);
+    g.cyl(T3(0,-0.6,0.03,1,0.13,1),rust,7,0.085,0.035);
+    g.torus(T3(0,-0.6,0.03),rustDk,0.085,0.015,8,3);
+  }),[0,0,0]));
+  torso.k.push(armR);
+
+  // Legs hidden under the robe; only bare pale feet show at the hem
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.52,0,1,0.52,1),hem,5,0.05,0.06);
+    g.box(T3(0,-0.51,0.06,0.08,0.05,0.16),skin);
+  });
+  root.k.push(torso);
+  root.k.push(part('legL',legM,[0.1,0.54,0]));
+  root.k.push(part('legR',legM,[-0.1,0.54,0],{s:[-1,1,1]}));
+
+  return {root,kind:'drownedAcolyte'};
+}
+// Sunscar Dunes: Dune Raider, desert bandit in faded rust cloth wraps and head scarf, leather vest, curved short blade | Tris: 680 / 2500 budget (hero or humanoid monster)
+// Solid: 680 + Glow: 0 = 680 tris
+// Size: 0.53 W x 1.56 H x 0.42 D. Stands on y=0, faces +z.
+// Motion: quick crouched stance; walk is a fast lope; attack is a forehand slash with the right arm.
+function duneRaiderModel(){
+  const wrap=[176,104,56],scarf=[204,176,124],vest=[96,64,42],skin=[150,108,76],steel=[172,176,182],dark=[54,40,32];
+  const root=part('root',null);
+
+  const torso=part('torso',mk(g=>{
+    g.cyl(T3(0,-0.06,0,1,0.18,0.8),wrap,8,0.17,0.16);
+    g.cyl(T3(0,0.10,0,1,0.36,0.72),vest,8,0.17,0.2);
+    g.box(T3(0,0.22,0.13,0.10,0.26,0.03),wrap);
+    g.torus(T3(0,0.06,0,1,0.6,0.82),dark,0.175,0.022,8,3);
+    g.cyl(T3(0,0.44,0,1,0.06,1),scarf,8,0.13,0.12);
+    g.box(T3(0.08,-0.16,0.14,0.10,0.24,0.03,0,0,0.1),wrap);
+  }),[0,0.82,0],{r:[0.1,0,0]});
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0.12,0,0.11,0.12,0.11),skin,8,6);
+    g.sphere(T3(0,0.16,-0.01,0.13,0.11,0.13),scarf,8,5);
+    g.box(T3(0,0.06,0.09,0.17,0.07,0.06),scarf);
+    g.cyl(T3(0,0.06,-0.12,1,0.22,1,0,-2.6,0),scarf,4,0.05,0);
+    g.box(T3(0,0.13,0.11,0.12,0.03,0.03),dark);
+  }),[0,0.48,0.02]);
+  torso.k.push(head);
+
+  const armL=mk(g=>{
+    g.cyl(T3(0,-0.26,0,1,0.26,1),wrap,5,0.045,0.055);
+    g.cyl(T3(0,-0.52,0,1,0.26,1),skin,5,0.038,0.045);
+    g.sphere(T3(0,-0.56,0.01,0.045,0.05,0.04),skin,5,4);
+  });
+  torso.k.push(part('armL',armL,[0.21,0.36,0]));
+  const armR=part('armR',armL,[-0.21,0.36,0],{r:[0.3,0,0],s:[-1,1,1]});
+  armR.k.push(part('blade',mk(g=>{
+    g.box(T3(0,-0.58,0.04,0.03,0.03,0.12),dark);
+    g.box(T3(0,-0.58,0.20,0.03,0.06,0.24,0,-0.15,0),steel);
+    g.box(T3(0,-0.55,0.34,0.03,0.05,0.10,0,-0.45,0),steel);
+  }),[0,0,0]));
+  torso.k.push(armR);
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.40,0,1,0.40,1),wrap,5,0.055,0.068);
+    g.cyl(T3(0,-0.80,0,1,0.40,1),dark,5,0.045,0.055);
+    g.box(T3(0,-0.79,0.05,0.09,0.05,0.18),dark);
+  });
+  root.k.push(torso);
+  root.k.push(part('legL',legM,[0.10,0.82,0]));
+  root.k.push(part('legR',legM,[-0.10,0.82,0],{s:[-1,1,1]}));
+  return {root,kind:'duneRaider'};
+}
+// Sunscar Dunes: Sand Shade, floating hooded spirit of swirling sand-gold cloth with a glowing amber core | Tris: 444 / 1200 budget (beast or monster)
+// Solid: 400 + Glow: 44 = 444 tris
+// Size: 0.81 W x 1.77 H x 0.80 D. Stands on y=0, faces +z.
+// Motion: hovers (y +-0.04), tatters sway; walk is a glide; attack raises both claws then thrusts forward (ranged bolt from the core).
+function sandShadeModel(){
+  const cloth=[208,180,124],deep=[164,132,82],shadow=[28,30,36],claw=[120,96,64],eyeC=[240,214,140],coreC=[240,176,90];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.cyl(T3(0,0,0,1,1.0,1),cloth,10,0.40,0.21);
+    for(let k=0;k<7;k++){
+      const a=k/7*Math.PI*2;
+      g.cyl(T3(Math.cos(a)*0.34,0.24,Math.sin(a)*0.34,1,0.24,1,0,Math.PI,0),deep,4,0.07,0);
+    }
+    g.cyl(T3(0,1.0,0,1,0.44,1),deep,8,0.22,0.15);
+    g.sphere(T3(0,1.56,0,0.18,0.21,0.18),cloth,8,6);
+    g.sphere(T3(0,1.53,0.08,0.13,0.15,0.10),shadow,6,5);
+  }),[0,0,0]);
+  body.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.05,1.55,0.16,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.4,t:'#ffd090'}));
+  body.k.push(part('core',mk(g=>{
+    g.ico(T3(0,0.98,0.14,0.08,0.08,0.08),coreC);
+  }),[0,0,0],{e:1.8,t:'#ffb060'}));
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.40,0,1,0.40,1),cloth,5,0.046,0.074);
+    g.box(T3(0,-0.50,0.03,0.08,0.12,0.05),claw);
+    g.cyl(T3(0,-0.62,0.05,1,0.08,1,0,Math.PI,0),claw,4,0.03,0);
+  });
+  const armL=part('armL',armM,[0.26,1.26,0],{r:[-0.2,0,0.15]});
+  const armR=part('armR',armM,[-0.26,1.26,0],{r:[-0.2,0,-0.15],s:[-1,1,1]});
+  root.k.push(body,armL,armR);
+  return {root,kind:'sandShade'};
+}
+// Frostfang Reach: Frostfang Wolf, pale wolf with jagged ice spines and a frosted mane | Tris: 882 / 1200 budget (beast or monster)
+// Solid: 858 + Glow: 24 = 882 tris
+// Size: 0.52 W x 1.02 H x 1.96 D. Stands on y=0, faces +z.
+function frostfangWolfModel(){
+  const fur=[214,224,232],dark=[120,138,156],pale=[236,240,240],spike=[150,206,236],eyeC=[170,224,240];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.sphere(T3(0,0.62,0.28,0.26,0.30,0.28),fur,8,6);
+    g.sphere(T3(0,0.58,-0.06,0.24,0.25,0.38),fur,8,6);
+    g.sphere(T3(0,0.52,0.06,0.18,0.14,0.32),pale,7,5);
+    g.ico(T3(0,0.72,0.32,0.26,0.24,0.22),dark);
+    for(let k=0;k<6;k++){
+      g.cyl(T3((k%2?0.03:-0.03),0.76-k*0.02,0.28-k*0.12,1,0.28-k*0.015,1,0,-0.5,(k%2?-0.2:0.2)),spike,4,0.045,0);
+    }
+    g.ico(T3(0.12,0.70,0.40,0.12,0.14,0.10),pale);
+    g.ico(T3(-0.12,0.70,0.40,0.12,0.14,0.10),pale);
+    g.cyl(T3(0.16,0.80,0.18,1,0.16,1,0,-0.3,-0.5),spike,4,0.035,0);
+    g.cyl(T3(-0.16,0.80,0.18,1,0.16,1,0,-0.3,0.5),spike,4,0.035,0);
+  }),[0,0,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0,0,0.17,0.16,0.18),fur,8,6);
+    g.cyl(T3(0,-0.04,0.12,1,0.22,1,0,Math.PI/2),fur,6,0.09,0.05);
+    g.box(T3(0,-0.10,0.20,0.08,0.04,0.16),dark);
+    g.box(T3(0,-0.02,0.34,0.05,0.04,0.04),dark);
+    for(const s of[-1,1]) g.cyl(T3(s*0.08,0.12,-0.03,1,0.15,1,0,-0.2,s*-0.35),dark,4,0.045,0);
+  }),[0,0.76,0.54]);
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.07,0.04,0.14,0.03,0.04,0.03),eyeC);
+  }),[0,0,0],{e:2.0,t:'#aae0ff'}));
+
+  const tail=part('tail',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.48,1,0,-Math.PI/2+0.4),fur,5,0.065,0.02);
+    g.cyl(T3(0,-0.26,-0.32,1,0.22,1,0,-Math.PI/2+0.1),dark,4,0.035,0);
+  }),[0,0.64,-0.52]);
+  root.k.push(body,head,tail);
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.26,0,1,0.26,1),fur,6,0.052,0.075);
+    g.cyl(T3(0,-0.50,-0.02,1,0.24,1),dark,6,0.040,0.052);
+    g.box(T3(0,-0.47,0.03,0.09,0.06,0.12),dark);
+  });
+  root.k.push(part('lf',legM,[0.13,0.50,0.36]));
+  root.k.push(part('rf',legM,[-0.13,0.50,0.36]));
+  root.k.push(part('lb',legM,[0.13,0.50,-0.40]));
+  root.k.push(part('rb',legM,[-0.13,0.50,-0.40]));
+  return {root,kind:'frostfangWolf'};
+}
+// Frostfang Reach: Frostbitten Dead, gaunt corpse in torn furs crusted with ice, pale blue skin and a frozen beard | Tris: 631 / 2500 budget (hero or humanoid monster)
+// Solid: 607 + Glow: 24 = 631 tris
+// Size: 0.54 W x 1.36 H x 0.61 D. Stands on y=0, faces +z.
+// Motion: shambling hunch like the Fen Ghoul; idle sways, attack is a double claw swipe.
+function frostbittenDeadModel(){
+  const skin=[156,184,204],cloth=[110,92,74],trim=[200,194,180],accent=[196,226,240],claw=[118,140,160],eyeC=[170,226,240];
+  const root=part('root',null);
+
+  const torso=part('torso',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.44,0.72),cloth,10,0.15,0.198);
+    g.sphere(T3(0,0.24,0.06,0.17,0.16,0.12),skin,8,6);
+    g.box(T3(0,-0.04,0,0.28,0.14,0.18),cloth);
+    g.sphere(T3(0,0.42,-0.02,0.24,0.08,0.18),trim,7,4);
+    g.ico(T3(0.14,0.30,0.12,0.06,0.07,0.05),accent);
+    g.ico(T3(-0.10,0.12,0.14,0.05,0.06,0.04),accent);
+    g.ico(T3(0.04,0.36,-0.16,0.06,0.05,0.05),accent);
+  }),[0,0.72,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0.10,0,0.12,0.13,0.13),skin,8,6);
+    g.box(T3(0,0.02,0.12,0.10,0.06,0.12),skin);
+    g.cyl(T3(0,-0.12,0.10,1,0.12,1,0,Math.PI,0),accent,5,0.07,0);
+    g.box(T3(0,0.20,-0.04,0.18,0.06,0.18),trim);
+  }),[0,0.38,0.22],{r:[0.45,0,0]});
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.045,0.12,0.12,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.0,t:'#aae0ff'}));
+  torso.k.push(head);
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.28,0,1,0.28,1),skin,5,0.042,0.048);
+    g.cyl(T3(0,-0.56,0.02,1,0.28,1),skin,5,0.036,0.042);
+    g.box(T3(0,-0.62,0.04,0.08,0.12,0.04),claw);
+  });
+  torso.k.push(part('armL',armM,[0.22,0.32,0.05]));
+  torso.k.push(part('armR',armM,[-0.22,0.32,0.05],{s:[-1,1,1]}));
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.36,0,1,0.36,1),cloth,5,0.052,0.068);
+    g.cyl(T3(0,-0.72,0.02,1,0.36,1),skin,5,0.042,0.052);
+    g.box(T3(0,-0.69,0.06,0.09,0.06,0.18),claw);
+  });
+  root.k.push(torso);
+  root.k.push(part('legL',legM,[0.12,0.72,0]));
+  root.k.push(part('legR',legM,[-0.12,0.72,0],{s:[-1,1,1]}));
+  return {root,kind:'frostbittenDead'};
+}
+// Frostfang Reach: Rime Wraith, floating hooded spectre of pale ice-blue tatters with icicle fringes | Tris: 444 / 1200 budget (beast or monster)
+// Solid: 400 + Glow: 44 = 444 tris
+// Size: 0.81 W x 1.77 H x 0.80 D. Stands on y=0, faces +z.
+// Motion: hovers (y +-0.04), tatters sway; walk is a glide; attack raises both claws then thrusts forward (ranged bolt from the core).
+function rimeWraithModel(){
+  const cloth=[182,214,232],deep=[132,170,196],shadow=[28,30,36],claw=[206,228,240],eyeC=[170,226,240],coreC=[150,214,240];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.cyl(T3(0,0,0,1,1.0,1),cloth,10,0.40,0.21);
+    for(let k=0;k<7;k++){
+      const a=k/7*Math.PI*2;
+      g.cyl(T3(Math.cos(a)*0.34,0.3,Math.sin(a)*0.34,1,0.3,1,0,Math.PI,0),deep,4,0.07,0);
+    }
+    g.cyl(T3(0,1.0,0,1,0.44,1),deep,8,0.22,0.15);
+    g.sphere(T3(0,1.56,0,0.18,0.21,0.18),cloth,8,6);
+    g.sphere(T3(0,1.53,0.08,0.13,0.15,0.10),shadow,6,5);
+  }),[0,0,0]);
+  body.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.05,1.55,0.16,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.4,t:'#bfe8ff'}));
+  body.k.push(part('core',mk(g=>{
+    g.ico(T3(0,0.98,0.14,0.06,0.06,0.06),coreC);
+  }),[0,0,0],{e:1.8,t:'#8fd8ff'}));
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.40,0,1,0.40,1),cloth,5,0.046,0.074);
+    g.box(T3(0,-0.50,0.03,0.08,0.12,0.05),claw);
+    g.cyl(T3(0,-0.62,0.05,1,0.08,1,0,Math.PI,0),claw,4,0.03,0);
+  });
+  const armL=part('armL',armM,[0.26,1.26,0],{r:[-0.2,0,0.15]});
+  const armR=part('armR',armM,[-0.26,1.26,0],{r:[-0.2,0,-0.15],s:[-1,1,1]});
+  root.k.push(body,armL,armR);
+  return {root,kind:'rimeWraith'};
+}
+// Gloamwood: Gloom Stalker, lean long-legged shadow-violet wolf with bony shoulder ridges and pale fungus | Tris: 922 / 1200 budget (beast or monster)
+// Solid: 898 + Glow: 24 = 922 tris
+// Size: 0.52 W x 1.13 H x 1.96 D. Stands on y=0, faces +z.
+function gloomStalkerModel(){
+  const fur=[84,70,112],dark=[46,38,64],pale=[118,104,146],spike=[206,196,170],eyeC=[212,160,240];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.sphere(T3(0,0.71,0.28,0.26,0.30,0.28),fur,8,6);
+    g.sphere(T3(0,0.67,-0.06,0.24,0.25,0.38),fur,8,6);
+    g.sphere(T3(0,0.60,0.06,0.18,0.14,0.32),pale,7,5);
+    g.ico(T3(0,0.83,0.32,0.26,0.24,0.22),dark);
+    for(let k=0;k<6;k++){
+      g.cyl(T3((k%2?0.03:-0.03),0.87-k*0.02,0.28-k*0.12,1,0.18-k*0.015,1,0,-0.5,(k%2?-0.2:0.2)),spike,4,0.045,0);
+    }
+    g.sphere(T3(0.10,0.86,0.02,0.07,0.035,0.07),[214,206,184],6,3);
+    g.sphere(T3(-0.08,0.84,-0.18,0.06,0.03,0.06),[214,206,184],6,3);
+    g.cyl(T3(0.10,0.80,0.02,1,0.06,1),[176,168,150],4,0.018,0.018);
+    g.cyl(T3(-0.08,0.78,-0.18,1,0.06,1),[176,168,150],4,0.016,0.016);
+  }),[0,0,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0,0,0.17,0.16,0.18),fur,8,6);
+    g.cyl(T3(0,-0.04,0.12,1,0.22,1,0,Math.PI/2),fur,6,0.09,0.05);
+    g.box(T3(0,-0.10,0.20,0.08,0.04,0.16),dark);
+    g.box(T3(0,-0.02,0.34,0.05,0.04,0.04),dark);
+    for(const s of[-1,1]) g.cyl(T3(s*0.08,0.12,-0.03,1,0.15,1,0,-0.2,s*-0.35),dark,4,0.045,0);
+  }),[0,0.87,0.54]);
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.07,0.04,0.14,0.03,0.04,0.03),eyeC);
+  }),[0,0,0],{e:2.0,t:'#d4a0ff'}));
+
+  const tail=part('tail',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.48,1,0,-Math.PI/2+0.4),fur,5,0.065,0.02);
+    g.cyl(T3(0,-0.26,-0.32,1,0.22,1,0,-Math.PI/2+0.1),dark,4,0.035,0);
+  }),[0,0.74,-0.52]);
+  root.k.push(body,head,tail);
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.30,0,1,0.30,1),fur,6,0.052,0.075);
+    g.cyl(T3(0,-0.57,-0.02,1,0.28,1),dark,6,0.040,0.052);
+    g.box(T3(0,-0.54,0.03,0.09,0.06,0.12),dark);
+  });
+  root.k.push(part('lf',legM,[0.13,0.57,0.36]));
+  root.k.push(part('rf',legM,[-0.13,0.57,0.36]));
+  root.k.push(part('lb',legM,[0.13,0.57,-0.40]));
+  root.k.push(part('rb',legM,[-0.13,0.57,-0.40]));
+  return {root,kind:'gloomStalker'};
+}
+// Gloamwood: Hexlight, floating violet will-o-wisp with a faceted core and three orbiting shards | Tris: 223 / 600 budget (small creature or pet)
+// Solid: 203 + Glow: 20 = 223 tris
+// Size: 0.48 W x 1.37 H x 0.42 D. Stands on y=0, faces +z.
+// Motion: bobs (y +-0.06), shards orbit the core; attack flares the core and fires a violet bolt.
+function hexlightModel(){
+  const vapor=[150,108,196],shroud=[178,138,222],shard=[206,170,240],heart=[236,214,240];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.cyl(T3(0,0,0,1,1.1,1),vapor,5,0.035,0.08);
+    g.sphere(T3(0,1.2,0,0.17,0.17,0.17),shroud,8,6);
+    g.cyl(T3(0,0.92,0,1,0.18,1,0,Math.PI,0),vapor,5,0.06,0);
+  }),[0,0,0]);
+  body.k.push(part('nucleus',mk(g=>{
+    g.ico(T3(0,1.2,0,0.08,0.09,0.08),heart);
+  }),[0,0,0],{e:2.0,t:'#c080ff'}));
+
+  const shardM=mk(g=>{
+    g.cyl(T3(0,-0.05,0,1,0.1,1),shard,4,0.03,0);
+    g.cyl(T3(0,-0.05,0,1,0.1,1,0,Math.PI,0),shard,4,0.03,0);
+  });
+  body.k.push(part('mote1',shardM,[0.22,1.28,0.10]));
+  body.k.push(part('mote2',shardM,[-0.20,1.14,-0.14]));
+  body.k.push(part('mote3',shardM,[0.06,1.02,-0.22]));
+
+  root.k.push(body);
+  return {root,kind:'hexlight'};
+}
+// Gloamwood: Blighted Dead, hunched corpse in rotting violet rags with pale fungus caps and twisted roots | Tris: 660 / 2500 budget (hero or humanoid monster)
+// Solid: 636 + Glow: 24 = 660 tris
+// Size: 0.69 W x 1.35 H x 0.57 D. Stands on y=0, faces +z.
+// Motion: shambling hunch like the Fen Ghoul; idle sways, attack is a double claw swipe.
+function blightedDeadModel(){
+  const skin=[132,120,146],cloth=[78,60,96],trim=[218,210,186],accent=[84,62,48],claw=[96,84,104],eyeC=[214,170,240];
+  const root=part('root',null);
+
+  const torso=part('torso',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.44,0.72),cloth,10,0.15,0.198);
+    g.sphere(T3(0,0.24,0.06,0.17,0.16,0.12),skin,8,6);
+    g.box(T3(0,-0.04,0,0.28,0.14,0.18),cloth);
+    g.sphere(T3(0.12,0.38,0.06,0.07,0.03,0.07),trim,6,3);
+    g.sphere(T3(-0.10,0.30,-0.10,0.06,0.03,0.06),trim,6,3);
+    g.cyl(T3(0.12,0.34,0.06,1,0.05,1),[180,170,150],4,0.02,0.02);
+    g.cyl(T3(-0.18,-0.10,0.02,1,0.40,1,0,0.2,0.4),accent,4,0.025,0.012);
+    g.cyl(T3(0.16,-0.08,-0.06,1,0.36,1,0,-0.3,-0.5),accent,4,0.022,0.01);
+  }),[0,0.72,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0.10,0,0.12,0.13,0.13),skin,8,6);
+    g.box(T3(0,0.02,0.12,0.10,0.06,0.12),skin);
+    g.sphere(T3(0.05,0.22,-0.02,0.08,0.035,0.08),trim,6,3);
+    g.cyl(T3(0.05,0.18,-0.02,1,0.05,1),[180,170,150],4,0.022,0.022);
+  }),[0,0.38,0.22],{r:[0.45,0,0]});
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.045,0.12,0.12,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.0,t:'#d4a8ff'}));
+  torso.k.push(head);
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.28,0,1,0.28,1),skin,5,0.042,0.048);
+    g.cyl(T3(0,-0.56,0.02,1,0.28,1),skin,5,0.036,0.042);
+    g.box(T3(0,-0.62,0.04,0.08,0.12,0.04),claw);
+  });
+  torso.k.push(part('armL',armM,[0.22,0.32,0.05]));
+  torso.k.push(part('armR',armM,[-0.22,0.32,0.05],{s:[-1,1,1]}));
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.36,0,1,0.36,1),cloth,5,0.052,0.068);
+    g.cyl(T3(0,-0.72,0.02,1,0.36,1),skin,5,0.042,0.052);
+    g.box(T3(0,-0.69,0.06,0.09,0.06,0.18),claw);
+  });
+  root.k.push(torso);
+  root.k.push(part('legL',legM,[0.12,0.72,0]));
+  root.k.push(part('legR',legM,[-0.12,0.72,0],{s:[-1,1,1]}));
+  return {root,kind:'blightedDead'};
+}
+// Emberfall Caldera: Ash Hound, charcoal hound with cracked rocky hide, ember seams and a mane of jagged plates | Tris: 878 / 1200 budget (beast or monster)
+// Solid: 818 + Glow: 60 = 878 tris
+// Size: 0.53 W x 1.02 H x 1.96 D. Stands on y=0, faces +z.
+function ashHoundModel(){
+  const fur=[58,52,50],dark=[34,30,30],pale=[86,74,68],spike=[44,40,40],eyeC=[240,150,60];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.sphere(T3(0,0.62,0.28,0.26,0.30,0.28),fur,8,6);
+    g.sphere(T3(0,0.58,-0.06,0.24,0.25,0.38),fur,8,6);
+    g.sphere(T3(0,0.52,0.06,0.18,0.14,0.32),pale,7,5);
+    g.ico(T3(0,0.72,0.32,0.26,0.24,0.22),dark);
+    for(let k=0;k<6;k++){
+      g.cyl(T3((k%2?0.03:-0.03),0.76-k*0.02,0.28-k*0.12,1,0.26-k*0.015,1,0,-0.5,(k%2?-0.2:0.2)),spike,4,0.045,0);
+    }
+    g.box(T3(0.16,0.74,0.36,0.04,0.16,0.10,0,0.2,-0.5),dark);
+    g.box(T3(-0.16,0.74,0.36,0.04,0.16,0.10,0,0.2,0.5),dark);
+  }),[0,0,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0,0,0.17,0.16,0.18),fur,8,6);
+    g.cyl(T3(0,-0.04,0.12,1,0.22,1,0,Math.PI/2),fur,6,0.09,0.05);
+    g.box(T3(0,-0.10,0.20,0.08,0.04,0.16),dark);
+    g.box(T3(0,-0.02,0.34,0.05,0.04,0.04),dark);
+    for(const s of[-1,1]) g.cyl(T3(s*0.08,0.12,-0.03,1,0.15,1,0,-0.2,s*-0.35),dark,4,0.045,0);
+  }),[0,0.76,0.54]);
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.07,0.04,0.14,0.03,0.04,0.03),eyeC);
+  }),[0,0,0],{e:2.0,t:'#ff9a3c'}));
+
+  const tail=part('tail',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.48,1,0,-Math.PI/2+0.4),fur,5,0.065,0.02);
+    g.cyl(T3(0,-0.26,-0.32,1,0.22,1,0,-Math.PI/2+0.1),dark,4,0.035,0);
+  }),[0,0.64,-0.52]);
+  body.k.push(part('embers',mk(g=>{
+    g.box(T3(0.25,0.60,0.10,0.03,0.05,0.30),[240,128,40]);
+    g.box(T3(-0.25,0.60,0.10,0.03,0.05,0.30),[240,128,40]);
+    g.box(T3(0,0.86,-0.10,0.05,0.03,0.26),[240,128,40]);
+  }),[0,0,0],{e:1.6,t:'#ff8028'}));
+  root.k.push(body,head,tail);
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.26,0,1,0.26,1),fur,6,0.052,0.075);
+    g.cyl(T3(0,-0.50,-0.02,1,0.24,1),dark,6,0.040,0.052);
+    g.box(T3(0,-0.47,0.03,0.09,0.06,0.12),dark);
+  });
+  root.k.push(part('lf',legM,[0.13,0.50,0.36]));
+  root.k.push(part('rf',legM,[-0.13,0.50,0.36]));
+  root.k.push(part('lb',legM,[0.13,0.50,-0.40]));
+  root.k.push(part('rb',legM,[-0.13,0.50,-0.40]));
+  return {root,kind:'ashHound'};
+}
+// Emberfall Caldera: Cinder Husk, charred corpse with black cracked skin, glowing ember cracks and smouldering rags | Tris: 560 / 2500 budget (hero or humanoid monster)
+// Solid: 500 + Glow: 60 = 560 tris
+// Size: 0.54 W x 1.35 H x 0.59 D. Stands on y=0, faces +z.
+// Motion: shambling hunch like the Fen Ghoul; idle sways, attack is a double claw swipe.
+function cinderHuskModel(){
+  const skin=[50,44,42],cloth=[86,52,40],trim=[70,64,60],accent=[240,128,40],claw=[34,30,30],eyeC=[240,190,90];
+  const root=part('root',null);
+
+  const torso=part('torso',mk(g=>{
+    g.cyl(T3(0,0,0,1,0.44,0.72),cloth,10,0.15,0.198);
+    g.sphere(T3(0,0.24,0.06,0.17,0.16,0.12),skin,8,6);
+    g.box(T3(0,-0.04,0,0.28,0.14,0.18),cloth);
+    g.box(T3(0.10,0.36,-0.12,0.10,0.06,0.10,0.4),trim);
+    g.box(T3(-0.12,0.10,0.14,0.08,0.10,0.04,0,0,0.3),trim);
+  }),[0,0.72,0]);
+
+  const head=part('head',mk(g=>{
+    g.sphere(T3(0,0.10,0,0.12,0.13,0.13),skin,8,6);
+    g.box(T3(0,0.02,0.12,0.10,0.06,0.12),skin);
+    g.box(T3(0,0.20,-0.02,0.16,0.05,0.16,0.3),trim);
+  }),[0,0.38,0.22],{r:[0.45,0,0]});
+  head.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.045,0.12,0.12,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.0,t:'#ffbe5a'}));
+  torso.k.push(head);
+  torso.k.push(part('embers',mk(g=>{
+    g.box(T3(0.06,0.24,0.18,0.03,0.16,0.03,0,0,0.4),accent);
+    g.box(T3(-0.08,0.14,0.17,0.03,0.12,0.03,0,0,-0.5),accent);
+    g.box(T3(0.12,0.02,-0.15,0.03,0.14,0.03,0,0,0.3),accent);
+  }),[0,0,0],{e:1.6,t:'#ff8028'}));
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.28,0,1,0.28,1),skin,5,0.042,0.048);
+    g.cyl(T3(0,-0.56,0.02,1,0.28,1),skin,5,0.036,0.042);
+    g.box(T3(0,-0.62,0.04,0.08,0.12,0.04),claw);
+  });
+  torso.k.push(part('armL',armM,[0.22,0.32,0.05]));
+  torso.k.push(part('armR',armM,[-0.22,0.32,0.05],{s:[-1,1,1]}));
+
+  const legM=mk(g=>{
+    g.cyl(T3(0,-0.36,0,1,0.36,1),cloth,5,0.052,0.068);
+    g.cyl(T3(0,-0.72,0.02,1,0.36,1),skin,5,0.042,0.052);
+    g.box(T3(0,-0.69,0.06,0.09,0.06,0.18),claw);
+  });
+  root.k.push(torso);
+  root.k.push(part('legL',legM,[0.12,0.72,0]));
+  root.k.push(part('legR',legM,[-0.12,0.72,0],{s:[-1,1,1]}));
+  return {root,kind:'cinderHusk'};
+}
+// Emberfall Caldera: Flame Shade, floating hooded spirit of tattered orange and deep red flame-shaped cloth with a yellow core | Tris: 444 / 1200 budget (beast or monster)
+// Solid: 400 + Glow: 44 = 444 tris
+// Size: 0.81 W x 1.77 H x 0.80 D. Stands on y=0, faces +z.
+// Motion: hovers (y +-0.04), tatters sway; walk is a glide; attack raises both claws then thrusts forward (ranged bolt from the core).
+function flameShadeModel(){
+  const cloth=[214,106,46],deep=[150,46,30],shadow=[28,30,36],claw=[64,36,30],eyeC=[240,232,140],coreC=[240,214,90];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.cyl(T3(0,0,0,1,1.0,1),cloth,10,0.40,0.21);
+    for(let k=0;k<7;k++){
+      const a=k/7*Math.PI*2;
+      g.cyl(T3(Math.cos(a)*0.34,0.32,Math.sin(a)*0.34,1,0.32,1,0,Math.PI,0),deep,4,0.07,0);
+    }
+    g.cyl(T3(0,1.0,0,1,0.44,1),deep,8,0.22,0.15);
+    g.sphere(T3(0,1.56,0,0.18,0.21,0.18),cloth,8,6);
+    g.sphere(T3(0,1.53,0.08,0.13,0.15,0.10),shadow,6,5);
+  }),[0,0,0]);
+  body.k.push(part('eyes',mk(g=>{
+    for(const s of[-1,1]) g.box(T3(s*0.05,1.55,0.16,0.035,0.035,0.035),eyeC);
+  }),[0,0,0],{e:2.4,t:'#ffe08c'}));
+  body.k.push(part('core',mk(g=>{
+    g.ico(T3(0,0.98,0.14,0.08,0.08,0.08),coreC);
+  }),[0,0,0],{e:1.8,t:'#ff8a3a'}));
+
+  const armM=mk(g=>{
+    g.cyl(T3(0,-0.40,0,1,0.40,1),cloth,5,0.046,0.074);
+    g.box(T3(0,-0.50,0.03,0.08,0.12,0.05),claw);
+    g.cyl(T3(0,-0.62,0.05,1,0.08,1,0,Math.PI,0),claw,4,0.03,0);
+  });
+  const armL=part('armL',armM,[0.26,1.26,0],{r:[-0.2,0,0.15]});
+  const armR=part('armR',armM,[-0.26,1.26,0],{r:[-0.2,0,-0.15],s:[-1,1,1]});
+  root.k.push(body,armL,armR);
+  return {root,kind:'flameShade'};
+}
+// Emberfall Caldera: Magma Scuttler, low wide scorpion of black volcanic rock plates with glowing magma joints | Tris: 672 / 1200 budget (beast or monster)
+// Solid: 616 + Glow: 56 = 672 tris
+// Size: 1.12 W x 0.87 H x 1.76 D. Stands on y=0, faces +z.
+// Motion: like the Dune Scorpion; claws snap, tail arches and strikes; magma seams pulse.
+function magmaScuttlerModel(){
+  const rock=[52,46,44],rockDk=[32,28,28],plate=[78,66,60],magma=[240,120,40];
+  const root=part('root',null);
+
+  const body=part('body',mk(g=>{
+    g.sphere(T3(0,0.30,0,0.34,0.15,0.44),rock,8,6);
+    g.sphere(T3(0,0.32,0.38,0.24,0.13,0.18),rock,8,5);
+    for(let k=0;k<4;k++){
+      g.ico(T3((k%2?0.06:-0.06),0.44,-0.22+k*0.15,0.20-k*0.01,0.06,0.09),plate);
+    }
+    for(let k=0;k<4;k++){
+      const zOff=-0.18+k*0.13,pitch=(k-1.5)*0.15;
+      g.cyl(T3(0.26,0.32,zOff,1,0.42,1,0,pitch,2.43),rockDk,4,0.036,0.018);
+      g.cyl(T3(-0.26,0.32,zOff,1,0.42,1,0,pitch,-2.43),rockDk,4,0.036,0.018);
+    }
+  }),[0,0,0]);
+  body.k.push(part('magma',mk(g=>{
+    g.box(T3(0,0.43,0.0,0.06,0.03,0.46),magma);
+    g.box(T3(0.30,0.30,0.0,0.03,0.04,0.40),magma);
+    g.box(T3(-0.30,0.30,0.0,0.03,0.04,0.40),magma);
+  }),[0,0,0],{e:1.7,t:'#ff7828'}));
+
+  const clawM=mk(g=>{
+    g.cyl(T3(0,0,0,1,0.36,1,0,Math.PI/2-0.2),rockDk,4,0.05,0.042);
+    g.ico(T3(0,0.06,0.38,0.12,0.09,0.15),rock);
+    g.box(T3(0.05,0.06,0.53,0.04,0.04,0.17,0.25),plate);
+    g.box(T3(-0.05,0.06,0.53,0.04,0.04,0.17,-0.25),plate);
+  });
+  const clawL=part('clawL',clawM,[0.24,0.32,0.42],{r:[0,0.4,0]});
+  const clawR=part('clawR',clawM,[-0.24,0.32,0.42],{r:[0,-0.4,0],s:[-1,1,1]});
+
+  const tail=part('tail',mk(g=>{
+    let py=0,pz=0;
+    for(let k=0;k<5;k++){
+      const a=-0.2+k*0.58;
+      py+=Math.sin(a)*0.14;
+      pz-=Math.cos(a)*0.14*(1-k*0.22);
+      g.ico(T3(0,py,pz,0.10-k*0.01,0.09-k*0.01,0.10-k*0.01),k%2?plate:rock);
+    }
+    g.cyl(T3(0,py+0.06,pz+0.12,1,0.22,1,0,1.9),rockDk,4,0.042,0);
+  }),[0,0.36,-0.38]);
+  tail.k.push(part('venom',mk(g=>{
+    g.ico(T3(0,0.42,-0.30,0.07,0.07,0.08),magma);
+  }),[0,0,0],{e:1.8,t:'#ff8a3a'}));
+
+  root.k.push(body,clawL,clawR,tail);
+  return {root,kind:'magmaScuttler'};
+}
 function scorpModel(){const sh=[176,114,58],dk=[110,66,32],root=part('root',null);
  const body=part('body',mk(g=>{g.sphere(T3(0,.3,0,.27,.15,.38),sh,10,6);g.sphere(T3(0,.32,.34,.19,.12,.16),sh,8,5);for(let k=0;k<4;k++)g.box(T3(0,.43,-.22+k*.14,.34-k*.02,.03,.1),dk);
   for(const s2 of[-1,1]){g.sphere(T3(s2*.07,.4,.46,.025,.025,.02),[20,10,8],5,4);for(let k=0;k<4;k++)g.cyl(T3(s2*.22,.3,-.2+k*.13,1,.36,1,0,(k-1.5)*.15,s2*1.95),dk,4,.028,.014,false)}}),[0,0,0]);
@@ -3438,13 +4029,13 @@ function drawStatus(e){if(e.fade>0||e.ghostT>0)return;const x=e.x*U,z=e.y*U,gy=g
 function drawEnemy(e){if(e.ghostT>0)return;const d=e.d,x=e.x*U,z=e.y*U;const fl=e.hitFlash>0?.6:0;const sc=(e.fade>0?1-e.fade/0.6:1)*(d.sc||1);
  const wind=e.wind>0?(1-e.wind/(d.boss?.45:.32)):0;
  if(d.shape==='scorp'){const s=1.3*sc,sw=Math.sin(e.ph*1.4),gy=groundH(x,z),lunge=wind*.2;const an={tail:{rx:Math.sin(e.anim*3)*.12-wind*.7},clawL:{ry:Math.sin(e.anim*4)*.15+wind*.4},clawR:{ry:-Math.sin(e.anim*4)*.15-wind*.4},body:{y:Math.abs(sw)*.02*e.mv}};
-  drawPart(MODELS.scorp.root,M4.trs(x+Math.sin(e.rot)*lunge,gy,z+Math.cos(e.rot)*lunge,e.rot,0,0,s,s,s),an,fl,d.tint);decal(x,z,gy+.04,.55*s,.7*s,e.rot,0,[0,0,0],.5);return}
- if(d.shape==='rat'||d.shape==='wolf'){const mdl=MODELS[d.shape],s=(d.shape==='rat'?1.25:1.05)*sc;const sw=Math.sin(e.ph*1.1);
+  drawPart((MODELS[d.model]||MODELS.scorp).root,M4.trs(x+Math.sin(e.rot)*lunge,gy,z+Math.cos(e.rot)*lunge,e.rot,0,0,s,s,s),an,fl,d.tint);decal(x,z,gy+.04,.55*s,.7*s,e.rot,0,[0,0,0],.5);return}
+ if(d.shape==='rat'||d.shape==='wolf'){const mdl=MODELS[d.model]||MODELS[d.shape],s=(d.shape==='rat'?1.25:1.05)*sc;const sw=Math.sin(e.ph*1.1);
   const an=d.shape==='wolf'?{lf:{rx:sw*.7*e.mv},rb:{rx:sw*.7*e.mv},rf:{rx:-sw*.7*e.mv},lb:{rx:-sw*.7*e.mv},tail:{ry:Math.sin(e.anim*5)*.4},head:{rx:wind*.4},root:{}}:{tail:{ry:Math.sin(e.anim*7)*.5},body:{y:Math.abs(sw)*.03*e.mv}};
   const lunge=wind*.25;const M=M4.trs(x+Math.sin(e.rot)*lunge,groundH(x,z),z+Math.cos(e.rot)*lunge,e.rot,0,0,s,s,s);drawPart(mdl.root,M,an,fl,d.tint);decal(x,z,groundH(x,z)+.04,.5*s*(d.shape==='rat'?.7:1.2),.5*s*(d.shape==='rat'?1:1.4),e.rot,0,[0,0,0],.5);return}
- if(d.shape==='wisp'){const y=groundH(x,z)+Math.sin(e.anim*2.5)*.15;drawPart(MODELS.wisp.root,M4.trs(x,y,z,0,0,0,sc,sc,sc),null,fl,d.tint);sprite(x,y+1.3,z,.7,.7,d.glow||'#b8ffd0',.9);sprite(x,y+1.3,z,.25,.25,'#ffffff',.9);return}
- if(d.shape==='wraith'){const y=groundH(x,z)+.25+Math.sin(e.anim*2)*.12;const an={armR:{rx:(e.castT>0?-1.2:0)+Math.sin(e.anim*3)*.2}};drawPart(MODELS.wraith.root,M4.trs(x,y,z,e.rot,0,0,sc,sc,sc),an,fl,d.tint);sprite(x,y+1.2,z,1.2,1.4,d.glow||'#7fb8d8',.25);decal(x,z,groundH(x,z)+.04,.55,.55,0,0,[0,0,0],.35);return}
- const mdl=MODELS[d.shape],scale=(d.shape==='prior'?1.75:d.shape==='ghoul'?1.05:1.05)*sc;
+ if(d.shape==='wisp'){const y=groundH(x,z)+Math.sin(e.anim*2.5)*.15;drawPart((MODELS[d.model]||MODELS.wisp).root,M4.trs(x,y,z,0,0,0,sc,sc,sc),null,fl,d.tint);sprite(x,y+1.3,z,.7,.7,d.glow||'#b8ffd0',.9);sprite(x,y+1.3,z,.25,.25,'#ffffff',.9);return}
+ if(d.shape==='wraith'){const y=groundH(x,z)+.25+Math.sin(e.anim*2)*.12;const an={armR:{rx:(e.castT>0?-1.2:0)+Math.sin(e.anim*3)*.2}};drawPart((MODELS[d.model]||MODELS.wraith).root,M4.trs(x,y,z,e.rot,0,0,sc,sc,sc),an,fl,d.tint);sprite(x,y+1.2,z,1.2,1.4,d.glow||'#7fb8d8',.25);decal(x,z,groundH(x,z)+.04,.55,.55,0,0,[0,0,0],.35);return}
+ const mdl=MODELS[d.model]||MODELS[d.shape],scale=(d.shape==='prior'?1.75:d.shape==='ghoul'?1.05:1.05)*sc;
  const cast=e.castT>0?.3:0;drawHum(mdl,x,z,e.rot,e.ph,e.mv,wind>0?1-wind:0,cast,fl,scale,0,d.tint);
  if(d.shape==='prior'){sprite(x,groundH(x,z)+1.4*scale,z,1.6*scale/1.75,1.6*scale/1.75,e.enr?'#ff8a6a':(d.glow||'#6fd8ea'),.18)}if(d.boss&&d.shape!=='prior')sprite(x,groundH(x,z)+d.h*.8,z,2.4,2.4,e.enr?'#ff8a6a':(d.glow||'#ffd27a'),.12);if(d.elite)decal(x,z,groundH(x,z)+.05,d.r*U*1.8,d.r*U*1.8,G.time,5,[1,.75,.3],.5,.6);
  decal(x,z,groundH(x,z)+.04,.45*scale,.45*scale,0,0,[0,0,0],.5)}
@@ -3861,6 +4452,11 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:54,date:'6 Nov 2026',title:'New looks for thirteen monsters',items:[
+  'The Frostfang Wolf, Gloom Stalker and Ash Hound have their own bodies now: ice spines, a long-legged shadow wolf with fungus, and a charcoal hound with glowing ember seams.',
+  'The Rime Wraith, Sand Shade and Flame Shade are new spirits with icicle, sand and flame tatters and a glowing core.',
+  'The Frostbitten Dead, Blighted Dead and Cinder Husk are new undead in ice-crusted furs, fungus-covered rags and charred, ember-cracked skin.',
+  'The Drowned Acolyte carries a rusted bell, the Dune Raider wears desert wraps and a curved blade, the Hexlight is a violet wisp with orbiting shards, and the Magma Scuttler is a scorpion of black rock and magma.']},
  {id:53,date:'6 Nov 2026',title:'Night, weather and water',items:[
   'Most monsters see less far at night, so creeping past them after dark is easier. Running and fighting are as loud as ever.',
   'Wisps, wraiths and other shadow creatures see further at night instead.',
