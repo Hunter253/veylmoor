@@ -421,7 +421,7 @@ await test('A hero saved where a building now stands loads safely, and other tow
   V.enterMap('vale',V.G.maps.vale.start);V.update(1/30);return bad}`));
 
 // Enemy tactics (7.b). Most of these use open ground, so walls can't hide what the rule does.
-const TAC_SETUP = `const V=window.__veyl,bad=[];V.startNew('reaver','Tester');const P=V.P,G=V.G,TS=32;V.enterMap('dunes');G.enemies=[];P.x=40*TS;P.y=10*TS;P.hp=1e7;P.iframes=1e9;P.fx=0;P.fy=1;P.faceLock=1e9;const m=G.map,solid=m.solidAt,get=m.get;m.solidAt=()=>false;m.get=()=>0;const done=()=>{m.solidAt=solid;m.get=get;G.enemies=[];return bad},step=(n,f)=>{for(let i=0;i<n;i++){V.update(1/30);P.iframes=1e9;P.faceLock=1e9;if(f)f(i)}},add=(t,dx,dy,o)=>{const e=V.mkEnemy(t,20,P.x+dx,P.y+dy);e.hp=e.max=1e6;e.spT=1e9;e.state='chase';if(o)Object.assign(e,o);G.enemies.push(e);return e},pd=e=>Math.hypot(e.x-P.x,e.y-P.y);`;
+const TAC_SETUP = `const V=window.__veyl,bad=[];V.startNew('reaver','Tester');V.TIMEO.time='day';V.TIMEO.weather='clear';const P=V.P,G=V.G,TS=32;V.enterMap('dunes');G.enemies=[];P.x=40*TS;P.y=10*TS;P.hp=1e7;P.iframes=1e9;P.fx=0;P.fy=1;P.faceLock=1e9;const m=G.map,solid=m.solidAt,get=m.get;m.solidAt=()=>false;m.get=()=>0;const done=()=>{m.solidAt=solid;m.get=get;G.enemies=[];return bad},step=(n,f)=>{for(let i=0;i<n;i++){V.update(1/30);P.iframes=1e9;P.faceLock=1e9;if(f)f(i)}},add=(t,dx,dy,o)=>{const e=V.mkEnemy(t,20,P.x+dx,P.y+dy);e.hp=e.max=1e6;e.spT=1e9;e.state='chase';if(o)Object.assign(e,o);G.enemies.push(e);return e},pd=e=>Math.hypot(e.x-P.x,e.y-P.y);`;
 
 await reset();
 await test('Every regular monster has an archetype, and bosses have none', () => ev(`()=>{const V=window.__veyl,bad=[];for(const t in V.EN){const b=V.EN[t].boss;if(b&&V.TACBY[t])bad.push(t+' is a boss with an archetype');if(!b&&!V.TACBY[t])bad.push(t+' has no archetype')}for(const t in V.TACTICS.patrolShare)if(!V.EN[t])bad.push('patrol lists unknown '+t);for(const k of ['stalker','sentinel','ravager','arcanist'])if(!V.TACTICS.arch[k])bad.push('missing '+k);for(const t of V.TACTICS.arch.arcanist.types)if(!V.EN[t].ranged)bad.push(t+' is an arcanist but not ranged');return bad}`));
@@ -583,6 +583,56 @@ await test('Curious monsters stay out of town and off a dead hero', () => ev(`()
   const z=m.zones.find(q=>q.s==='Town');P.x=(z.x1-1)*TS;P.y=((z.y0+z.y1)/2)*TS;const e=face(add('wolf',(1+3)*TS+80,0,idle),true),hx=e.hx;step(150,()=>{G.noiseT=G.time});if(!e.aware)bad.push('did not hear the hero');if(e.x<(z.x1)*TS)bad.push('walked into town');
   G.enemies=[];const d=face(add('ghoul',100,0,idle));step(2);if(!d.aware)bad.push('did not grow suspicious');P.dead=true;step(3);if(d.aware)bad.push('stayed suspicious of a dead hero');P.dead=false;
   G.enemies=[];const h=add('wolf',120,0,{state:'hunt',huntT:30,hsx:0,hsy:0,lx:P.x,ly:P.y});P.dead=true;step(2);if(h.state==='hunt')bad.push('hunted a dead hero');P.dead=false;return done()}`));
+
+// Surroundings (7.b.4): night, weather and water. TAC_SETUP fixes the time to day and the weather to clear; each test changes them on purpose.
+await reset();
+await test('Night shortens most monsters\' sight, shadow creatures see further, and the Abbey has no night', () => ev(`()=>{${SENSE_SETUP}
+  const E=V.TACTICS.env,quiet=()=>{P.mv=0;G.noiseT=-99;P.lastHurt=-99};
+  const w=add('wolf',300,0),s=add('wisp',300,0),b=add('qassar',300,0);
+  V.TIMEO.time='day';const n0=V.tacNight(),dw=V.tacSightK(w),ds=V.tacSightK(s);
+  V.TIMEO.time='night';const n1=V.tacNight(),nw=V.tacSightK(w),ns=V.tacSightK(s),nb=V.tacSightK(b);
+  if(n0!==0||n1<.9)bad.push('night value '+n0+' by day, '+n1+' at night');
+  if(dw!==1||ds!==1)bad.push('daytime sight changed: '+dw+' '+ds);
+  if(Math.abs(nw-(1-E.nightBlind*n1))>1e-6||nw>.75)bad.push('a wolf at night sees '+nw.toFixed(2)+' as far');
+  if(Math.abs(ns-(1+E.nightSee*n1))>1e-6||ns<=1.1)bad.push('a wisp at night sees '+ns.toFixed(2)+' as far');
+  if(nb!==1)bad.push('a boss changed at night');
+  const run=(t,f,time)=>{G.enemies=[];V.TIMEO.time=time;const R=V.EN[t].aggro*(V.TACBY[t].sight||1),e=face(add(t,R*f,0,idle));quiet();step(60,quiet);return e.state==='chase'};
+  if(!run('ghoul',.85,'day'))bad.push('a ghoul did not see the hero by day');
+  if(run('ghoul',.85,'night'))bad.push('a ghoul saw as far at night');
+  if(run('wisp',1.1,'day'))bad.push('a wisp saw past its daytime range');
+  if(!run('wisp',1.1,'night'))bad.push('a wisp did not see further at night');
+  V.TIMEO.time='night';const r=done();V.enterMap('abbey');if(V.tacNight()!==0)r.push('night reached inside the Abbey');return r}`));
+
+await reset();
+await test('Fog, mist and sandstorms hide you best, and rain and sandstorms muffle sound', () => ev(`()=>{${SENSE_SETUP}
+  const E=V.TACTICS.env,w=add('wolf',300,0),b=add('qassar',300,0);
+  for(const k of['fog','mist','sand','rain','snow','ash']){V.TIMEO.weather=k;const W=V.weatherNow(),x=E.wx[k],sk=V.tacSightK(w),hk=V.tacHearK();
+   if(!W||W.k!==k)bad.push(k+' weather did not apply');else{if(Math.abs(sk-(1-(x.sight||0)*W.s))>1e-6)bad.push(k+' sight '+sk);if(Math.abs(hk-(1-(x.hear||0)*W.s))>1e-6)bad.push(k+' hearing '+hk)}
+   if(V.tacSightK(b)!==1)bad.push('a boss lost sight in '+k)}
+  const at=k=>{V.TIMEO.weather=k;return[V.tacSightK(w),V.tacHearK()]};
+  if(!(at('fog')[0]<=.65&&at('mist')[0]<=.65&&at('sand')[0]<=.65))bad.push('fog, mist or sand hides too little');
+  if(!(at('sand')[1]<=.75&&at('rain')[1]<=.75))bad.push('rain or sand muffles too little');
+  if(!(at('snow')[0]<.9&&at('snow')[0]>.7&&at('snow')[1]===1))bad.push('snow: '+at('snow'));
+  V.TIMEO.weather='clear';if(V.tacSightK(w)!==1||V.tacHearK()!==1)bad.push('clear weather changed the senses');
+  const see=k=>{G.enemies=[];V.TIMEO.weather=k;const R=V.EN.ghoul.aggro*(V.TACBY.ghoul.sight||1),e=face(add('ghoul',R*.85,0,idle));step(60);return e.state==='chase'};
+  if(!see('clear'))bad.push('a ghoul did not see in clear weather');if(see('fog'))bad.push('a ghoul saw as far in fog');
+  const hear=k=>{G.enemies=[];V.TIMEO.weather=k;const R=V.TACTICS.senses.noise.fight*(V.TACBY.wolf.hear||1),e=face(add('wolf',R*.9,0,idle),true);step(30,()=>{G.noiseT=G.time});return!!e.aware};
+  if(!hear('clear'))bad.push('a wolf did not hear a fight in clear weather');if(hear('sand'))bad.push('a wolf heard as far in a sandstorm');
+  V.TIMEO.weather='clear';return done()}`));
+
+await reset();
+await test('Wading is heard further than walking, and water slows monsters but not fire creatures in lava or bosses', () => ev(`()=>{const V=window.__veyl,bad=[];V.startNew('reaver','Tester');V.TIMEO.time='day';V.TIMEO.weather='clear';const P=V.P,G=V.G,TS=32,N=V.TACTICS.senses.noise;
+  P.sprint=false;P.mounted=false;G.noiseT=-99;P.lastHurt=-99;P.mv=1;P.wade=0;const walk=V.tacNoise();P.wade=1;const wade=V.tacNoise();P.mv=0;const still=V.tacNoise();P.wade=0;
+  if(walk!==N.walk||wade!==N.wade||!(wade>walk))bad.push('walking '+walk+', wading '+wade);if(still!==0)bad.push('standing in water made noise');
+  const deepest=(t,o)=>{const m=G.map;let best=null;for(let y=2;y<m.h-2;y++)for(let x=2;x<m.w-2;x++){if(m.get(x,y)!==V.T.WATER)continue;const e=Object.assign(V.mkEnemy(t,20,(x+.5)*TS,(y+.5)*TS),o||{}),k=V.tacWadeK(e);if(!best||k<best.k)best={k,x:e.x,y:e.y}}return best};
+  V.enterMap('vale');const sx=P.x,sy=P.y,m=G.map,solid=m.solidAt;
+  const v=deepest('ghoul');if(!v||v.k>.65)bad.push('a ghoul in deep water keeps '+(v?v.k.toFixed(2):'?')+' of its speed');
+  if(V.tacWadeK(V.mkEnemy('ghoul',20,sx,sy))!==1)bad.push('a ghoul on dry ground was slowed');
+  if(deepest('prior').k!==1)bad.push('a boss was slowed by water');if(deepest('ghoul',{ev:true}).k!==1)bad.push('a defend-wave monster was slowed by water');
+  m.solidAt=()=>false;const move=(x,y)=>{G.enemies=[];const e=V.mkEnemy('ghoul',20,x,y);e.hp=e.max=1e6;e.spT=1e9;e.state='chase';e.hx=x;e.hy=y;G.enemies.push(e);P.x=x+200;P.y=y;P.hp=1e7;const x0=e.x,y0=e.y;for(let i=0;i<10;i++){P.iframes=1e9;V.update(1/30)}return Math.hypot(e.x-x0,e.y-y0)};
+  const wet=move(v.x,v.y),dry=move(sx,sy);m.solidAt=solid;if(!(dry>0&&wet<dry*.8))bad.push('a chasing ghoul moved '+wet.toFixed(1)+' in water and '+dry.toFixed(1)+' on land');
+  V.enterMap('ember');const lava=deepest('cinderdead'),other=deepest('ghoul');if(!lava||lava.k!==1)bad.push('a fire creature was slowed by lava');if(!other||other.k>.8)bad.push('a monster from elsewhere was not slowed by lava: '+(other&&other.k.toFixed(2)));
+  G.enemies=[];return bad}`));
 
 // Day and night (25.b).
 const ZONES = `['vale','dunes','frost','gloam','ember']`;
