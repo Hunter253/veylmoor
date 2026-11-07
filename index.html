@@ -1798,11 +1798,11 @@ function resNote(i){const d=RES[P.cls];if(!d)return'';if(i===0)return`<div class
 function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*resDmg(i)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit+S.m.critA[i];if(crit)a*=S.critD/100;a*=talentSelf();return{a:Math.max(1,Math.round(a)),crit,i}}
 function healP(a,quiet){if(P.dead)return;a=Math.round(a*(1+S.amp/200));if(a<=0)return;const b=P.hp;P.hp=Math.min(S.maxHp,P.hp+a);const got=Math.round(P.hp-b);if(S.m.k.overheal&&a-got>0){P.shield=Math.min(S.maxHp*.3,(P.shield||0)+(a-got));P.shieldT=Math.max(P.shieldT||0,6)}if(!quiet&&got>0)txt(P.x,P.y,1.9,'+'+got,'#6aff5a',19)}
 function hitEnemy(e,r,o={}){
- if(e.dead)return;if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0;if(tacSidestep(e,r))return}let a=r.a;const grd=!o.dot&&tacGuarded(e);if(grd)a*=1-TACTICS.attack.guard.dr;a*=cmdTaken(e);const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;if(!o.dot&&!o.noArm)a*=1-monBlock(e,(S.pen||0)+(o.pen||0));a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
+ if(e.dead)return;if(e.shiftT>0){if(!o.dot&&!o.quiet)txt(e.x,e.y,e.d.h+.4,'Immune','#c8c8c8',15);return}if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0;if(tacSidestep(e,r))return}let a=r.a;const grd=!o.dot&&tacGuarded(e);if(grd)a*=1-TACTICS.attack.guard.dr;a*=cmdTaken(e);if(e.openT>0)a*=BOSSPH.open.taken;const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;if(!o.dot&&!o.noArm)a*=1-monBlock(e,(S.pen||0)+(o.pen||0));a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
  if(e.state!=='chase'){e.state='chase';for(const f of live())if(f!==e&&f.state==='idle'&&dist(f.x,f.y,e.x,e.y)<110)f.state='chase'}
  const hh=e.d.h*(e.d.boss?1.75:1);if(grd){txt(e.x,e.y,hh+.5,'Blocked','#ffe6a0',14);sfx('absorb',.5)}
  if(o.dot)txt(e.x,e.y,hh*.8,a,o.dot==='burn'?'#ff9a4a':'#ff5a5a',14);else txt(e.x,e.y,hh+.1,a+(r.crit?'!':''),r.crit?'#ffa53a':'#ffe14a',r.crit?28:20);
- if(o.stun){e.stun=Math.max(e.stun,o.stun*S.m.stunX*(e.d.boss?0.35:1));if(S.m.ccWeak)weaken(e,S.m.ccWeak,4)}if(o.root)e.root=Math.max(e.root,o.root*(e.d.boss?0.4:1));
+ if(o.stun&&bossStunOk(e)){e.stun=Math.max(e.stun,o.stun*S.m.stunX*(e.d.boss?0.35:1));if(S.m.ccWeak)weaken(e,S.m.ccWeak,4)}if(o.root)e.root=Math.max(e.root,o.root*(e.d.boss?0.4:1));
  let ls=S.m.ls+buffSum('ls');if(o.dot==='bleed'&&P.cls==='reaver')ls+=.25+(S.m.k.bleedLs||0);if(ls>0)healP(a*ls,true);
  if(!o.dot){burst(e.x,e.y,o.col||'#e8dfc8',7,80,0.4,2.4,e.d.h*.55);G.fx.push({k:'flash',x:e.x,y:e.y,h:e.d.h*.55*(e.d.boss?1.75:1),c:o.col||'#fff1d0',t:0,max:.16});
   if(!o.quiet)sfx(r.crit?'crit':'hit');if(r.crit){spark(e.x,e.y,'#ffd27a',8,e.d.h*.6,110);shake(1.5)}G.tgt=e}
@@ -1901,7 +1901,7 @@ const ABFX={
  /* ---------- Bulwark: tank, control, shields ---------- */
  cleave(ab,t,i){const n=frontArc(ab.range,1.25,e=>{hitEnemy(e,roll(i,ab.base),{col:'#e9c78f'});echo(e,i,ab.base)});
   {const K=S.m.k;if(n&&(P.shield||0)<S.maxHp*(K.aegis?.35:.2))addShield(S.maxHp*.015*n*(K.aegis?2:1),6,true)}slashFx(Math.atan2(P.fy,P.fx),ab.range+6,1.25,'#f1d9a6');sfx(n?'heavy':'swing');P.atkAnim=0.3},
- bash(ab,t,i){if(!inReach(t,ab))return false;const K=S.m.k,held=t.stun>0||t.root>0,st=1.5+(K.concuss?.6:0),r=roll(i,ab.base);if(K.shatter&&held){r.a*=2;txt(t.x,t.y,t.d.h+.7,'Shatter!','#cfe0ff',17);for(const e of live())if(e!==t&&dist(e.x,e.y,t.x,t.y)<110+e.d.r){e.stun=Math.max(e.stun,st*S.m.stunX*(isBoss(e)?.35:1));ring(e.x,e.y,e.d.r+10,'#cfe0ff',.3,4)}ring(t.x,t.y,110,'#cfe0ff',.4,5)}hitEnemy(t,r,{stun:st,col:'#f4e2b0',quiet:true});if(!t.dead){knock(t,P.x,P.y,300);vuln(t,.2,5,'#f4e2b0')}
+ bash(ab,t,i){if(!inReach(t,ab))return false;const K=S.m.k,held=t.stun>0||t.root>0,st=1.5+(K.concuss?.6:0),r=roll(i,ab.base);if(K.shatter&&held){r.a*=2;txt(t.x,t.y,t.d.h+.7,'Shatter!','#cfe0ff',17);for(const e of live())if(e!==t&&dist(e.x,e.y,t.x,t.y)<110+e.d.r){if(bossStunOk(e))e.stun=Math.max(e.stun,st*S.m.stunX*(isBoss(e)?.35:1));ring(e.x,e.y,e.d.r+10,'#cfe0ff',.3,4)}ring(t.x,t.y,110,'#cfe0ff',.4,5)}hitEnemy(t,r,{stun:st,col:'#f4e2b0',quiet:true});if(!t.dead){knock(t,P.x,P.y,300);vuln(t,.2,5,'#f4e2b0')}
   ring(t.x,t.y,t.d.r+20,'#f4e2b0',.3,6);G.fx.push({k:'flash',x:t.x,y:t.y,h:t.d.h*.6,c:'#ffffff',t:0,max:.2});spark(t.x,t.y,'#fff3c0',16,t.d.h*.6,110);sfx('clang');shake(5);P.atkAnim=0.3},
  oath(ab,t,i){const K=S.m.k;let n=0;for(const e of live()){const d=dist(P.x,P.y,e.x,e.y);if(d<230){taunt(e,4);n++;if(d>50)knock(e,P.x,P.y,-Math.min(380,d*1.6))}}
   if(K.quake){aoe(P.x,P.y,230,2,12*K.quake,{col:'#d4a857',quiet:true});burst(P.x,P.y,'#a08060',24,200,.7,4,.1);sfx('rumble',.6)}
@@ -2365,26 +2365,61 @@ function updateEnemies(dt){
  for(let a=0;a<L.length;a++)for(let b=a+1;b<L.length;b++){const A=L[a],B=L[b],dx=B.x-A.x,dy=B.y-A.y,dd=Math.hypot(dx,dy),min=(A.d.r+B.d.r)*0.8;
   if(dd>0.01&&dd<min){const push=(min-dd)/2/dd;if(!A.d.boss)moveEnt(A,-dx*push,-dy*push,A.d.r*.7);if(!B.d.boss)moveEnt(B,dx*push,dy*push,B.d.r*.7)}}}
 /* ================= Area bosses ================= */
-function bossLogic(e,dt){const d=e.d;
+/* Boss phases (8.a, 8.b), first estimates for the balance passes. Every boss fights in three phases, as in the enemy behaviour guide's Hollow Warden example.
+   at: health share where phases 2 and 3 begin. every: seconds between moves in each phase. combo: chance in each phase that a move is followed by its partner
+   (combos) comboGap seconds later. Phase 1 uses only the boss's first two moves; phases 2 and 3 use all of them. Move choice reads the hero's distance:
+   within near the boss favours its close moves, beyond far its reaching ones, and it rarely repeats the last move.
+   shift: the phase change. For shift.time the boss can't be hurt, roots itself, calls its adds and sends out a shockwave of shift.r the hero can step out of.
+   open: after a slam, charge or nova the boss stands open for open.time: it can't move or swing and takes open.taken times the damage.
+   rally: its adds are told to press the attack for this long when it changes phase or stands open. stunGuard: seconds after a stun before a boss can be stunned again. */
+const BOSSPH={at:[.7,.35],every:[6.5,5,4],combo:[0,0,.45],comboGap:.9,near:110,far:220,close:['slam','nova'],reach:['charge','barrage','rain'],
+ combos:{slam:'nova',charge:'slam',nova:'barrage',barrage:'charge',rain:'slam'},
+ shift:{time:1.4,r:120,dmg:1.2},open:{time:1.3,taken:1.25,after:{slam:1.35,nova:1.2,charge:1.05}},rally:4,stunGuard:6};
+const bossPhaseOf=e=>{const f=e.hp/e.max;return f<BOSSPH.at[1]?3:f<BOSSPH.at[0]?2:1};
+function bossLogic(e,dt){const d=e.d,B=BOSSPH;
  if(G.boss!==e){G.boss=e;G.tgt=e;P.auto=true;toast(d.intro||`<b>${esc(d.name)}</b> turns toward you.`,'warn');sfx('horn',.8)}
- const f=e.hp/e.max;if(!e.ph1&&f<0.66){e.ph1=1;summon(e)}if(!e.ph2&&f<0.33){e.ph2=1;summon(e)}
- if(!e.enr&&f<0.25){e.enr=1;toast(`${esc(d.name)} grows frenzied.`,'warn');ring(e.x,e.y,90,d.glow||'#ff8a6a',0.6,5);sfx('roar',.8)}
+ const ph=bossPhaseOf(e);if(ph>(e.phase||1)){e.phase=ph;bossShift(e);return}
+ if(e.shiftT>0){e.shiftT-=dt;return}
+ if(e.openT>0){e.openT-=dt;return}
  e.mvT=(e.mvT==null?3:e.mvT)-dt;if(e.mvT>0||e.wind>0||e.bd)return;
- const mv=d.moves[(e.mvI||0)%d.moves.length];e.mvI=(e.mvI||0)+1;e.mvT=(e.enr?4.2:6)*rr(.85,1.15);bossMove(e,mv)}
-function bossMove(e,mv){const d=e.d,col=d.glow||'#ff8a6a',dm=e.dmg*(e.enr?1.2:1);
+ const mv=bossPick(e),p=e.phase||1;e.mvT=B.every[p-1]*rr(.85,1.15);
+ if(R()<B.combo[p-1]){const nx=bossPartner(e,mv);bossMove(e,mv,true);e.mvT+=B.comboGap;later(B.comboGap,()=>{if(!e.dead&&G.boss===e&&!(e.shiftT>0)&&!e.bd)bossMove(e,nx)})}
+ else bossMove(e,mv)}
+/* Picks the next move: phase 1 knows only the first two; distance and the last move shift the odds. */
+function bossPick(e){const B=BOSSPH,all=e.d.moves,pool=(e.phase||1)===1?all.slice(0,2):all,dd=dist(e.x,e.y,P.x,P.y);
+ const w=pool.map(m=>{let k=1;if(m===e.lastMv)k*=.25;if(dd<B.near){if(B.close.includes(m))k*=2.5;if(m==='charge')k*=.3}if(dd>B.far&&B.reach.includes(m))k*=2.5;return k});
+ let r=R()*w.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return e.lastMv=pool[i]}return e.lastMv=pool[pool.length-1]}
+function bossPartner(e,mv){const all=e.d.moves,nx=BOSSPH.combos[mv];return nx!==mv&&all.includes(nx)?nx:(all.find(m=>m!==mv)||mv)}
+/* The phase change: a short pause it can't be hurt in, a shockwave, its adds and a rallying call. Phase 3 is the old frenzy. */
+function bossShift(e){const d=e.d,B=BOSSPH,col=d.glow||'#ff8a6a',x=e.x,y=e.y,dm=e.dmg*B.shift.dmg,t=B.shift.time;
+ e.shiftT=t;e.openT=0;e.bd=null;e.wind=0;e.root=Math.max(e.root||0,t);e.cd=Math.max(e.cd||0,t);e.castT=t;e.mvT=1.2;
+ if(e.phase>=3){e.enr=1;toast(`${esc(d.name)} grows frenzied.`,'warn');sfx('roar',.8)}else{toast(`${esc(d.name)} fights in earnest.`,'warn');sfx('horn',.8)}
+ txt(x,y,d.h+1,e.phase>=3?'Frenzy':'Phase two',col,18);ring(x,y,90,col,0.6,5);
+ G.tele.push({x,y,r:B.shift.r,t:0,max:t,team:'e',cb(){nova(x,y,B.shift.r,col,'#ffffff');shake(5);sfx('explode',.6);if(!P.dead&&dist(P.x,P.y,x,y)<B.shift.r+8)hurtPlayer(dm,e)}});
+ summon(e);bossRally(e)}
+/* Stands open after a big move: the reward for learning when to dodge and when to strike. */
+function bossOpen(e){const B=BOSSPH;if(e.dead||e.shiftT>0)return;e.openT=B.open.time;e.root=Math.max(e.root||0,B.open.time);e.cd=Math.max(e.cd||0,B.open.time);
+ txt(e.x,e.y,e.d.h+.8,'Exposed','#ffe14a',17);ring(e.x,e.y,e.d.r+14,'#ffe14a',.5,4);bossRally(e)}
+function bossRally(e){for(const f of G.enemies)if(f.summoned&&!f.dead&&dist(f.x,f.y,e.x,e.y)<420){f.state='chase';f.ord={k:'press',by:e.id};f.ordT=BOSSPH.rally}}
+/* Anti-stunlock: a boss shrugs off a second stun for stunGuard seconds. */
+function bossStunOk(e){if(!e.d.boss)return true;if(G.time<(e.stunGd||0)){txt(e.x,e.y,e.d.h+.5,'Resists','#c8c8c8',14);return false}e.stunGd=G.time+BOSSPH.stunGuard;return true}
+function bossMove(e,mv,noOpen){const d=e.d,col=d.glow||'#ff8a6a',dm=e.dmg*(e.enr?1.2:1);
+ if(!noOpen&&BOSSPH.open.after[mv]!=null)later(BOSSPH.open.after[mv],()=>{if(G.boss===e&&!e.bd)bossOpen(e);else if(G.boss===e)later(.4,()=>bossOpen(e))});
  if(mv==='slam'){const tx=P.x,ty=P.y;txt(e.x,e.y,3.2,d.name===EN.prior.name?'Tidal Slam':'Slam',col,16);sfx('horn',.6);e.castT=1.35;
   G.tele.push({x:tx,y:ty,r:80,t:0,max:1.35,team:'e',cb(){ring(tx,ty,80,col,0.5,6);burst(tx,ty,col,36,220,0.8,3,0.2);sfx('rumble');shake(6);if(!P.dead&&dist(P.x,P.y,tx,ty)<90)hurtPlayer(dm*2.4,e)}})}
  else if(mv==='nova'){txt(e.x,e.y,3.2,'Shockwave',col,16);e.castT=1.2;const x=e.x,y=e.y;
   G.tele.push({x,y,r:150,t:0,max:1.2,team:'e',cb(){nova(x,y,150,col,'#ffffff');burst(x,y,col,40,260,.8,3.5,.3);sfx('explode',.8);shake(6);if(!P.dead&&dist(P.x,P.y,x,y)<158)hurtPlayer(dm*2,e)}})}
  else if(mv==='barrage'){txt(e.x,e.y,3.2,'Barrage',col,16);e.castT=.7;later(.55,()=>{if(e.dead)return;const a0=Math.atan2(P.y-e.y,P.x-e.x),n=e.enr?9:7;
   for(let k=0;k<n;k++){const a=a0+(k-(n-1)/2)*.16;G.projs.push({x:e.x,y:e.y,z:1.3,vx:Math.cos(a)*230,vy:Math.sin(a)*230,r:8,team:'e',raw:dm*.85,col:d.proj||col,life:2.2,src:e})}sfx('volley',.8)})}
- else if(mv==='charge'){const a=Math.atan2(P.y-e.y,P.x-e.x),L=Math.min(320,dist(e.x,e.y,P.x,P.y)+80),x2=e.x+Math.cos(a)*L,y2=e.y+Math.sin(a)*L,x1=e.x,y1=e.y;txt(e.x,e.y,3.2,'Charge',col,16);e.castT=1;e.root=1.05;
+ else if(mv==='charge'){const a=Math.atan2(P.y-e.y,P.x-e.x),A=G.map&&G.map.arena;let L=Math.min(320,dist(e.x,e.y,P.x,P.y)+80);
+  if(A){const cx=A.x*TS,cy=A.y*TS,R=(A.r-1)*TS;while(L>60&&dist(e.x+Math.cos(a)*L,e.y+Math.sin(a)*L,cx,cy)>R&&dist(e.x,e.y,cx,cy)<R)L-=10}
+  const x2=e.x+Math.cos(a)*L,y2=e.y+Math.sin(a)*L,x1=e.x,y1=e.y;txt(e.x,e.y,3.2,'Charge',col,16);e.castT=1;e.root=1.05;
   G.tele.push({x:(x1+x2)/2,y:(y1+y2)/2,r:0,line:[x1,y1,x2,y2],w:46,t:0,max:1,team:'e',cb(){if(e.dead)return;e.bd={vx:Math.cos(a)*900,vy:Math.sin(a)*900,t:L/900,hit:false};sfx('whoosh')}})}
  else if(mv==='rain'){txt(e.x,e.y,3.2,'Ruin from above',col,16);e.castT=.8;const n=e.enr?6:4;for(let k=0;k<n;k++)later(k*.3,()=>{if(e.dead)return;const tx=P.x+rr(-70,70),ty=P.y+rr(-70,70);
   G.tele.push({x:tx,y:ty,r:60,t:0,max:1.1,team:'e',meteor:d.area==='ember',cb(){ring(tx,ty,60,col,.45,5);burst(tx,ty,col,24,180,.7,3.5,.2);sfx('explode',.5);shake(3);if(!P.dead&&dist(P.x,P.y,tx,ty)<66)hurtPlayer(dm*1.5,e)}})})}}
 function summon(b){const d=b.d;if(!d.adds)return;toast(esc(d.summonMsg||'Reinforcements arrive.'),'warn');
  for(const[dx,dy]of[[-110,-80],[110,-80],[0,110]]){const a=mkEnemy(d.adds,Math.max(1,b.lvl-4),b.x+dx,b.y+dy);if(blocked(G.map,a.x,a.y,10)){a.x=b.x;a.y=b.y}a.state='chase';a.fade=0.5;a.hx=a.x;a.hy=a.y;a.summoned=true;G.enemies.push(a);burst(a.x,a.y,d.glow||'#7fc8d8',16,90,0.7,3,0.2)}}
-function bossReset(e){if(G.boss===e)G.boss=null;e.ph1=e.ph2=e.enr=0;e.mvT=3;e.bd=null;for(const f of G.enemies)if(f.summoned&&!f.dead){f.dead=true;f.respawn=-1}}
+function bossReset(e){if(G.boss===e)G.boss=null;e.ph1=e.ph2=e.enr=0;e.phase=1;e.shiftT=e.openT=0;e.lastMv=null;e.mvT=3;e.bd=null;for(const f of G.enemies)if(f.summoned&&!f.dead){f.dead=true;f.respawn=-1}}
 
 /* ================= Farmable resources: ore, herbs and crystals graded by zone ================= */
 const RESF={ore:{n:['Copper Ore','Iron Ore','Darkiron Ore','Runestone Ore','Starmetal Ore'],act:'Mine',verb:'Mining',c:['#d4875a','#b9bcc4','#7a82a0','#7fe8ff','#ffe8a0'],w:7},
@@ -4495,6 +4530,7 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:56,date:'6 Nov 2026',title:'Boss phases',items:['Every boss now fights in three phases. Below 70% health it fights in earnest, and below 35% it grows frenzied.','At each change it pauses, can\'t be hurt for a moment, calls its helpers and sends out a shockwave: step out of the ring.','In the first phase a boss uses only two of its moves. Later it uses all of them, and when frenzied it chains two moves together.','It chooses moves by how far away you are: close moves when you\'re near, charges and volleys when you keep your distance.','After a slam, charge or shockwave it stands Exposed for a moment and takes extra damage. Learn the moves and strike then.','A boss can\'t be stunned again for a few seconds after a stun, and charges stay inside its arena.']},
  {id:55,date:'6 Nov 2026',title:'Commanders',items:['Each wild zone now has a Commander leading a pack: the Fen Chieftain in Lantern Fen, the Raider Warchief in Raider\'s Hollow, the Rime Chieftain at Mirror Lake, the Thorn Matriarch in Gloamwood and the Cinder Warlord on the Ashen Slopes. Look for the turning red ring under its feet.','Every few seconds it gives an order to the monsters fighting near it. Press the attack makes them hit harder and swing sooner; Hold the line makes them harder to hurt. Monsters following an order have a small red or blue ring.','Once a fight turns against it, a Commander rallies the pack and calls nearby monsters in.','Kill it and its pack is Shaken for a few seconds: slower, easier to hurt and no longer flanking. It returns after a minute and a half.','Ranged monsters no longer fire through their allies; they step aside to find a clear shot.']},
  {id:54,date:'6 Nov 2026',title:'New looks for thirteen monsters',items:[
   'The Frostfang Wolf, Gloom Stalker and Ash Hound have their own bodies now: ice spines, a long-legged shadow wolf with fungus, and a charcoal hound with glowing ember seams.',
@@ -5281,7 +5317,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,cmdTick,cmdFall,cmdSpawn,cmdOrd,cmdTaken,tacLineBlocked,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,cmdTick,cmdFall,cmdSpawn,cmdOrd,cmdTaken,tacLineBlocked,BOSSPH,bossLogic,bossPick,bossPartner,bossShift,bossOpen,bossMove,bossStunOk,bossReset,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

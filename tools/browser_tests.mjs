@@ -1018,6 +1018,27 @@ await test('Monsters with their own model are light enough, keep their moving pa
   const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing them logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
   if(G.enemies.filter(e=>!e.dead).length<own.length)bad.push('some monsters disappeared while being drawn');
   G.enemies=[];return bad}`));
+// Boss phases (8.a, 8.b): three phases, distance-aware move choice, a shift it can't be hurt in, open windows, anti-stunlock, charges kept in the arena.
+await reset();
+await test('Bosses fight in three phases, pick moves by distance, stand open after big moves and resist stunlocks', () => ev(`()=>{${TAC_SETUP}
+  const B=V.BOSSPH,dmgTo=e=>{const h=e.hp;V.hitEnemy(e,{a:500,crit:false},{noArm:true,quiet:true});const l=h-e.hp;e.hp=h;return l};
+  for(const k in V.EN){const d=V.EN[k];if(!d.boss)continue;if(!d.moves||d.moves.length<2)bad.push(k+' has fewer than two moves');else for(const m of d.moves)if(!['slam','nova','barrage','charge','rain'].includes(m))bad.push(k+' has an unknown move '+m)}
+  const b=add('qassar',-60,90,{state:'chase'});G.boss=b;b.phase=1;
+  const seen=new Set();for(let i=0;i<300;i++)seen.add(V.bossPick(b));for(const m of seen)if(!b.d.moves.slice(0,2).includes(m))bad.push('phase 1 used '+m);
+  b.phase=2;const count=(dx,dy)=>{b.x=P.x+dx;b.y=P.y+dy;const c={};for(let i=0;i<600;i++){const m=V.bossPick(b);c[m]=(c[m]||0)+1}return c};
+  const near=count(60,0),far=count(400,0);if((near.slam||0)<=(near.charge||0))bad.push('up close it charged as often as it slammed '+JSON.stringify(near));if((far.charge||0)+(far.barrage||0)<=(far.slam||0)*2)bad.push('far away it still slammed '+JSON.stringify(far));
+  b.x=P.x-60;b.y=P.y+90;b.phase=1;b.hp=b.max*.6;step(1);if(b.phase!==2)bad.push('no phase 2 at 60% health');if(!(b.shiftT>0))bad.push('no pause at the phase change');
+  const adds=G.enemies.filter(e=>e.summoned&&!e.dead);if(!adds.length)bad.push('no adds at the phase change');else if(!adds.every(e=>V.cmdOrd(e,'press')))bad.push('adds were not rallied');
+  if(dmgTo(b)>0)bad.push('the boss took damage during its phase change');
+  step(Math.ceil(B.shift.time*30)+3);if(b.shiftT>0)bad.push('the phase change never ended');const plain=dmgTo(b);if(!(plain>0))bad.push('no damage after the phase change');
+  V.bossOpen(b);if(!(b.openT>0))bad.push('bossOpen did not open the boss');const open=dmgTo(b);if(Math.abs(open/plain-B.open.taken)>.03)bad.push('open took '+(open/plain).toFixed(2)+' times the damage');
+  b.openT=0;b.hp=b.max*.3;step(1);if(b.phase!==3||!b.enr)bad.push('no frenzied phase 3 at 30% health');
+  b.shiftT=0;b.stun=0;b.stunGd=0;V.hitEnemy(b,{a:1,crit:false},{stun:2,noArm:true,quiet:true});if(!(b.stun>0))bad.push('a first stun did not land');b.stun=0;V.hitEnemy(b,{a:1,crit:false},{stun:2,noArm:true,quiet:true});if(b.stun>0)bad.push('a second stun landed straight away');
+  const A=G.map.arena;if(A){G.boss=b;b.bd=null;b.x=A.x*TS;b.y=A.y*TS;const px=P.x,py=P.y;P.x=b.x+(A.r+6)*TS;P.y=b.y;const n=G.tele.length;V.bossMove(b,'charge',true);const t=G.tele[G.tele.length-1];
+   if(G.tele.length===n||!t.line)bad.push('the charge had no telegraph');else if(Math.hypot(t.line[2]-A.x*TS,t.line[3]-A.y*TS)>A.r*TS)bad.push('the charge left the arena');P.x=px;P.y=py}else bad.push('the dunes have no arena');
+  V.bossReset(b);if(b.phase!==1||b.shiftT||b.openT)bad.push('a reset boss kept its phase');G.boss=null;
+  return done()}`));
+
 // Commanders (7.d): orders, one rally per fight, a shaken pack, a slow respawn, and ranged monsters that won't shoot through allies.
 await reset();
 await test('Commanders give orders, rally the pack once, and leave it shaken when they fall', () => ev(`async()=>{${TAC_SETUP}
