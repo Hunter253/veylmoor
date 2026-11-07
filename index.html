@@ -1798,7 +1798,7 @@ function resNote(i){const d=RES[P.cls];if(!d)return'';if(i===0)return`<div class
 function roll(i,base){const m=S.m,k=['dmgB','dmg1','dmg2','dmg3','dmg4','dmg5'][i];let bf=1;for(const b of P.buffs)if(b.dmgB)bf+=b.dmgB;let a=base*(1+0.16*(PL(P.lvl)-1))*S.atk*m.dmg*m[k]*bf*(pHas('weak')?.75:1)*(i>0?1+S.amp/100:1)*resDmg(i)*rr(0.9,1.1);const crit=P.sureCrit||R()*100<S.crit+S.m.critA[i];if(crit)a*=S.critD/100;a*=talentSelf();return{a:Math.max(1,Math.round(a)),crit,i}}
 function healP(a,quiet){if(P.dead)return;a=Math.round(a*(1+S.amp/200));if(a<=0)return;const b=P.hp;P.hp=Math.min(S.maxHp,P.hp+a);const got=Math.round(P.hp-b);if(S.m.k.overheal&&a-got>0){P.shield=Math.min(S.maxHp*.3,(P.shield||0)+(a-got));P.shieldT=Math.max(P.shieldT||0,6)}if(!quiet&&got>0)txt(P.x,P.y,1.9,'+'+got,'#6aff5a',19)}
 function hitEnemy(e,r,o={}){
- if(e.dead)return;if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0;if(tacSidestep(e,r))return}let a=r.a;const grd=!o.dot&&tacGuarded(e);if(grd)a*=1-TACTICS.attack.guard.dr;const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;if(!o.dot&&!o.noArm)a*=1-monBlock(e,(S.pen||0)+(o.pen||0));a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
+ if(e.dead)return;if(!o.dot){G.noiseT=G.time;e.lx=P.x;e.ly=P.y;e.lostT=0;if(tacSidestep(e,r))return}let a=r.a;const grd=!o.dot&&tacGuarded(e);if(grd)a*=1-TACTICS.attack.guard.dr;a*=cmdTaken(e);const tal=r.i!=null&&!o.dot;if(tal)a*=talentVs(e);if(e.vulnT>0)a*=1+e.vulnA;if(o.markB&&e.markT>0)a*=1+o.markB;if(!o.dot&&!o.noArm)a*=1-monBlock(e,(S.pen||0)+(o.pen||0));a=Math.max(1,Math.round(a));e.hp-=a;e.hitFlash=o.dot?.05:.12;
  if(e.state!=='chase'){e.state='chase';for(const f of live())if(f!==e&&f.state==='idle'&&dist(f.x,f.y,e.x,e.y)<110)f.state='chase'}
  const hh=e.d.h*(e.d.boss?1.75:1);if(grd){txt(e.x,e.y,hh+.5,'Blocked','#ffe6a0',14);sfx('absorb',.5)}
  if(o.dot)txt(e.x,e.y,hh*.8,a,o.dot==='burn'?'#ff9a4a':'#ff5a5a',14);else txt(e.x,e.y,hh+.1,a+(r.crit?'!':''),r.crit?'#ffa53a':'#ffe14a',r.crit?28:20);
@@ -1809,9 +1809,9 @@ function hitEnemy(e,r,o={}){
  if(tal)talentHit(e,r,a);
  if(e.hp<=0&&!e.dead)killEnemy(e)}
 function killEnemy(e){
- if(!e.dead){talentKill(e);foeDeath(e)} if(e.markT>0&&P.cls==='thornstalker'&&P.cds[2]>0){P.cds[2]=0;txt(P.x,P.y,2.3,'Vault ready','#c8ff9a',13)}e.dots=null;e.slowT=e.vulnT=e.weakT=e.markT=e.taunt=0;e.kb=null;sfx('kill');
+ if(!e.dead){talentKill(e);foeDeath(e);cmdFall(e)} if(e.markT>0&&P.cls==='thornstalker'&&P.cds[2]>0){P.cds[2]=0;txt(P.x,P.y,2.3,'Vault ready','#c8ff9a',13)}e.dots=null;e.slowT=e.vulnT=e.weakT=e.markT=e.taunt=0;e.kb=null;sfx('kill');
  if(!e.dead&&SKIN.types.has(e.type)&&!e.summoned&&G.map.id!=='abbey'){G.skins=(G.skins||[]).filter(o=>o.t>0).slice(-(SKIN.max-1));G.skins.push({x:e.x,y:e.y,t:SKIN.last,g:AREAG[G.map.id]||1,name:e.d.name})}
- if(!e.dead){achAdd('kills');if(e.moonElite)achAdd('moonElites')}tacSwingEnd(e);e.guardT=0;e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite||e.moonX||e.story)e.respawn=-1;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
+ if(!e.dead){achAdd('kills');if(e.moonElite)achAdd('moonElites')}tacSwingEnd(e);e.guardT=0;e.dead=true;e.hp=0;e.respawn=G.map.id!=='abbey'?26:-1;if(e.summoned||e.ev||e.elite||e.moonX||e.story)e.respawn=-1;if(e.d.cmd&&e.respawn>0)e.respawn=TACTICS.command.respawn;e.stun=e.root=e.wind=0;burst(e.x,e.y,e.d.col,16,120,0.7,3,e.d.h*.5);
  gainXP(Math.max(1,Math.round(e.d.xp*PL(e.lvl)*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
  const gold=Math.round(PL(e.lvl)*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
  for(const q of QUESTS){const st=P.q[q.id];if(!st||st.s!=='active')continue;
@@ -2084,6 +2084,7 @@ function enterMap(id,pos){
  if(id==='vale')m.portals=m.portals.filter(p=>p.to!=='home');
  G.enemies=[];G.skins=[];G.projs=[];G.areas=[];G.tele=[];G.harm=[];G.loot=[];G.fx=[];G.timers=[];G.parts=[];G.boss=null;G.tgt=null;if(P)P.auto=false;
  if(m.spawns)for(const sp of m.spawns)for(let k=0;k<sp.n;k++){const p=findSpot(m,sp);if(p)G.enemies.push(mkEnemy(sp.type,ri(sp.l0,sp.l1),p.x,p.y))}
+ cmdSpawn(m);
  if(m.fixed)for(const[ty,l,x,y]of m.fixed){const e=mkEnemy(ty,l,(x+.5)*TS,(y+.5)*TS);if(e.d.boss&&id!=='abbey')e.leash=520;G.enemies.push(e)}G.event=null;
  P.x=pos.x;P.y=pos.y;P.dash=null;
  CAM.yaw=id==='abbey'&&pos===m.start?Math.PI/2:Math.PI;P.rot=CAM.yaw;P.fx=Math.sin(CAM.yaw);P.fy=Math.cos(CAM.yaw);snapCam();
@@ -2156,10 +2157,27 @@ function updatePlayer(dt){
    alertR: how far a monster's notice spreads. homeMax: fleeing and backing away stop here, inside the 440 where a chase gives up and heals.
    attackers: melee monsters that may strike at a time, each for turn seconds; the rest hold at space.hold until their turn.
    patrolShare: the share of each monster type that walks a route. */
+/* ================= Commanders (7.d) =================
+   One per field zone: a recoloured, larger version of a monster that already lives there, so no new model is needed.
+   cmd marks a commander. Stats are about 2.5 times the health and 1.2 times the damage of the monster it leads. */
+Object.assign(EN,{
+ fenchief:{name:'Fen Chieftain',hp:240,dmg:13,spd:66,range:28,cd:1.4,r:15,xp:60,col:'#5f8a4a',shape:'ghoul',aggro:180,h:1.8,sc:1.25,tint:[.8,1.15,.7],cmd:1},
+ warchief:{name:'Raider Warchief',hp:280,dmg:16,spd:88,range:28,cd:1.2,r:14,xp:72,col:'#c08030',shape:'nomad',model:'duneRaider',aggro:200,h:1.9,sc:1.25,tint:[1.3,1,.6],cmd:1},
+ rimechief:{name:'Rime Chieftain',hp:325,dmg:18,spd:66,range:28,cd:1.4,r:15,xp:84,col:'#8fb8e0',shape:'ghoul',model:'frostbittenDead',aggro:180,h:1.8,sc:1.25,tint:[.8,.95,1.35],cmd:1},
+ thornmatron:{name:'Thorn Matriarch',hp:325,dmg:21,spd:68,range:200,cd:1.8,r:14,xp:102,col:'#a04ab8',shape:'acolyte',aggro:220,ranged:true,proj:'#d080ff',h:1.9,sc:1.25,tint:[1.25,.5,1.5],glow:'#c060ff',cmd:1},
+ warlord:{name:'Cinder Warlord',hp:425,dmg:24,spd:68,range:28,cd:1.4,r:15,xp:108,col:'#c0502a',shape:'ghoul',model:'cinderHusk',aggro:180,h:1.8,sc:1.25,tint:[1.35,.75,.5],glow:'#ff7a30',cmd:1}});
 const TACTICS={alertR:110,homeMax:380,attackers:3,turn:3,lowHp:.25,
  space:{r:150,gap:1,speed:.7,hold:70},
  flank:{max:2,start:150,orbit:70,behind:2.2,time:2.5,speed:1.15,pause:.55,cd:[5,9],ally:200},
- ranged:{keep:.5,back:.7,strafe:.8,speed:.8},
+ ranged:{keep:.5,back:.7,strafe:.8,speed:.8,clear:6,blockedWait:.4},
+ /* 7.d, first estimates for the balance passes. at: where each zone's commander stands, and its level. r: how far its orders reach.
+    every: seconds between orders, each lasting time seconds. Press: allies hit press.dmg times as hard and wait press.cd as long between swings.
+    Hold, chosen when the pack is below holdBelow health on average: allies take hold.dr less damage. rally: once per fight, below rally.at health,
+    it calls up to rally.max idle monsters within rally.r. shaken: when it falls, allies within r lose their order, slow by shaken.slow, take
+    shaken.taken times the damage and stop flanking for shaken.time seconds. respawn: seconds before it returns. */
+ command:{r:220,every:[7,10],time:5,holdBelow:.5,press:{dmg:1.2,cd:.8},hold:{dr:.25},rally:{at:.5,r:420,max:4},shaken:{time:5,slow:.25,taken:1.15},respawn:90,
+  at:{vale:{type:'fenchief',x0:40,y0:32,x1:58,y1:44,l:13},dunes:{type:'warchief',x0:26,y0:22,x1:50,y1:40,l:25},frost:{type:'rimechief',x0:6,y0:26,x1:28,y1:40,l:29},
+   gloam:{type:'thornmatron',x0:34,y0:5,x1:55,y1:25,l:41},ember:{type:'warlord',x0:5,y0:16,x1:26,y1:28,l:45}}},
  flee:{time:3,speed:1.1},
  patrol:{r:[70,130],pts:2,speed:.5,rest:[.8,2.5],townGap:6,tries:12},
  /* close: noticed from any side. cone: how far round a monster sees (1 is dead ahead, 0 is square to the side). forget: seconds for full suspicion to fade.
@@ -2174,21 +2192,22 @@ const TACTICS={alertR:110,homeMax:380,attackers:3,turn:3,lowHp:.25,
   sentinel:{alert:1.5,sight:1.3,hear:1,notice:.5,search:3,heavy:.3,bash:1,guard:1,types:['acolyte']},
   ravager:{rage:1,sight:.8,hear:.7,notice:.2,search:4,heavy:.35,rageHeavy:.6,types:['ghoul','rimedead','blightghoul','cinderdead','scorp','magmascorp']},
   arcanist:{sight:1.2,hear:1,notice:.6,search:5,types:['wisp','wraith','sandsh','rimewr','hexwisp','thornwitch','flameshade']},
-  skirmisher:{flee:1,sight:.9,hear:.9,notice:.8,search:2.5,heavy:.15,dodge:1,types:['rat','nomad']}},
+  skirmisher:{flee:1,sight:.9,hear:.9,notice:.8,search:2.5,heavy:.15,dodge:1,types:['rat','nomad']},
+  commander:{alert:2,sight:1.2,hear:1.1,notice:.5,search:6,heavy:.3,types:['fenchief','warchief','rimechief','thornmatron','warlord']}},
  patrolShare:{nomad:1,acolyte:1,wolf:.5,frostwolf:.5,gloomwolf:.5,ashhound:.5},
  /* 7.b.4, first estimates for the balance passes. nightBlind: sight lost at full night; nightSee: sight gained by shadow creatures.
     wx: sight and hearing lost in each weather at full strength. wade: how much water slows a monster, as it does the hero; lavaNative ignore lava.
     The hero's splashing carries noise.wade far (see senses.noise). */
  env:{nightBlind:.35,nightSee:.2,nightFoes:['wisp','wraith','sandsh','rimewr','hexwisp','flameshade'],
   wx:{fog:{sight:.4},mist:{sight:.4},sand:{sight:.4,hear:.3},rain:{sight:.2,hear:.3},snow:{sight:.2},ash:{sight:.2}},
-  wade:{base:.25,deep:.25},lavaNative:['cinderdead','flameshade','magmascorp','ashhound']}};
+  wade:{base:.25,deep:.25},lavaNative:['cinderdead','flameshade','magmascorp','ashhound','warlord']}};
 const TACBY={};for(const k in TACTICS.arch)for(const t of TACTICS.arch[k].types)TACBY[t]=TACTICS.arch[k];
 const tacFree=e=>!e.d.boss&&!e.ev&&!e.summoned&&!(e.taunt>0);
 const tacBy=e=>TACBY[e.type]||{};
 function tacNote(e,s,size=13){txt(e.x,e.y,e.d.h+.8,s,'#ffd890',size)}
-function tacReset(e){tacSwingEnd(e);e.guardT=0;e.aware=0;e.sus=0;e.lostT=0;e.huntT=0;e.lx=null;e.ly=null;e.fled=false;e.fleeT=0;e.flankT=0;e.strafeT=0;e.restT=0;e.routeI=0;e.side=0;if(!e.d.boss)e.enr=0}
+function tacReset(e){tacSwingEnd(e);e.guardT=0;e.aware=0;e.sus=0;e.lostT=0;e.huntT=0;e.lx=null;e.ly=null;e.fled=false;e.fleeT=0;e.flankT=0;e.strafeT=0;e.restT=0;e.routeI=0;e.side=0;e.rallied=0;e.ord=null;e.ordT=0;e.shakT=0;e.ordCd=null;if(!e.d.boss)e.enr=0}
 function tacFlankEnd(e){const T=TACTICS.flank;e.flankT=0;e.flankCd=rr(T.cd[0],T.cd[1]);e.cd=Math.max(e.cd,T.pause)}
-function tacTick(e,dt){for(const k of['heavyCd','bashCd','guardT','guardCd','dodgeCd'])if(e[k]>0)e[k]-=dt;if(e.heavy&&(e.stun>0||e.kb)){tacSwingEnd(e);e.wind=0}if(e.fleeT>0)e.fleeT-=dt;if(e.strafeT>0)e.strafeT-=dt;if(e.flankCd>0)e.flankCd-=dt;if(e.flankT>0){e.flankT-=dt;if(e.flankT<=0||!tacFree(e))tacFlankEnd(e)}}
+function tacTick(e,dt){for(const k of['heavyCd','bashCd','guardT','guardCd','dodgeCd','ordT','shakT'])if(e[k]>0)e[k]-=dt;if(e.heavy&&(e.stun>0||e.kb)){tacSwingEnd(e);e.wind=0}if(e.fleeT>0)e.fleeT-=dt;if(e.strafeT>0)e.strafeT-=dt;if(e.flankCd>0)e.flankCd-=dt;if(e.flankT>0){e.flankT-=dt;if(e.flankT<=0||!tacFree(e))tacFlankEnd(e)}}
 function tacAlert(e){if(e.d.boss)return;const r=TACTICS.alertR*(tacBy(e).alert||1);for(const f of live())if(f!==e&&(f.state==='idle'||f.state==='hunt')&&!f.d.boss&&dist(f.x,f.y,e.x,e.y)<r){f.state='chase';f.lostT=0;f.lx=P.x;f.ly=P.y}}
 function tacShot(e){if(tacFree(e)){e.strafeT=TACTICS.ranged.strafe;e.strafeS=R()<.5?1:-1}}
 const tacBlind=e=>tacFree(e)&&e.canSee===false;
@@ -2202,7 +2221,7 @@ function tacFrame(dt){const T=TACTICS.space,L=[];
  for(let i=0;i<L.length&&i<TACTICS.attackers;i++){const e=L[i];if(!now(e))e.turnEnd=G.time+TACTICS.turn;e.mayBite=true}}
 /* A wolf with a partner circles towards the hero's back, then waits a moment before biting so there is time to turn. */
 function tacFlank(e,d,sp){const T=TACTICS.flank,a=Math.atan2(e.y-P.y,e.x-P.x),fa=Math.atan2(P.fy,P.fx);
- if(!(e.flankT>0)){if(!tacBy(e).flank||e.flankCd>0||d>T.start)return false;
+ if(!(e.flankT>0)){if(!tacBy(e).flank||e.flankCd>0||e.shakT>0||d>T.start)return false;
   const L=live().filter(f=>f.state==='chase');if(L.filter(f=>f.flankT>0).length>=T.max||!L.some(f=>f!==e&&dist(f.x,f.y,P.x,P.y)<T.ally))return false;
   e.flankT=T.time;e.flankS=angDiff(a,fa)<0?-1:1}
  const da=angDiff(fa+e.flankS*T.behind,a);if(Math.abs(da)<.35&&Math.abs(d-T.orbit)<30){tacFlankEnd(e);return false}
@@ -2226,7 +2245,7 @@ function tacSwing(e){const A=TACTICS.attack,by=tacBy(e);e.heavy=0;if(!tacFree(e)
 function tacSwingEnd(e){if(e.tel){const i=G.tele.indexOf(e.tel);if(i>=0)G.tele.splice(i,1);e.tel=null}e.heavy=0}
 /* The swing lands. A bash that hurts stops the hero's spell. Afterwards a Sentinel may raise its guard. */
 function tacLand(e,d){const A=TACTICS.attack,kind=e.heavy;tacSwingEnd(e);
- if(!P.dead&&d<e.d.range+e.d.r+(kind===1?A.heavy.reach:20)){const t0=P.lastHurt;hurtPlayer(e.dmg*(e.enr?1.3:1)*(kind===1?A.heavy.mul:kind===2?A.bash.mul:1),e);
+ if(!P.dead&&d<e.d.range+e.d.r+(kind===1?A.heavy.reach:20)){const t0=P.lastHurt;hurtPlayer(e.dmg*(e.enr?1.3:1)*cmdDmg(e)*(kind===1?A.heavy.mul:kind===2?A.bash.mul:1),e);
   if(kind===1){sfx('rumble',.5);shake(4)}else sfx({rat:'bite',wolf:'bite',scorp:'sting',prior:'clang'}[e.d.shape]||'claw',.55);
   if(kind===2&&P.lastHurt!==t0&&P.cast&&P.cast.i>=0){P.cast=null;txt(P.x,P.y,2.2,'Interrupted','#ff4a3a',16);sfx('clang',.6)}}
  const G2=A.guard;if(tacBy(e).guard&&tacFree(e)&&!(e.guardCd>0)&&R()<G2.chance){e.guardT=G2.time;e.guardCd=rr(G2.cd[0],G2.cd[1]);tacNote(e,'Guards')}}
@@ -2285,6 +2304,27 @@ function tacHunt(e,d,dt){const T=TACTICS.senses,by=tacBy(e);if(P.dead||dist(e.x,
  const tx=e.lx+e.hsx,ty=e.ly+e.hsy,wd=dist(e.x,e.y,tx,ty),stop=e.d.ranged?e.d.range*TACTICS.ranged.keep:12;
  if(wd>stop&&!e.huntStuck&&e.root<=0&&!tacInTown(G.map,tx,ty,0)){const sp=e.d.spd*T.huntSpeed*(e.slowT>0?1-e.slowA:1)*tacWadeK(e)*dt,ox=e.x,oy=e.y;moveEnt(e,(tx-e.x)/wd*sp,(ty-e.y)/wd*sp,e.d.r*.7);e.trot=Math.atan2(tx-e.x,ty-e.y);if(sp>0&&Math.abs(e.x-ox)+Math.abs(e.y-oy)<sp*.1)e.huntStuck=true}
  else e.trot=(e.trot||0)+dt*T.look}
+/* ---- Commanders (7.d): orders, a rally and a shaken pack. Bosses, waves, summoned and taunted foes take no orders. ---- */
+const cmdOrd=(e,k)=>!!e.ord&&e.ord.k===k&&e.ordT>0&&!(e.shakT>0);
+const cmdDmg=e=>cmdOrd(e,'press')?TACTICS.command.press.dmg:1;
+function cmdTaken(e){const C=TACTICS.command;let k=1;if(cmdOrd(e,'hold'))k*=1-C.hold.dr;if(e.shakT>0)k*=C.shaken.taken;return k}
+const cmdSpeed=e=>e.shakT>0?1-TACTICS.command.shaken.slow:1;
+function cmdSpawn(m){const c=TACTICS.command.at[m.id];if(!c||!EN[c.type])return null;const p=findSpot(m,c);if(!p)return null;const e=mkEnemy(c.type,c.l,p.x,p.y);G.enemies.push(e);return e}
+const cmdNear=(e,r)=>live().filter(f=>f!==e&&!f.d.cmd&&tacFree(f)&&dist(f.x,f.y,e.x,e.y)<r);
+/* Called each frame while a commander fights: one rally when it is hurt, and an order every few seconds to the allies already fighting near it. */
+function cmdTick(e,dt){const C=TACTICS.command;
+ if(!e.rallied&&e.hp<=e.max*C.rally.at){e.rallied=1;const L=cmdNear(e,C.rally.r).filter(f=>f.state==='idle'||f.state==='hunt').sort((a,b)=>dist(a.x,a.y,e.x,e.y)-dist(b.x,b.y,e.x,e.y)).slice(0,C.rally.max);
+  for(const f of L){f.state='chase';f.lostT=0;f.lx=P.x;f.ly=P.y;tacNote(f,'!',18)}tacNote(e,'Rallies the pack',15);ring(e.x,e.y,C.rally.r*.5,'#ffb060',.8,4,true);sfx('horn',.45)}
+ e.ordCd=(e.ordCd==null?rr(1.5,3):e.ordCd)-dt;if(e.ordCd>0)return;e.ordCd=rr(C.every[0],C.every[1]);
+ const A=cmdNear(e,C.r).filter(f=>f.state==='chase'&&!(f.shakT>0));if(!A.length)return;
+ const k=(e.hp/e.max+A.reduce((s,f)=>s+f.hp/f.max,0))/(A.length+1)<C.holdBelow?'hold':'press';
+ for(const f of A){f.ord={k,by:e.id};f.ordT=C.time}e.ord={k,by:e.id};e.ordT=C.time;
+ tacNote(e,k==='hold'?'Hold the line!':'Press the attack!',15);ring(e.x,e.y,C.r,k==='hold'?'#8fc8ff':'#ff7a5a',.7,4,true);sfx('horn',.35)}
+/* A fallen commander leaves the allies near it shaken: no order, slower, easier to hurt and no flanking for a while. */
+function cmdFall(e){if(!e.d.cmd)return;const C=TACTICS.command;for(const f of cmdNear(e,C.r)){f.ord=null;f.ordT=0;f.shakT=C.shaken.time;if(f.flankT>0)tacFlankEnd(f);tacNote(f,'Shaken',14)}ring(e.x,e.y,C.r,'#d8d8d8',.7,4,true)}
+/* Ranged monsters under tactics don't fire through an ally standing between them and the hero; they step aside instead. */
+function tacLineBlocked(e){if(!tacFree(e))return false;const dx=P.x-e.x,dy=P.y-e.y,L=Math.hypot(dx,dy);if(L<1)return false;const ux=dx/L,uy=dy/L;
+ for(const f of live()){if(f===e)continue;const fx=f.x-e.x,fy=f.y-e.y,t=fx*ux+fy*uy;if(t<=e.d.r||t>=L-8)continue;if(Math.abs(fx*uy-fy*ux)<f.d.r+TACTICS.ranged.clear)return true}return false}
 function updateEnemies(dt){
  tacFrame(dt);
  for(const e of G.enemies){
@@ -2308,13 +2348,14 @@ function updateEnemies(dt){
   else if(e.stun<=0&&!e.kb){
    if(e.wind>0){e.wind-=dt;if(e.wind<=0)tacLand(e,d)}
    else if(e.state==='chase'&&!P.dead&&tacTrack(e,d,dt)&&!tacFlee(e,d,dt)){
-    e.trot=Math.atan2(P.x-e.x,P.y-e.y);
+    e.trot=Math.atan2(P.x-e.x,P.y-e.y);if(e.d.cmd&&tacFree(e))cmdTick(e,dt);
     if(FOESP[e.type]&&!e.d.boss&&!(e.flankT>0)&&!tacBlind(e)){const SL=FOESP[e.type],k2=e.d.elite?1.4:1;e.spc=e.spc||{};for(const s0 of SL)e.spc[s0.k]=(e.spc[s0.k]==null?(s0.open?rr(0,.4):rr(1.5,5)):e.spc[s0.k])-dt*k2;e.spT=(e.spT||0)-dt;
      if(e.spT<=0&&e.root<=0){e.spT=.35;for(const s0 of SL){if(e.spc[s0.k]>0||d>s0.range+e.d.r||(s0.min&&d<s0.min))continue;if(enemySpecial(e,s0)!==false){e.spc[s0.k]=s0.cd*rr(.8,1.2);e.spI=(e.spI||0)+1;e.spT=1.6;e.cd=Math.max(e.cd,.6)}break}}}
-    const reach=e.d.ranged?e.d.range:e.d.range+e.d.r,sp=e.d.spd*(e.enr?1.3:1)*(e.hasteT>0?1.35:1)*(e.slowT>0?1-e.slowA:1)*tacWadeK(e)*dt;
+    const reach=e.d.ranged?e.d.range:e.d.range+e.d.r,sp=e.d.spd*(e.enr?1.3:1)*(e.hasteT>0?1.35:1)*(e.slowT>0?1-e.slowA:1)*tacWadeK(e)*cmdSpeed(e)*dt;
     tacMove(e,d,sp,reach);
-    if(d<=reach&&e.cd<=0&&!(e.flankT>0)&&!(e.guardT>0)&&tacMayHit(e)){e.cd=e.d.cd*(e.enr?0.8:1);
-     if(e.d.ranged){const a=Math.atan2(P.y-e.y,P.x-e.x);G.projs.push({x:e.x,y:e.y,z:e.d.h*.75,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:6,team:'e',raw:e.dmg,col:e.d.proj,life:1.6,src:e});e.castT=0.4;sfx('eshot');tacShot(e)}
+    if(d<=reach&&e.cd<=0&&!(e.flankT>0)&&!(e.guardT>0)&&tacMayHit(e)){e.cd=e.d.cd*(e.enr?0.8:1)*(cmdOrd(e,'press')?TACTICS.command.press.cd:1);
+     if(e.d.ranged&&tacLineBlocked(e)){e.cd=TACTICS.ranged.blockedWait;tacShot(e)}
+     else if(e.d.ranged){const a=Math.atan2(P.y-e.y,P.x-e.x);G.projs.push({x:e.x,y:e.y,z:e.d.h*.75,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:6,team:'e',raw:e.dmg*cmdDmg(e),col:e.d.proj,life:1.6,src:e});e.castT=0.4;sfx('eshot');tacShot(e)}
      else e.wind=tacSwing(e)}
     if(e.d.boss)bossLogic(e,dt)}
    else if(e.state==='hunt')tacHunt(e,d,dt)}
@@ -2461,6 +2502,7 @@ const FOESP={
  cinderdead:[{k:'explode',cd:99,range:90}],
  flameshade:[{k:'lob',cd:7,range:210},{k:'blink',cd:10,range:90}],
  magmascorp:[{k:'lavatail',cd:8,range:130}]};
+Object.assign(FOESP,{fenchief:FOESP.ghoul,warchief:FOESP.nomad,rimechief:FOESP.rimedead,thornmatron:FOESP.thornwitch,warlord:[{k:'grasp',cd:9,range:44},{k:'bile',cd:11,range:110}]});
 const DEATHFX={blightghoul:'cloud'};
 const fcol=e=>e.d.glow||e.d.proj||e.d.col||'#ff6a4a';
 function eTele(o){G.tele.push(Object.assign({t:0,team:'e'},o))}
@@ -3914,7 +3956,7 @@ function moonEvent(){const m=G.map;if(!m||!MOON.spots[m.id]||worldNow().night<MO
 function moonNext(){const c=moonNow(),f=k=>{let h=MOON.events[k].day-c.d;while(h<=0)h+=MOON.days;return h*WORLDTIME.cycle/3600};return{c,full:f('full'),new:f('new')}}
 function moonInfo(){const{c,full,new:nw}=moonNext(),h=x=>x<1.5?'about an hour':'about '+Math.round(x)+' hours',k=moonEvent();
  return`<b>${c.name}</b>. ${k?esc(MOON.events[k].tip)+' ':''}Next full moon in ${h(full)}, next new moon in ${h(nw)}.`}
-const moonCanElite=e=>!e.dead&&!e.d.boss&&!e.elite&&!e.summoned&&!e.ev&&!e.moonElite;
+const moonCanElite=e=>!e.dead&&!e.d.boss&&!e.d.cmd&&!e.elite&&!e.summoned&&!e.ev&&!e.moonElite;
 function moonElite(e){const L=MOON.elite,b=e.d,f=e.max?e.hp/e.max:1;e.mBase={d:b,max:e.max,dmg:e.dmg};
  e.d=Object.assign({},b,{name:'Moonlit '+b.name,sc:(b.sc||1)*L.sc,h:b.h*L.sc,r:b.r*1.15,xp:b.xp*L.xp,tint:L.tint});e.max=Math.round(e.max*L.hp);e.hp=Math.round(e.max*f);e.dmg*=L.dmg;e.moonElite=1}
 function moonPlain(e){if(!e.moonElite)return;const B=e.mBase,f=e.max?e.hp/e.max:1;e.d=B.d;e.max=B.max;e.hp=Math.round(B.max*f);e.dmg=B.dmg;e.moonElite=0;e.mBase=null}
@@ -4028,6 +4070,7 @@ function drawStatus(e){if(e.fade>0||e.ghostT>0)return;const x=e.x*U,z=e.y*U,gy=g
  if(e.dots)for(const q of e.dots)if(q.k==='burn')sprite(x,gy+h*.45,z,.8*r/1.2+.3,h*.9,'#ff6a1a',.18+.06*q.st,1)}
 function drawEnemy(e){if(e.ghostT>0)return;const d=e.d,x=e.x*U,z=e.y*U;const fl=e.hitFlash>0?.6:0;const sc=(e.fade>0?1-e.fade/0.6:1)*(d.sc||1);
  const wind=e.wind>0?(1-e.wind/(d.boss?.45:.32)):0;
+ if(d.cmd)decal(x,z,groundH(x,z)+.05,d.r*U*1.9,d.r*U*1.9,-G.time*.8,5,[1,.45,.3],.55,.6);else if(cmdOrd(e,'press')||cmdOrd(e,'hold'))decal(x,z,groundH(x,z)+.05,d.r*U*1.3,d.r*U*1.3,G.time*1.5,5,e.ord.k==='hold'?[.55,.8,1]:[1,.5,.35],.4,.6);
  if(d.shape==='scorp'){const s=1.3*sc,sw=Math.sin(e.ph*1.4),gy=groundH(x,z),lunge=wind*.2;const an={tail:{rx:Math.sin(e.anim*3)*.12-wind*.7},clawL:{ry:Math.sin(e.anim*4)*.15+wind*.4},clawR:{ry:-Math.sin(e.anim*4)*.15-wind*.4},body:{y:Math.abs(sw)*.02*e.mv}};
   drawPart((MODELS[d.model]||MODELS.scorp).root,M4.trs(x+Math.sin(e.rot)*lunge,gy,z+Math.cos(e.rot)*lunge,e.rot,0,0,s,s,s),an,fl,d.tint);decal(x,z,gy+.04,.55*s,.7*s,e.rot,0,[0,0,0],.5);return}
  if(d.shape==='rat'||d.shape==='wolf'){const mdl=MODELS[d.model]||MODELS[d.shape],s=(d.shape==='rat'?1.25:1.05)*sc;const sw=Math.sin(e.ph*1.1);
@@ -4238,7 +4281,7 @@ function renderPortrait(cnv,model,fr,anim,rot=0,tint=null){
  const n=w*h*4;if(!PBUF.b||PBUF.b.length<n)PBUF.b=new Uint8Array(n);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,PBUF.b);
  const c2=cnv.getContext('2d'),img=c2.createImageData(w,h),row=w*4;for(let y=0;y<h;y++)img.data.set(PBUF.b.subarray((h-1-y)*row,(h-y)*row),y*row);c2.putImageData(img,0,0);gl.bindFramebuffer(gl.FRAMEBUFFER,null)}
 function sizeCanvas(cnv){if(!cnv)return false;const r={width:cnv.offsetWidth,height:cnv.offsetHeight};if(r.width<4)return false;const d=Math.min(2,window.devicePixelRatio||1);let w=Math.round(r.width*d),h=Math.round(r.height*d);const k=Math.min(1,640/w,800/h);w=Math.max(2,Math.floor(w*k));h=Math.max(2,Math.floor(h*k));if(cnv.width!==w||cnv.height!==h){cnv.width=w;cnv.height=h}return true}
-const modelOf=type=>MODELS[EN[type]?EN[type].shape:type];
+const modelOf=type=>(EN[type]&&MODELS[EN[type].model])||MODELS[EN[type]?EN[type].shape:type];
 const frOf=type=>FR[EN[type]?EN[type].shape:type]||FR.hum;
 const idleAnim=w=>humAnim(G.time*1.2,0,0,0,w);
 let tgtDirty=true;
@@ -4452,6 +4495,7 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:55,date:'6 Nov 2026',title:'Commanders',items:['Each wild zone now has a Commander leading a pack: the Fen Chieftain in Lantern Fen, the Raider Warchief in Raider\'s Hollow, the Rime Chieftain at Mirror Lake, the Thorn Matriarch in Gloamwood and the Cinder Warlord on the Ashen Slopes. Look for the turning red ring under its feet.','Every few seconds it gives an order to the monsters fighting near it. Press the attack makes them hit harder and swing sooner; Hold the line makes them harder to hurt. Monsters following an order have a small red or blue ring.','Once a fight turns against it, a Commander rallies the pack and calls nearby monsters in.','Kill it and its pack is Shaken for a few seconds: slower, easier to hurt and no longer flanking. It returns after a minute and a half.','Ranged monsters no longer fire through their allies; they step aside to find a clear shot.']},
  {id:54,date:'6 Nov 2026',title:'New looks for thirteen monsters',items:[
   'The Frostfang Wolf, Gloom Stalker and Ash Hound have their own bodies now: ice spines, a long-legged shadow wolf with fungus, and a charcoal hound with glowing ember seams.',
   'The Rime Wraith, Sand Shade and Flame Shade are new spirits with icicle, sand and flame tatters and a glowing core.',
@@ -5237,7 +5281,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,cmdTick,cmdFall,cmdSpawn,cmdOrd,cmdTaken,tacLineBlocked,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

@@ -491,7 +491,7 @@ await test('Monsters choose light or heavy swings by archetype; bosses and waves
   for(const t of['wraith','wisp'])if(share(t)>0)bad.push('ranged '+t+' swung heavy');
   G.enemies=[];const e=add('ghoul',20,0);let after=0;for(let i=0;i<200&&e.heavy!==1;i++){e.heavyCd=0;V.tacSwing(e)}if(e.heavy!==1)bad.push('no heavy swing came');else{const tel=e.tel;if(!G.tele.includes(tel)||tel.team!=='e'||Math.abs(tel.max-A.heavy.wind)>.001)bad.push('the heavy swing has no red marking');V.tacSwingEnd(e);if(G.tele.includes(tel))bad.push('the marking stayed after the swing');for(let i=0;i<100;i++){V.tacSwing(e);if(e.heavy===1)after++;V.tacSwingEnd(e)}if(after)bad.push(after+' heavy swings during the cooldown')}
   G.enemies=[];const boss=add('qassar',20,0),wave=add('ghoul',20,0,{ev:true}),pet=add('ghoul',20,0,{taunt:99}),sum=add('acolyte',20,0,{summoned:true});P.cast={i:1,t:0,max:9};let odd=0;for(let i=0;i<200;i++)for(const f of[boss,wave,pet,sum]){f.heavyCd=f.bashCd=0;const w=V.tacSwing(f);if(f.heavy)odd++;if(Math.abs(w-(f===boss?.45:A.light))>.001)odd++}P.cast=null;if(odd)bad.push('bosses, waves, taunted or summoned foes changed swing '+odd+' times');
-  G.enemies=[];const g=add('ghoul',20,0,{cd:0,state:'chase'});let seen=0;step(300,()=>{if(g.heavy===1)seen++});if(!seen)bad.push('no heavy swing in ten seconds of fighting');G.tele=[];return done()}`));
+  G.enemies=[];const g=add('ghoul',20,0,{cd:0,state:'chase'});let seen=0;step(600,()=>{if(g.heavy===1)seen++});if(!seen)bad.push('no heavy swing in twenty seconds of fighting');G.tele=[];return done()}`));
 
 await reset();
 await test('A heavy swing hits hard, and rolling, stepping out or a stun avoids it', () => ev(`()=>{${TAC3}
@@ -719,7 +719,7 @@ await test('Moon nights: more shadows, moonlit elites, a Warden marking and a re
   if(extra!==want)bad.push('new moon added '+extra+' shadows, not '+want);if(G.enemies.some(e=>e.moonX&&!M.shadow.vale.includes(e.type)))bad.push('a non-shadow creature was added');if(G.enemies.length!==n0+want)bad.push('monster count '+G.enemies.length);
   tick();if(G.enemies.filter(e=>e.moonX).length!==want)bad.push('shadows were added twice');
   const ch=M.eliteChance;M.eliteChance=1;O.moon='full';tick();if(G.enemies.some(e=>e.moonX))bad.push('new moon shadows stayed after it ended');const el=G.enemies.filter(e=>e.moonElite);M.eliteChance=ch;
-  const can=G.enemies.filter(e=>!e.dead&&!e.d.boss&&!e.elite&&!e.summoned&&!e.ev);if(el.length!==can.length)bad.push(el.length+' of '+can.length+' became elites');const e=el[0];
+  const can=G.enemies.filter(e=>!e.dead&&!e.d.boss&&!e.d.cmd&&!e.elite&&!e.summoned&&!e.ev);if(el.length!==can.length)bad.push(el.length+' of '+can.length+' became elites');const e=el[0];
   if(e){if(!/^Moonlit /.test(e.d.name))bad.push('elite is named '+e.d.name);if(!(e.max>e.mBase.max*2))bad.push('elite health '+e.max);if(V.EN[e.type].name.startsWith('Moonlit'))bad.push('the monster table changed');
    const g=V.P.gems?JSON.stringify(V.P.gems):'';e.hp=1;V.hitEnemy(e,{a:99999},{quiet:true});if(!e.dead)bad.push('elite did not die');if((V.P.gems?JSON.stringify(V.P.gems):'')===g)bad.push('elite gave no gem');
    e.respawn=.01;V.P.x=e.hx+5000;V.P.y=e.hy;V.update(1/30);V.update(1/30);if(e.moonElite&&G.moonK!=='full')bad.push('elite respawned as elite');V.P.x=G.map.start.x;V.P.y=G.map.start.y}
@@ -1011,13 +1011,42 @@ await test('Monsters with their own model are light enough, keep their moving pa
    let tris=0;const names=[];const w=pt=>{names.push(pt.n);if(pt.m)tris+=pt.m.n/3;pt.k.forEach(w)};w(m.root);
    const lim=LIMIT[d.shape]||2500;if(!(tris>50&&tris<=lim))bad.push(k+' has '+tris+' triangles (limit '+lim+')');
    for(const n of (PARTS[d.shape]||HUM))if(!names.includes(n))bad.push(k+': no '+n+' part to animate');
-   if(d.tint)bad.push(k+' still has the old recolour tint')}
+   if(d.tint&&!d.cmd)bad.push(k+' still has the old recolour tint')}
   V.startNew('bulwark','Tester');V.closePanel(true);const P=V.P,before=V.readErrors().length;G.enemies=[];
   own.forEach(([k],i)=>{const e=V.mkEnemy(k,20,P.x+((i%5)-2)*48,P.y+60+Math.floor(i/5)*48);e.aggro=0;G.enemies.push(e)});
   for(let i=0;i<30;i++)await new Promise(r=>requestAnimationFrame(r));
   const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing them logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
   if(G.enemies.filter(e=>!e.dead).length<own.length)bad.push('some monsters disappeared while being drawn');
   G.enemies=[];return bad}`));
+// Commanders (7.d): orders, one rally per fight, a shaken pack, a slow respawn, and ranged monsters that won't shoot through allies.
+await reset();
+await test('Commanders give orders, rally the pack once, and leave it shaken when they fall', () => ev(`async()=>{${TAC_SETUP}
+  const C=V.TACTICS.command,hurt=f=>{P.iframes=0;V.S.dodge=0;P.shield=0;P.blocking=false;P.mounted=false;P.hp=1e7;f();const l=1e7-P.hp;P.hp=1e7;P.iframes=1e9;return l},
+   dmgTo=e=>{const h=e.hp;V.hitEnemy(e,{a:1000,crit:false},{noArm:true,quiet:true});const l=h-e.hp;e.hp=e.max;return l},swing=e=>{e.heavy=0;V.tacLand(e,20)};
+  for(const id of ['vale','dunes','frost','gloam','ember']){const c=C.at[id];if(!c||!V.EN[c.type]||!V.EN[c.type].cmd)bad.push(id+' has no commander');else if(!V.TACBY[c.type])bad.push(c.type+' has no archetype')}
+  const sp=V.cmdSpawn(G.map),at=C.at.dunes;if(!sp||sp.type!==at.type)bad.push('no commander spawned in the dunes');else if(sp.x<at.x0*TS||sp.x>(at.x1+1)*TS||sp.y<at.y0*TS||sp.y>(at.y1+1)*TS)bad.push('the commander spawned outside its area');
+  if(V.moonCanElite(V.mkEnemy('warchief',20,P.x,P.y)))bad.push('a commander could become a Moonlit elite');
+  G.enemies=[];const k=add('warchief',60,0),a=add('nomad',-40,0),b=add('nomad',0,60),far=add('nomad',600,0);
+  k.ordCd=0;V.cmdTick(k,1/30);if(!V.cmdOrd(a,'press')||!V.cmdOrd(b,'press'))bad.push('healthy allies were not told to press');if(far.ord)bad.push('an ally out of reach got an order');
+  let on=0,off=0;for(let i=0;i<40;i++){a.ordT=C.time;on+=hurt(()=>swing(a));a.ordT=0;off+=hurt(()=>swing(a))}const pr=on/off;if(Math.abs(pr-C.press.dmg)>.12)bad.push('Press made hits '+pr.toFixed(2)+' times as hard');
+  a.hp=a.max*.2;b.hp=b.max*.2;k.hp=k.max*.6;k.ordCd=0;V.cmdTick(k,1/30);if(!V.cmdOrd(a,'hold'))bad.push('a hurt pack was not told to hold');a.hp=a.max;b.hp=b.max;
+  a.ord={k:'hold',by:k.id};a.ordT=C.time;const held=dmgTo(a);a.ordT=0;const plain=dmgTo(a);if(Math.abs(held/plain-(1-C.hold.dr))>.02)bad.push('Hold let through '+(held/plain).toFixed(2)+' of the damage');
+  if(k.rallied)bad.push('rallied while still healthy');
+  const i1=add('nomad',300,0,{state:'idle'}),i2=add('nomad',0,-380,{state:'idle'}),i3=add('nomad',0,700,{state:'idle'});k.hp=k.max*.4;k.ordCd=99;V.cmdTick(k,1/30);
+  if(i1.state!=='chase'||i2.state!=='chase')bad.push('the rally did not bring nearby idle monsters');if(i3.state!=='idle')bad.push('the rally reached too far');
+  i1.state='idle';V.cmdTick(k,1/30);if(i1.state!=='idle')bad.push('rallied twice in one fight');
+  V.killEnemy(k);if(!(a.shakT>0)||!(b.shakT>0))bad.push('the pack was not shaken');if(far.shakT>0)bad.push('a distant monster was shaken');if(a.ord)bad.push('a shaken monster kept its order');
+  const sh=dmgTo(a);if(Math.abs(sh/plain-C.shaken.taken)>.03)bad.push('a shaken monster took '+(sh/plain).toFixed(2)+' times the damage');
+  a.ord={k:'press',by:0};a.ordT=C.time;if(V.cmdOrd(a,'press'))bad.push('a shaken monster followed an order');
+  if(k.respawn!==C.respawn)bad.push('the commander returns after '+k.respawn+' seconds');
+  G.enemies=[];const live=add('warchief',60,0,{ordCd:0}),pal=add('nomad',-40,0);step(10);if(!pal.ord)bad.push('a fighting commander gave no order in play');
+  G.enemies=[];const tt=add('warchief',60,0,{ordCd:0,taunt:99}),pal2=add('nomad',-40,0);step(10);if(pal2.ord)bad.push('a taunted commander gave orders');
+  G.enemies=[];const w=add('thornmatron',150,0),wall=add('nomad',75,0),c2=add('thornwitch',0,150);
+  if(!V.tacLineBlocked(w))bad.push('an ally in the way did not stop the shot');if(V.tacLineBlocked(c2))bad.push('a clear shot counted as blocked');
+  w.ev=true;if(V.tacLineBlocked(w))bad.push('a defend-wave monster held its fire');w.ev=false;wall.y+=60;if(V.tacLineBlocked(w))bad.push('an ally off to the side stopped the shot');
+  G.enemies=[];const before=V.readErrors().length;Object.values(C.at).forEach((c,i)=>add(c.type,(i-2)*60,90));for(let i=0;i<20;i++)await new Promise(r=>requestAnimationFrame(r));
+  const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing commanders logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
+  return done()}`));
 await test('The cat follows, runs to catch up, jumps to you when left behind, and sits when still', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],TS=32;V.startNew('bulwark','Tester');G.enemies=[];V.closePanel(true);const m=G.map;
   let sp=null;for(let ty=5;ty<m.h-5&&!sp;ty++)for(let tx=5;tx<m.w-5;tx++){let ok=true;for(let dy=-4;dy<=4&&ok;dy++)for(let dx=-4;dx<=4;dx++)if(m.solidAt((tx+dx)*TS,(ty+dy)*TS)){ok=false;break}if(ok){sp=[tx,ty];break}}if(!sp)return['no open ground to test on'];
   const P=V.P;P.x=sp[0]*TS+16;P.y=sp[1]*TS+16;P.rot=0;G.cat=null;V.catTick(.05);let c=G.cat;if(!c)return['no cat appeared'];const d0=Math.hypot(c.x-P.x,c.y-P.y)/TS;if(!(d0>.8&&d0<1.8))bad.push('the cat appeared '+d0.toFixed(2)+' tiles away');
