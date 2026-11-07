@@ -1304,9 +1304,16 @@ Object.assign(NPCS,{
  fennick:{town:'Duskhollow',name:'Fennick',title:'Hexwright',col:'#6a8a5a',x:12.5,y:28.4,idle:'Charms, tonics, a little hex-craft. Nothing that bites back, mostly.',shop:true},
  vael:{town:'Cinderwatch',name:'Commander Vael',title:'Watch Commander',col:'#c0603a',x:8,y:37.4,idle:'Every day the Caldera burns closer. Every day we hold the gate anyway.'},
  rusk:{town:'Cinderwatch',name:'Rusk',title:'Quartermaster',col:'#8a6a4a',x:15,y:37.6,idle:'Ash in the bread, ash in the tonics. Still sells.',shop:true}});
-const NODEK={rite:{act:'Step to',verb:'Stepping to',c:'#c080ff'},pup:{act:'Approach',verb:'Approaching',c:'#e8f4ff'},tents:{act:'Approach',verb:'Approaching',c:'#ffd8a0'},wmark:{act:'Touch',verb:'Touching',c:'#9fd8ff'},mcache:{act:'Open',verb:'Opening',c:'#ffd27a'},herb:{act:'Gather',verb:'Gathering',c:'#9be07a'},ore:{act:'Mine',verb:'Mining',c:'#8fe8ff'},relic:{act:'Take',verb:'Recovering',c:'#ffd27a'},captive:{act:'Free',verb:'Freeing',c:'#ffe6a0'},
+const NODEK={tracks:{act:'Read',verb:'Reading',c:'#e0b878'},clue:{act:'Examine',verb:'Examining',c:'#ffd890'},search:{act:'Search',verb:'Searching',c:'#ffe6a8'},stash:{act:'Mark',verb:'Marking',c:'#9fe0c0'},rite:{act:'Step to',verb:'Stepping to',c:'#c080ff'},pup:{act:'Approach',verb:'Approaching',c:'#e8f4ff'},tents:{act:'Approach',verb:'Approaching',c:'#ffd8a0'},wmark:{act:'Touch',verb:'Touching',c:'#9fd8ff'},mcache:{act:'Open',verb:'Opening',c:'#ffd27a'},herb:{act:'Gather',verb:'Gathering',c:'#9be07a'},ore:{act:'Mine',verb:'Mining',c:'#8fe8ff'},relic:{act:'Take',verb:'Recovering',c:'#ffd27a'},captive:{act:'Free',verb:'Freeing',c:'#ffe6a0'},
  totem:{act:'Smash',verb:'Smashing',c:'#c080ff'},banner:{act:'Burn',verb:'Burning',c:'#ff9a4a'},altar:{act:'Break',verb:'Breaking',c:'#ff7a30'}};
-const QKIND={scene:'Story',choice:'Decide',kill:'Slay',collect:'Collect',gather:'Gather',explore:'Explore',deliver:'Deliver',hunt:'Hunt',rescue:'Rescue',destroy:'Destroy',defend:'Defend',boss:'Area boss'};
+/* New quest types (12.b), first estimates for the balance passes.
+   Tracking: only the next mark of a trail shows; reading it points the way to the next, and the last mark wakes the quarry.
+   Investigation: each clue adds a line to the quest log; once every clue is found, the place they point to appears.
+   Stealth: reach every objective in a guarded area without a monster there chasing you. Standing within cover.r of hiding cover cuts how far
+   monsters can see you to cover.sight of normal. If one gives chase after you've marked anything, the attempt resets (spotted.margin tiles
+   beyond the area count). */
+const QTYPES={cover:{r:.9,sight:.35},spotted:{margin:3}};
+const QKIND={track:'Track',investigate:'Investigate',stealth:'Stealth',scene:'Story',choice:'Decide',kill:'Slay',collect:'Collect',gather:'Gather',explore:'Explore',deliver:'Deliver',hunt:'Hunt',rescue:'Rescue',destroy:'Destroy',defend:'Defend',boss:'Area boss'};
 const QUESTS=[
  /* ---------------- Veylmoor (levels 1-19) ---------------- */
  {id:'q1',giver:'marwen',map:'vale',lv:1,camp:1,title:'Rats in the Grain',kind:'kill',target:'rat',n:6,obj:'Mire Rats killed',item:{slot:'boots',rar:1},req:[],
@@ -1325,6 +1332,14 @@ const QUESTS=[
   offer:'Something is pulling the dead up out of the fen. Bog ghouls walk the causeway at night. Put eight of them back in the mud.',wait:'Eight ghouls. Follow the causeway south from the crossroads into the fen.',done:'The fen is quieter. But the ghouls were all walking the same way: toward the old abbey.'},
  {id:'v4',giver:'marwen',map:'vale',lv:13,camp:1,title:'Lost in the Fen',kind:'rescue',node:'captive',nodeName:'Trapped villager',nodes:[[44,32],[53,38],[58,43]],n:3,obj:'Villagers freed',ambush:{type:'ghoul',n:2},req:['q4'],
   offer:'Three of our peat-cutters never came home. The ghouls drag the living into the fen and bind them in reed-cages. Find them, cut them loose, and expect company when you do.',wait:'Three villagers, caged somewhere in Lantern Fen. The ghouls will not let them go quietly.',done:'All three, alive. Hollowmere will not forget it. Now we deal with whoever is ringing that bell.'},
+ {id:'v8',giver:'corra',map:'vale',lv:11,title:'The Lamb-taker',kind:'track',node:'tracks',nodeName:'Fresh tracks',nodes:[[24,16],[29,12],[34,9],[40,7],[46,11]],
+  quarry:{type:'wolf',name:'The Lamb-taker',sc:1.4,tint:[.8,.7,.6]},n:6,obj:'Follow the trail and slay the Lamb-taker',item:{slot:'boots',rar:2},req:['v3'],
+  offer:'Something has been taking lambs from the folds, and it hunts alone, so it is not Greymuzzle\'s pack. Its tracks start just north of town. Read each print and it will show you where it went next. Follow it to the end and finish it.',
+  wait:'Read each print before you move on. Every one points to the next.',done:'That is the one. The folds will sleep easier tonight. These boots are for walking quiet, which you have earned.'},
+ {id:'v9',giver:'marwen',map:'vale',lv:14,title:'Quiet Feet in the Fen',kind:'stealth',node:'stash',nodeName:'Ghoul stash',nodes:[[45,35],[52,37],[49,42]],area:[49,38,9],cover:[[43,33],[47,36],[50,40],[54,39],[46,40],[51,34]],
+  n:3,obj:'Ghoul stashes marked unseen',potions:3,req:['v4'],
+  offer:'The ghouls in the fen are hoarding what they drag out of the villages, and something there gives them orders now. I want to know where the stashes are without stirring up the whole fen. Mark all three. Keep to the reeds, and if they see you, back off and start again.',
+  wait:'Three stashes in Lantern Fen. Keep to the reeds. If they spot you, slip away and try again.',done:'All three, and the fen none the wiser. Now we know what they are guarding.'},
  {id:'v5',giver:'ysolde',map:'vale',lv:13,title:'The Lantern Vigil',kind:'defend',beacon:[37,29],beaconName:'Ward-lantern',waves:['ghoul','wisp'],dur:40,n:1,obj:'Hold the ward-lantern',item:{slot:'charm',rar:2},req:['q3'],
   offer:'There is an old ward-lantern at the mouth of the fen. Light it and the dead will come to put it out. Hold it for forty breaths and its light will keep them off the village roads. Say the words while it burns: keep the ember, hold the watch.',wait:'Light the ward-lantern at the mouth of the fen, then hold it. Stay close to it, or it gutters out.',done:'I saw it from my window, burning green. That light will hold for a generation. Take this charm, it was my mother\'s.'},
  {id:'q5',giver:'marwen',map:'abbey',lv:17,camp:1,title:'The Sunken Abbey',kind:'boss',target:'prior',n:1,obj:'Silence the Drowned Prior',item:{rar:3},req:['v4'],
@@ -1353,6 +1368,11 @@ const QUESTS=[
   offer:'You broke their fighters. Now finish it. Their tents stand at the back of the hollow. Burn them, and the raiders have nowhere to come back to.',wait:"The raider camp is at the back of Raider's Hollow. Go and do what needs doing.",done:'It is done.'},
  {id:'d12',giver:'tamsin',map:'dunes',lv:23,title:'Water for the Hollow',kind:'defend',beacon:[40,31],beaconName:'Camp water-barrels',waves:['scorp','sandsh'],dur:45,n:1,obj:'Guard the refugee camp',item:{slot:'cloak',rar:2},need:{camp:'spare'},req:['d11'],
   offer:'The families stayed, thanks to you, and now everything in the deep sand can smell their water. Scorpions and shades will come for it. Stand with them at the water-barrels until the worst is over.',wait:"The refugee camp is at the back of Raider's Hollow. Light the lamp by the water-barrels and hold.",done:'They are safe, and they asked your name. One of the old women says her grandmother told of a city under the hollow, and of the people who once guarded it. Take this cloak. The camp wove it for you.'},
+ {id:'d15',giver:'hassa',map:'dunes',lv:22,title:'The Missing Water-skins',kind:'investigate',node:'clue',nodeName:'Something out of place',nodes:[[20,13],[23,17],[19,21]],
+  clues:['A scrap of rust-red cloth snagged on a stake, the colour the raiders wear.','Stones rolled off the trail and put back badly. Someone hid a path here.','Deep, heavy-laden prints heading south-east toward the hollow.'],
+  search:[25,24],searchName:'Disturbed sand',searchAmbush:{type:'nomad',n:2},n:4,obj:'Find where the water-skins went',potions:2,req:['d2'],
+  offer:'Twelve water-skins gone from the well-house in one night, and no one saw a thing. Look around the edge of town. Whoever took them left something behind; they always do. Put the pieces together and find where the skins went.',
+  wait:'Look for what is out of place around the edge of town. Each piece will point you on.',done:'Buried in the sand by the hollow, all twelve. Raiders, then. I will be keeping a closer eye on the well.'},
  {id:'d6',giver:'hassa',map:'dunes',lv:23,camp:1,title:"The Sun-King's Banners",kind:'destroy',node:'banner',nodeName:'War banner',nodes:[[28,28],[38,26],[50,29],[30,38]],n:4,obj:'War banners burned',ambush:{type:'nomad',n:2},req:['d11'],
   offer:'Every raider in the hollow has sworn to a banner of the Sun-King. Burn the four war banners and their courage burns with them. They will fight for those rags, so be ready.',wait:"Four war banners stand in Raider's Hollow. Burn them all.",done:'I watched the smoke from the wall, and saw something else. When the last banner burned, the sand slid off a gate buried in the hollow. There is a city under there, older than any of us, and the name carved over its gate is Qarim\'s Rest. Our town is named for a place nobody remembers. Now, while they are shaken, we finish this.'},
  {id:'d10',giver:'tamsin',map:'dunes',lv:23,title:'Hold the Caravan',kind:'defend',beacon:[30,12],beaconName:'Caravan signal',waves:['nomad','scorp'],dur:45,n:1,obj:'Guard the stranded caravan',item:{slot:'cloak',rar:2},req:['d5'],
@@ -1815,7 +1835,7 @@ function killEnemy(e){
  gainXP(Math.max(1,Math.round(e.d.xp*PL(e.lvl)*(e.d.boss?3:1)*xpMul(e.lvl)*(e.ev||e.summoned?.5:1))));
  const gold=Math.round(PL(e.lvl)*rr(1,2.4)*(e.d.boss?25:1));P.gold+=gold;txt(e.x,e.y,e.d.h*.7,'+'+gold+'g','#d4a857',12);
  for(const q of QUESTS){const st=P.q[q.id];if(!st||st.s!=='active')continue;
-  if(q.kind==='hunt'){if(e.elite===q.id)qProgress(q);continue}
+  if(q.kind==='hunt'||q.kind==='track'){if(e.elite===q.id)qProgress(q);continue}
   if(q.kind!=='kill'&&q.kind!=='collect'&&q.kind!=='boss')continue;if(Array.isArray(q.target)?!q.target.includes(e.type):q.target!==e.type)continue;
   if(q.kind==='collect'){if(R()>(q.chance||.7))continue;txt(e.x,e.y,1.4,'+'+q.thing,'#bfe6c8',13)}qProgress(q)}
  if(S.uq.lantern)healP(S.maxHp*0.05);
@@ -2150,7 +2170,7 @@ function updatePlayer(dt){
  for(const p of G.map.portals){const d=dist(P.x,P.y,p.x,p.y);if(d<70&&d<nd){nd=d;near={kind:'portal',p}}}
  for(const o of G.nodes||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'node',o}}}for(const o of G.res||[]){if(o.t>0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'res',o}}}if(!G.event)for(const o of G.beacons||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<72&&d<nd){nd=d;near={kind:'beacon',o}}}
  for(const o of G.moonO||[]){const d=dist(P.x,P.y,o.x,o.y);if(d<58&&d<nd){nd=d;near={kind:'moon',o}}}for(const o of G.skins||[]){if(o.t<=0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<52&&d<nd){nd=d;near={kind:'skin',o}}}for(const o of G.fishS||[]){if(o.t>0)continue;const d=dist(P.x,P.y,o.x,o.y);if(d<56&&d<nd){nd=d;near={kind:'fish',o}}}
- if((G.spotT=(G.spotT||0)-dt)<=0){G.spotT=.25;checkSpots()}
+ if((G.spotT=(G.spotT||0)-dt)<=0){G.spotT=.25;checkSpots();stealthTick()}
  G.near=near;checkZone()}
 /* ================= Enemy tactics (7.b) =================
    Each regular monster has an archetype from the enemy behaviour guide. Bosses, defend-quest waves, summoned foes and anything taunted fight as before.
@@ -2279,7 +2299,7 @@ function tacNoise(){const N=TACTICS.senses.noise;let n=P.mv>.2?N.walk:0;if(P.spr
 /* ---- Surroundings (7.b.4): night and weather change how far a monster sees and hears, and water slows it. Only for monsters under tactics. ---- */
 function tacNight(){return G.map&&G.map.id!=='abbey'?worldNow().night:0}
 function tacSightK(e){if(!tacFree(e))return 1;const E=TACTICS.env,n=tacNight(),W=weatherNow(),x=W&&W.s>0&&E.wx[W.k];
- return(E.nightFoes.includes(e.type)?1+E.nightSee*n:1-E.nightBlind*n)*(x&&x.sight?1-x.sight*W.s:1)}
+ return(E.nightFoes.includes(e.type)?1+E.nightSee*n:1-E.nightBlind*n)*(x&&x.sight?1-x.sight*W.s:1)*(heroHidden()?QTYPES.cover.sight:1)}
 function tacHearK(){const W=weatherNow(),x=W&&W.s>0&&TACTICS.env.wx[W.k];return x&&x.hear?1-x.hear*W.s:1}
 function tacWadeK(e){const m=G.map;if(!tacFree(e)||!m||!m.hgt||(m.theme===4&&TACTICS.env.lavaNative.includes(e.type)))return 1;
  const depth=(m.id==='abbey'?-0.025:-0.11)-groundH(e.x*U,e.y*U);if(depth<=.015)return 1;const W=TACTICS.env.wade;return 1-(W.base+W.deep*Math.min(1,(depth-.015)/.14))}
@@ -2598,19 +2618,37 @@ const qAvail=q=>!P.q[q.id]&&q.req.every(r=>P.q[r]&&P.q[r].s==='done')&&P.lvl>=q.
 const qArea=q=>q.map==='abbey'?'vale':q.map;
 function walkSpot(m,tx,ty){const ok=(x,y)=>{const v=m.get(x,y);return v>=0&&!SOLID[v]};let bx=Math.floor(tx),by=Math.floor(ty);if(ok(bx,by))return[tx,ty];
  for(let r=1;r<8;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;if(ok(bx+dx,by+dy))return[bx+dx+.5,by+dy+.5]}return[tx,ty]}
-function refreshQuestWorld(){G.nodes=[];G.spots=[];G.beacons=[];const m=G.map;if(!P||!m)return;storyNpcs(m);
+function refreshQuestWorld(){G.nodes=[];G.spots=[];G.beacons=[];G.cover=[];const m=G.map;if(!P||!m)return;storyNpcs(m);
  for(const q of QUESTS){const st=P.q[q.id];if(!st||st.s!=='active'||q.map!==m.id)continue;st.got=st.got||[];
-  if(q.nodes)q.nodes.forEach((p,i)=>{if(st.got.includes(i)||(q.rite&&riteLive()))return;const[x,y]=walkSpot(m,p[0]+.5,p[1]+.5);G.nodes.push({q,i,x:x*TS,y:y*TS,kind:q.node,name:q.nodeName})});
+  if(q.nodes)q.nodes.forEach((p,i)=>{if(st.got.includes(i)||(q.rite&&riteLive())||(q.kind==='track'&&i!==qTrailNext(q,st)))return;const[x,y]=walkSpot(m,p[0]+.5,p[1]+.5);G.nodes.push({q,i,x:x*TS,y:y*TS,kind:q.node,name:q.nodeName})});
+  if(q.search&&qCluesDone(q,st)&&!st.got.includes(q.nodes.length)){const[x,y]=walkSpot(m,q.search[0]+.5,q.search[1]+.5);G.nodes.push({q,i:q.nodes.length,x:x*TS,y:y*TS,kind:'search',name:q.searchName})}
+  if(q.cover)for(const c of q.cover){const[x,y]=walkSpot(m,c[0]+.5,c[1]+.5);G.cover.push({q,x:x*TS,y:y*TS,rot:(c[0]*7+c[1]*3)%6})}
   if(q.spots)q.spots.forEach((p,i)=>{if(st.got.includes(i))return;G.spots.push({q,i,x:(p[0]+.5)*TS,y:(p[1]+.5)*TS,name:p[2]})});
   if(q.beacon){const[x,y]=walkSpot(m,q.beacon[0]+.5,q.beacon[1]+.5);G.beacons.push({q,x:x*TS,y:y*TS,name:q.beaconName})}
-  if(q.elite&&!G.enemies.some(e=>e.elite===q.id&&!e.dead)){const E=q.elite,base=EN[E.type],[x,y]=walkSpot(m,E.x+.5,E.y+.5);const e=mkEnemy(E.type,q.lv+2,x*TS,y*TS);
+  const QE=qElite(q,st);if(QE&&!G.enemies.some(e=>e.elite===q.id&&!e.dead)){const E=QE,base=EN[E.type],[x,y]=walkSpot(m,E.x+.5,E.y+.5);const e=mkEnemy(E.type,q.lv+2,x*TS,y*TS);
    e.d=Object.assign({},base,{name:E.name,sc:E.sc||1.5,tint:E.tint||base.tint,xp:base.xp*4,elite:true,h:base.h*(E.sc||1.5),r:base.r*1.3});e.hp=e.max=Math.round(e.max*4);e.dmg*=1.5;e.elite=q.id;G.enemies.push(e)}}
  for(const e of G.enemies)if(e.elite&&!e.dead){const st=P.q[e.elite];if(!st||st.s!=='active'){e.dead=true;e.respawn=-1}}}
+/* ---- New quest types (12.b) ---- */
+const qTrailNext=(q,st)=>{let i=0;while(st.got.includes(i))i++;return i};
+const qCluesDone=(q,st)=>q.nodes.every((_,i)=>st.got.includes(i));
+/* A hunt quest's elite, or a tracking quest's quarry once the whole trail is read (it waits just past the last mark). */
+function qElite(q,st){if(q.elite)return q.elite;if(q.kind!=='track'||!q.quarry||!qCluesDone(q,st))return null;const L=q.nodes[q.nodes.length-1];return Object.assign({x:L[0]+1.5,y:L[1]+1},q.quarry)}
+function compass(dx,dy){const a=Math.atan2(dx,-dy),k=Math.round(a/(TAU/8))&7;return['north','north-east','east','south-east','south','south-west','west','north-west'][k]}
+/* Stealth: true while the hero stands in hiding cover. */
+function heroHidden(){if(!P||!G.cover||!G.cover.length)return false;const r=QTYPES.cover.r*TS;return G.cover.some(c=>dist(P.x,P.y,c.x,c.y)<r)}
+/* Stealth: once an objective is marked, a monster in the area giving chase resets the attempt. */
+function stealthTick(){const m=G.map;if(!P||!m||P.dead)return;const hid=heroHidden();if(hid&&!G.wasHidden)txt(P.x,P.y,2.1,'Hidden','#9fe0c0',14);G.wasHidden=hid;
+ for(const q of QUESTS){if(q.kind!=='stealth'||q.map!==m.id)continue;const st=P.q[q.id];if(!st||st.s!=='active'||!st.n)continue;
+  const cx=q.area[0]*TS,cy=q.area[1]*TS,R=(q.area[2]+QTYPES.spotted.margin)*TS;
+  if(G.enemies.some(e=>!e.dead&&e.state==='chase'&&!e.summoned&&dist(e.x,e.y,cx,cy)<R)){st.got=[];st.n=0;toast(`Spotted! <b>${esc(q.title)}</b>: slip away and try again.`,'warn');sfx('horn',.4);updateTracker();save();refreshQuestWorld()}}}
 function qProgress(q,inc=1){const st=P.q[q.id];if(!st||st.s!=='active')return;st.n=Math.min(q.n,st.n+inc);
  if(st.n>=q.n){st.s='ready';toast(`<b>${esc(q.title)}</b> complete. Return to ${esc(NPCS[qTurn(q)].name)}.`,'q');sfx('heal',.8)}updateTracker();save()}
 function useNode(n){const st=P.q[n.q.id];if(!st||st.s!=='active'||st.got.includes(n.i))return;if(n.q.choice){openPanel('choice',n.q.id);return}if(n.q.rite){openPanel('rite',n.q.id);return}st.got.push(n.i);const k=NODEK[n.kind]||NODEK.herb;
  burst(n.x,n.y,k.c,22,110,.7,3,.4);rise(n.x,n.y,k.c,10,14,.9,3);txt(n.x,n.y,1.6,n.kind==='captive'?'Thank you!':'+1 '+n.name,k.c,15);sfx(n.kind==='captive'?'heal':n.kind==='ore'?'clang':n.kind==='herb'?'loot':'execute',.8);
  if(n.q.ambush){const A=n.q.ambush;for(let j=0;j<A.n;j++){const a=R()*TAU,[x,y]=walkSpot(G.map,(n.x+Math.cos(a)*120)/TS,(n.y+Math.sin(a)*120)/TS);const e=mkEnemy(A.type,n.q.lv,x*TS,y*TS);e.state='chase';e.fade=.5;e.hx=e.x;e.hy=e.y;e.summoned=true;G.enemies.push(e);burst(e.x,e.y,'#a08060',12,80,.6,3,.1)}toast('Ambush!','warn')}
+ if(n.q.kind==='investigate'&&n.i<n.q.nodes.length&&n.q.clues){toast(`<b>Clue:</b> ${esc(n.q.clues[n.i])}`,'q');if(qCluesDone(n.q,st))toast('The clues point somewhere. It is marked on your map.','q')}
+ if(n.q.kind==='track'){const nx=qTrailNext(n.q,st),L=n.q.nodes[nx];if(L)toast(`The tracks lead ${compass(L[0]+.5-n.x/TS,L[1]+.5-n.y/TS)}.`,'q');else toast('The trail ends here. Something is close.','warn')}
+ if(n.kind==='search'&&n.q.searchAmbush){const A=n.q.searchAmbush;for(let j=0;j<A.n;j++){const a=R()*TAU,[x,y]=walkSpot(G.map,(n.x+Math.cos(a)*120)/TS,(n.y+Math.sin(a)*120)/TS);const e=mkEnemy(A.type,n.q.lv,x*TS,y*TS);e.state='chase';e.fade=.5;e.hx=e.x;e.hy=e.y;e.summoned=true;G.enemies.push(e)}toast('Ambush!','warn')}
  qProgress(n.q);refreshQuestWorld()}
 function checkSpots(){for(const s of G.spots||[])if(dist(P.x,P.y,s.x,s.y)<3*TS){const st=P.q[s.q.id];if(!st||st.got.includes(s.i))continue;st.got.push(s.i);
  toast(`Discovered <b>${esc(s.name)}</b>`,'q');ring(s.x,s.y,70,'#8fe8ff',.8,5,true);G.fx.push({k:'pillar',x:s.x,y:s.y,c:'#8fe8ff',t:0,max:1});sfx('mark');qProgress(s.q);refreshQuestWorld();return}}
@@ -3058,6 +3096,331 @@ function buildWild3D(m,g,ge,Rn,sh){const th=m.theme;
 /* ================= Models ================= */
 const part=(n,m,p,o={})=>({n,m,p:p||[0,0,0],r:o.r||[0,0,0],s:o.s||[1,1,1],e:o.e||0,sp:o.sp||0,t:o.t?lin(o.t):null,k:[]});
 const MODELS={};
+/* Quest props for tracking, investigation and stealth (12.b), made by Gemini (gemini-assets on the gemini branch, briefs 01 and 02) and approved in the Studio. */
+// Track marks (tracking and clue ground prop) | Tris: 120 / 120 budget (small prop)
+// Solid: 120 + Glow: 0 = 120 tris
+// Parts: 2 boot prints (2 sole + 2 heel = 4 boxes: 48 tris), 3 beast paw prints (3 pads + 3 toe rows = 6 boxes: 72 tris) = 120 tris
+// Size: 0.44 W x 0.04 H x 1.76 D. Stands on y=0, faces +z.
+function trackMarksProp(g,ge,x,y,z){
+  const mudWarm=[96,74,52],mudDark=[54,40,28];
+
+  // Boot print 1 (left foot, trail start at z -0.72)
+  // Sole: warmer displaced mud tread; Heel: darker indented heel-strike
+  g.box(T3(x-0.14,y+0.02,z-0.64,0.11,0.034,0.18,-0.10),mudWarm);
+  g.box(T3(x-0.16,y+0.02,z-0.80,0.08,0.034,0.09,-0.10),mudDark);
+
+  // Paw print 1 (beast rear paw at z -0.32, right side)
+  // Pad: dark indented centre; Toes: arched row of claw marks
+  g.box(T3(x+0.10,y+0.02,z-0.35,0.12,0.034,0.10,0.08),mudDark);
+  g.box(T3(x+0.11,y+0.02,z-0.26,0.14,0.034,0.045,0.08),mudWarm);
+
+  // Boot print 2 (right foot, mid-trail at z +0.06, left side)
+  g.box(T3(x-0.08,y+0.02,z+0.14,0.11,0.034,0.18,0.05),mudWarm);
+  g.box(T3(x-0.07,y+0.02,z-0.02,0.08,0.034,0.09,0.05),mudDark);
+
+  // Paw print 2 (beast front paw at z +0.44, right side)
+  g.box(T3(x+0.12,y+0.02,z+0.41,0.12,0.034,0.10,-0.06),mudDark);
+  g.box(T3(x+0.11,y+0.02,z+0.50,0.14,0.034,0.045,-0.06),mudWarm);
+
+  // Paw print 3 (leading beast paw at z +0.80, centre-left)
+  g.box(T3(x-0.05,y+0.02,z+0.77,0.12,0.034,0.10,0.10),mudDark);
+  g.box(T3(x-0.04,y+0.02,z+0.86,0.14,0.034,0.045,0.10),mudWarm);
+}
+// Clue marker (investigation ground clue prop) | Tris: 92 / 120 budget (small prop)
+// Solid: 92 + Glow: 0 = 92 tris
+// Parts: dirt base 12, stick 12, cloth wrap 12, cloth scrap 12, 3 stones (ico 20 + 2 boxes 24 = 44) = 92 tris
+// Size: 0.52 W x 0.62 H x 0.48 D. Stands on y=0, faces +z.
+function clueMarkerProp(g,ge,x,y,z){
+  const dirt=[64,48,34],stickWood=[78,56,38],cloth=[174,54,44],clothDark=[142,42,34],stoneGrey=[118,114,110],stoneSlate=[88,92,98],stoneMoss=[82,94,74];
+
+  // Disturbed dirt base
+  g.box(T3(x,y+0.018,z,0.34,0.034,0.32),dirt);
+
+  // Wooden stick driven into ground at an angle
+  g.box(T3(x-0.02,y+0.30,z+0.02,0.045,0.60,0.045,0.12,0,0.14),stickWood);
+
+  // Torn cloth scrap tied to upper stick
+  g.box(T3(x+0.02,y+0.52,z+0.04,0.08,0.06,0.08,0.12,0,0.14),cloth);
+  g.box(T3(x+0.10,y+0.45,z+0.07,0.16,0.18,0.035,0.35,-0.15,0.22),clothDark);
+
+  // Scattered stones around the marker
+  // 1 large faceted boulder beside stick
+  g.ico(T3(x-0.14,y+0.07,z-0.08,0.12,0.08,0.11),stoneGrey);
+  // 2 small stones
+  g.box(T3(x+0.14,y+0.04,z-0.10,0.09,0.06,0.08,-0.2,0.3,0.15),stoneSlate);
+  g.box(T3(x+0.06,y+0.04,z+0.15,0.08,0.05,0.08,0.4,-0.2,0.1),stoneMoss);
+}
+// Search spot (investigation ground search prop) | Tris: 92 / 120 budget (small prop)
+// Solid: 92 + Glow: 0 = 92 tris
+// Parts: dug dark soil patch 12, spoil mound 20, rock 12, box body 12, lid lip 12, iron band 12, iron corner brace 12 = 92 tris
+// Size: 0.63 W x 0.28 H x 0.57 D. Stands on y=0, faces +z.
+function searchSpotProp(g,ge,x,y,z){
+  const pitLoam=[42,32,24],spoilEarth=[82,62,44],woodPale=[168,132,88],woodPlank=[184,146,98],ironDark=[54,58,64],rock=[114,110,104];
+
+  // Dug dark soil patch on top of ground (stands on y=0)
+  g.box(T3(x,y+0.018,z,0.56,0.034,0.52),pitLoam);
+
+  // Excavated spoil mound - single shape
+  g.ico(T3(x+0.16,y+0.075,z+0.14,0.22,0.07,0.20),spoilEarth);
+
+  // Displaced rock beside spoil
+  g.box(T3(x+0.22,y+0.05,z-0.14,0.11,0.06,0.09,0.25,0,0),rock);
+
+  // Box corner poking up out of the soil (pale weathered planks)
+  g.box(T3(x-0.05,y+0.15,z-0.06,0.22,0.18,0.20,0.35,0.25,-0.22),woodPale);
+
+  // Box lid plank lip along upper edge
+  g.box(T3(x-0.04,y+0.20,z-0.05,0.23,0.045,0.21,0.35,0.25,-0.22),woodPlank);
+
+  // Dark iron band wrapping the exposed corner/edge
+  g.box(T3(x-0.02,y+0.18,z-0.03,0.06,0.17,0.06,0.35,0.25,-0.22),ironDark);
+
+  // Dark iron corner brace at the peak
+  g.box(T3(x-0.01,y+0.23,z-0.02,0.08,0.05,0.08,0.35,0.25,-0.22),ironDark);
+}
+// Hiding reeds (dense moor cover prop) | Tris: 316 / 400 budget (medium prop)
+// Solid: 316 + Glow: 0 = 316 tris
+// Parts: peat mound 32, marsh loam base 12, 4 cattail stalks (4x16=64), 4 cattail heads (4x16=64), 12 reed blades (12x12=144) = 316 tris
+// Size: 1.59 W x 1.42 H x 1.44 D. Stands on y=0, faces +z.
+function hidingReedsProp(g,ge,x,y,z){
+  const peat=[48,38,30],marshLoam=[62,48,36],reedDark=[52,78,38],reedMid=[68,104,46],reedLight=[86,128,52],reedDry=[148,132,78],cattail=[76,46,30];
+
+  // Base hummock
+  g.cyl(T3(x,y,z,1,0.12,1),peat,8,0.72,0.56);
+  g.box(T3(x+0.12,y+0.04,z-0.08,0.70,0.06,0.62,0.2),marshLoam);
+
+  // Tall central stalks with cattail flower spikes
+  // Stalk 1
+  g.cyl(T3(x-0.08,y+0.10,z+0.04,1,1.26,1,0,0.04,-0.06),reedDark,4,0.03,0.02);
+  g.cyl(T3(x-0.15,y+0.92,z+0.08,1,0.30,1,0,0.04,-0.06),cattail,4,0.05,0.045);
+
+  // Stalk 2
+  g.cyl(T3(x+0.10,y+0.10,z-0.05,1,1.32,1,0,-0.05,0.08),reedDark,4,0.03,0.02);
+  g.cyl(T3(x+0.18,y+0.98,z-0.10,1,0.32,1,0,-0.05,0.08),cattail,4,0.05,0.045);
+
+  // Stalk 3
+  g.cyl(T3(x+0.02,y+0.10,z+0.18,1,1.22,1,0,0.08,0.04),reedDark,4,0.03,0.02);
+  g.cyl(T3(x+0.06,y+0.86,z+0.25,1,0.28,1,0,0.08,0.04),cattail,4,0.045,0.04);
+
+  // Stalk 4
+  g.cyl(T3(x-0.20,y+0.10,z-0.14,1,1.18,1,0,-0.08,-0.10),reedDark,4,0.03,0.02);
+  g.cyl(T3(x-0.30,y+0.82,z-0.22,1,0.26,1,0,-0.08,-0.10),cattail,4,0.045,0.04);
+
+  // 12 Dense reed blades creating thick cover
+  // Tall central shielding blades
+  g.box(T3(x-0.04,y+0.66,z+0.02,0.10,1.14,0.035,0.1,0.06,-0.08),reedMid);
+  g.box(T3(x+0.07,y+0.68,z-0.02,0.10,1.16,0.035,-0.12,-0.08,0.10),reedLight);
+  g.box(T3(x+0.02,y+0.64,z+0.12,0.10,1.10,0.035,0.3,0.12,0.05),reedDark);
+  g.box(T3(x-0.10,y+0.65,z-0.08,0.10,1.12,0.035,-0.25,-0.10,-0.08),reedDry);
+
+  // Wide side flanking blades
+  g.box(T3(x-0.36,y+0.56,z+0.08,0.09,0.98,0.035,0.15,0.10,-0.22),reedLight);
+  g.box(T3(x+0.36,y+0.56,z-0.08,0.09,0.98,0.035,-0.15,-0.08,0.22),reedDark);
+  g.box(T3(x-0.46,y+0.46,z-0.10,0.08,0.84,0.035,-0.3,-0.15,-0.32),reedMid);
+  g.box(T3(x+0.46,y+0.46,z+0.12,0.08,0.84,0.035,0.3,0.14,0.32),reedLight);
+
+  // Outer fanning blades expanding cover footprint (~1.6 wide, ~1.4 deep)
+  g.box(T3(x-0.62,y+0.30,z+0.04,0.08,0.58,0.034,0.1,0.1,-0.50),reedDry);
+  g.box(T3(x+0.62,y+0.30,z-0.04,0.08,0.58,0.034,-0.1,-0.1,0.50),reedLight);
+  g.box(T3(x+0.04,y+0.32,z+0.48,0.08,0.60,0.034,0.48,0.45,0.05),reedMid);
+  g.box(T3(x-0.04,y+0.32,z-0.48,0.08,0.60,0.034,-0.48,-0.45,-0.05),reedDark);
+}
+// Hiding cover dunes (Sunscar Dunes crouch-behind stealth cover) | Tris: 288 / 400 budget (medium prop)
+// Solid: 288 + Glow: 0 = 288 tris
+// Parts: sand drift base 32, dark sand wedge 12, sandstone leaning slab 36 (3 boxes), boulder 20, rear drift 12, loose rock 12, scrub branches & twigs 84 (7 boxes), scrub bush clumps 80 (4 icos) = 288 tris
+// Size: 1.58 W x 1.42 H x 1.56 D. Stands on y=0, faces +z.
+function hidingCoverDunesProp(g,ge,x,y,z){
+  const sand=[212,184,136],sandDark=[186,154,112],sandStone=[198,154,106],stoneDark=[164,124,84],stoneWarm=[214,172,120],scrubTwig=[98,82,56],scrubDry=[138,122,78],scrubPale=[156,138,90];
+
+  // Base sand drift banked around the spot
+  g.cyl(T3(x,y,z,1,0.10,1),sand,8,0.78,0.64);
+  g.box(T3(x-0.10,y+0.04,z+0.08,0.76,0.06,0.68,0.15),sandDark);
+
+  // Leaning slab of sandstone (solid crouch cover, reaches ~1.40 tall)
+  // Main leaning slab
+  g.box(T3(x-0.12,y+0.72,z-0.06,0.28,1.26,0.82,0.18,-0.10,0.16),sandStone);
+  // Eroded top crest of the slab
+  g.box(T3(x-0.22,y+1.22,z-0.08,0.22,0.30,0.74,0.18,-0.10,0.16),stoneWarm);
+  // Strata ridge along the front face
+  g.box(T3(x-0.04,y+0.62,z-0.02,0.10,0.16,0.78,0.18,-0.10,0.16),stoneDark);
+
+  // Secondary sandstone boulder wedging the base of the slab
+  g.ico(T3(x-0.34,y+0.25,z-0.12,0.26,0.22,0.26),stoneDark);
+
+  // Banked sand drift blowing up against the slab rear
+  g.box(T3(x-0.25,y+0.24,z-0.32,0.34,0.36,0.30,-0.2,0.3,-0.15),sand);
+
+  // Displaced desert rock on the side
+  g.box(T3(x-0.45,y+0.09,z+0.26,0.16,0.12,0.14,0.3,0.2,0.1),sandStone);
+
+  // Cluster of dry desert scrub growing alongside and behind the slab
+  // Gnarled root/branch bases
+  g.box(T3(x+0.18,y+0.24,z+0.08,0.06,0.38,0.06,-0.1,0.2,0.25),scrubTwig);
+  g.box(T3(x+0.32,y+0.28,z-0.06,0.06,0.44,0.06,0.2,-0.1,0.32),scrubTwig);
+  g.box(T3(x+0.12,y+0.42,z+0.18,0.05,0.40,0.05,0.3,0.2,-0.15),scrubTwig);
+
+  // Scrub bush clusters (spiny desert bushes)
+  // Low bushy base
+  g.ico(T3(x+0.22,y+0.36,z+0.06,0.32,0.25,0.28),scrubDry);
+  // Mid scrub mass (adds solid height up to ~0.95 - 1.05)
+  g.ico(T3(x+0.34,y+0.62,z+0.02,0.28,0.26,0.26),scrubPale);
+  // Upper thorny scrub clump
+  g.ico(T3(x+0.26,y+0.92,z-0.04,0.24,0.22,0.24),scrubDry);
+  // Outer spreading bush extending the cover to ~1.6 wide
+  g.ico(T3(x+0.56,y+0.42,z-0.08,0.28,0.24,0.26),scrubPale);
+
+  // Dry branching twigs protruding from the scrub
+  g.box(T3(x+0.38,y+0.98,z-0.02,0.04,0.34,0.04,0.15,0.3,0.22),scrubTwig);
+  g.box(T3(x+0.60,y+0.60,z-0.12,0.04,0.32,0.04,-0.2,0.1,0.45),scrubTwig);
+  g.box(T3(x+0.08,y+0.82,z+0.16,0.04,0.30,0.04,0.35,-0.2,-0.2),scrubTwig);
+  g.box(T3(x-0.02,y+0.48,z+0.34,0.04,0.28,0.04,0.4,0.2,0.3),scrubTwig);
+}
+// Hiding cover frost (Frostfang Reach low snow-laden pine thicket) | Tris: 308 / 400 budget (medium prop)
+// Solid: 308 + Glow: 0 = 308 tris
+// Parts: snow base drift 32, shaded snow wedge 12, rock 20, trunks & timber branches 44 (cyl 20 + 2 boxes 24), pine tiers & snow caps 200 (10 5-seg cyls) = 308 tris
+// Size: 1.56 W x 1.40 H x 1.56 D. Stands on y=0, faces +z.
+function hidingCoverFrostProp(g,ge,x,y,z){
+  const snowWhite=[238,244,252],snowBlue=[196,212,228],pineDark=[34,56,42],pineNeedles=[42,68,50],bark=[58,44,32],rock=[84,88,96];
+
+  // Base snow drift mound
+  g.cyl(T3(x,y,z,1,0.14,1),snowWhite,8,0.78,0.64);
+  g.box(T3(x-0.08,y+0.06,z+0.06,0.76,0.08,0.68,0.15),snowBlue);
+
+  // Cold mountain rock poking out of the drift
+  g.ico(T3(x-0.45,y+0.16,z-0.24,0.18,0.14,0.18),rock);
+
+  // Pine thicket timber trunks
+  g.cyl(T3(x-0.06,y+0.10,z-0.02,1,0.55,1,0,0.04,-0.06),bark,5,0.08,0.05);
+  g.box(T3(x-0.28,y+0.32,z+0.05,0.07,0.42,0.07,0.15,0.2,-0.35),bark);
+  g.box(T3(x+0.28,y+0.30,z-0.06,0.07,0.40,0.07,-0.2,0.15,0.38),bark);
+
+  // Central pine thicket tiers (reaching ~1.40 tall)
+  // Lower bough tier & snow cap
+  g.cyl(T3(x-0.04,y+0.48,z-0.02,1,0.38,1,0,0.02,-0.04),pineDark,5,0.48,0.26);
+  g.cyl(T3(x-0.05,y+0.74,z-0.02,1,0.12,1,0,0.02,-0.04),snowWhite,5,0.46,0.24);
+
+  // Mid bough tier & snow cap
+  g.cyl(T3(x-0.05,y+0.78,z-0.02,1,0.36,1,0,-0.02,0.03),pineNeedles,5,0.38,0.18);
+  g.cyl(T3(x-0.05,y+1.02,z-0.02,1,0.12,1,0,-0.02,0.03),snowWhite,5,0.36,0.16);
+
+  // Top peak bough tier & snow crest
+  g.cyl(T3(x-0.04,y+1.06,z-0.02,1,0.34,1,0,0.03,-0.02),pineDark,5,0.25,0.03);
+  g.cyl(T3(x-0.04,y+1.24,z-0.02,1,0.16,1,0,0.03,-0.02),snowWhite,5,0.20,0.02);
+
+  // Flanking low pine thicket boughs (expanding width to ~1.56 wide)
+  // Left spreading bough + snow
+  g.cyl(T3(x-0.34,y+0.28,z+0.06,1,0.42,1,0.1,0.15,-0.38),pineDark,5,0.36,0.16);
+  g.cyl(T3(x-0.42,y+0.52,z+0.08,1,0.14,1,0.1,0.15,-0.38),snowWhite,5,0.34,0.14);
+
+  // Right spreading bough + snow
+  g.cyl(T3(x+0.34,y+0.26,z-0.06,1,0.44,1,-0.15,-0.1,0.36),pineNeedles,5,0.38,0.18);
+  g.cyl(T3(x+0.42,y+0.52,z-0.08,1,0.14,1,-0.15,-0.1,0.36),snowWhite,5,0.36,0.15);
+}
+// Hiding cover gloam (Gloamwood twisted violet bramble thicket) | Tris: 304 / 400 budget (medium prop)
+// Solid: 304 + Glow: 0 = 304 tris
+// Parts: loam base 32, moss wedge 12, root rock 20, bramble canes & side thickets 96 (8 boxes), bramble knot clumps 80 (4 icos), pale fungus caps 64 (4 4-seg cyls) = 304 tris
+// Size: 1.58 W x 1.41 H x 1.56 D. Stands on y=0, faces +z.
+function hidingCoverGloamProp(g,ge,x,y,z){
+  const loam=[42,30,46],brambleDark=[58,36,72],brambleMid=[78,48,94],brambleLight=[96,62,114],mossGreen=[36,54,40],fungusPale=[222,216,198];
+
+  // Base loam & root mound
+  g.cyl(T3(x,y,z,1,0.12,1),loam,8,0.78,0.64);
+  g.box(T3(x+0.10,y+0.05,z-0.08,0.74,0.08,0.66,0.2),mossGreen);
+
+  // Gnarled forest stone embedded in roots
+  g.ico(T3(x-0.42,y+0.16,z-0.22,0.22,0.14,0.20),loam);
+
+  // Twisted main bramble arches (solid core cover reaching ~1.40 tall)
+  // Central twisted cane 1
+  g.box(T3(x-0.06,y+0.70,z-0.02,0.14,1.20,0.14,0.18,0.12,-0.10),brambleMid);
+  // Central cane 2 (crossing arch)
+  g.box(T3(x+0.08,y+0.68,z+0.04,0.13,1.16,0.13,-0.15,-0.10,0.12),brambleDark);
+  // Twisted top crest knot
+  g.ico(T3(x-0.04,y+1.26,z+0.02,0.24,0.18,0.22),brambleLight);
+
+  // Dense bramble tangle clumps (providing full opacity for crouch height 0.8 - 1.1)
+  g.ico(T3(x-0.12,y+0.82,z+0.06,0.36,0.28,0.34),brambleMid);
+  g.ico(T3(x+0.14,y+0.78,z-0.06,0.34,0.26,0.32),brambleDark);
+  g.ico(T3(x+0.02,y+0.46,z+0.12,0.38,0.26,0.36),brambleLight);
+
+  // Flanking twisted bramble arches (expanding width to ~1.58 wide)
+  // Left arching cane & side thicket clump
+  g.box(T3(x-0.34,y+0.52,z+0.08,0.11,0.92,0.11,0.22,0.18,-0.32),brambleDark);
+  g.box(T3(x-0.54,y+0.38,z-0.04,0.22,0.62,0.22,-0.2,-0.15,-0.45),brambleLight);
+
+  // Right arching cane & side thicket clump
+  g.box(T3(x+0.34,y+0.50,z-0.08,0.11,0.90,0.11,-0.20,-0.15,0.32),brambleMid);
+  g.box(T3(x+0.54,y+0.36,z+0.04,0.22,0.60,0.22,0.2,0.15,0.45),brambleDark);
+
+  // Front & rear bramble tendrils with thorns
+  g.box(T3(x+0.04,y+0.40,z+0.36,0.08,0.68,0.08,0.45,0.32,0.1),brambleLight);
+  g.box(T3(x-0.06,y+0.40,z-0.36,0.08,0.68,0.08,-0.45,-0.32,-0.1),brambleDark);
+
+  // Pale fungus caps (4 distinct mushroom caps on the wood and root base)
+  // 1. Large shelf fungus bracket on lower trunk
+  g.cyl(T3(x-0.22,y+0.28,z+0.18,1,0.09,1,0.1,0.2,-0.15),fungusPale,4,0.18,0.12);
+
+  // 2. High shelf fungus on mid-bramble
+  g.cyl(T3(x+0.18,y+0.64,z+0.16,1,0.08,1,-0.15,-0.2,0.15),fungusPale,4,0.16,0.10);
+
+  // 3. Ground toadstool cap on root mound
+  g.cyl(T3(x+0.36,y+0.16,z+0.22,1,0.10,1,0,0,0),fungusPale,4,0.15,0.09);
+
+  // 4. Small rear shelf cap
+  g.cyl(T3(x-0.16,y+0.46,z-0.22,1,0.07,1,0.2,-0.15,-0.1),fungusPale,4,0.13,0.08);
+}
+// Hiding cover ember (Emberfall Caldera basalt rock crag with charred stumps) | Tris: 312 / 400 budget (medium prop)
+// Solid: 276 + Glow: 36 = 312 tris
+// Parts: ash base 32, ash wedge 12, basalt crags & boulders 140 (4 boxes 48 + 4 icos 80 + peak 12), charred stumps & branches 92 (2 cyls 36 + 4 boxes 48 + 1 ico 8?), glowing fissures 36 (3 boxes) = 312 tris
+// Size: 1.60 W x 1.41 H x 1.56 D. Stands on y=0, faces +z.
+function hidingCoverEmberProp(g,ge,x,y,z){
+  const ash=[52,46,44],ashDark=[38,34,32],rockDark=[46,40,38],rockMid=[60,52,48],rockLight=[74,66,60],rockTop=[88,78,72],stumpWarm=[72,48,34],stumpDark=[58,38,28],emberGlow=[238,110,28];
+
+  // Base volcanic ash mound
+  g.cyl(T3(x,y,z,1,0.12,1),ash,8,0.78,0.64);
+  g.box(T3(x-0.10,y+0.05,z+0.08,0.76,0.08,0.68,0.15),ashDark);
+
+  // Central jumble of basalt rock (tallest peak reaching ~1.40 tall)
+  // Main basalt crag base
+  g.box(T3(x-0.12,y+0.62,z-0.06,0.48,1.06,0.58,0.18,-0.10,0.14),rockDark);
+  // Jagged crag boulder mid-section
+  g.ico(T3(x-0.15,y+0.92,z-0.04,0.36,0.32,0.34),rockMid);
+  // Chipped pinnacle peak (lighter top)
+  g.ico(T3(x-0.18,y+1.24,z-0.05,0.24,0.20,0.22),rockTop);
+  // Supporting basalt buttress
+  g.box(T3(x-0.28,y+0.42,z-0.18,0.32,0.64,0.36,-0.15,0.2,-0.2),rockMid);
+
+  // Left flanking rock boulder (expanding width to ~1.60 wide)
+  g.ico(T3(x-0.52,y+0.40,z+0.04,0.32,0.28,0.30),rockLight);
+  g.box(T3(x-0.60,y+0.25,z-0.08,0.24,0.38,0.28,-0.2,-0.1,-0.32),rockDark);
+
+  // Right flanking rock formation & ledge
+  g.ico(T3(x+0.22,y+0.48,z-0.12,0.34,0.30,0.32),rockMid);
+  g.box(T3(x+0.46,y+0.34,z-0.08,0.34,0.52,0.36,-0.1,0.15,0.32),rockDark);
+  g.ico(T3(x+0.56,y+0.34,z+0.04,0.28,0.24,0.26),rockLight);
+
+  // Charred stumps clustered against the rock face (warm brown tones)
+  // 1. Tall charred stump (standing ~0.95 high for crouch cover)
+  g.cyl(T3(x+0.06,y+0.10,z+0.16,1,0.82,1,0,0.06,-0.08),stumpWarm,5,0.16,0.11);
+  // Hollow charcoal top
+  g.box(T3(x+0.08,y+0.88,z+0.18,0.18,0.10,0.16,0,0.2,0.1),stumpDark);
+  // Burnt root flares
+  g.box(T3(x+0.20,y+0.14,z+0.25,0.22,0.16,0.12,-0.1,0.4,0.2),stumpWarm);
+  g.box(T3(x-0.08,y+0.14,z+0.28,0.18,0.16,0.14,0.2,-0.3,-0.15),stumpDark);
+
+  // 2. Smaller secondary burnt stump
+  g.cyl(T3(x+0.32,y+0.10,z+0.20,1,0.46,1,0,-0.1,0.12),stumpWarm,4,0.12,0.08);
+
+  // Fallen charred branch
+  g.box(T3(x+0.02,y+0.15,z-0.34,0.10,0.12,0.48,-0.15,-0.2,0.05),stumpDark);
+
+  // Glowing orange crack (longer, clearly visible from above between rocks)
+  // Horizontal fissure channel across the rock ledge (viewed from above)
+  ge.box(T3(x-0.06,y+0.16,z-0.08,0.045,0.04,0.28,0.15,0.2,0),emberGlow);
+  ge.box(T3(x+0.04,y+0.16,z+0.12,0.045,0.04,0.26,-0.2,0.35,0),emberGlow);
+  // Vertical glowing crevice climbing the crag face
+  ge.box(T3(x-0.08,y+0.32,z-0.02,0.04,0.26,0.045,0.18,-0.1,0.15),emberGlow);
+}
 /* Gathering tools, made by Gemini (gemini-assets on the gemini branch). The metal is recoloured for each grade. Held at y=0, with the head towards +y. */
 function minerPickProp(g,ge,x,y,z,metal){
   const wood=[92,64,42],wrap=[58,44,34];
@@ -3296,7 +3659,12 @@ function loadModels(){
  MODELS.portal=mk(g=>{const st=[108,110,104];for(const s of[-1,1]){g.box(T3(s*1.05,1.2,0,.4,2.4,.5),st);g.box(T3(s*1.05,.12,0,.55,.24,.62),[90,92,88])}for(let k=0;k<=8;k++){const a=Math.PI*k/8;g.box(T3(Math.cos(a)*1.05,2.4+Math.sin(a)*1.0,0,.4,.36,.5,0,0,a+Math.PI/2),st)}
   g.box(T3(0,1.4,-.12,1.75,2.8,.06),[6,10,12])});
  MODELS.bars=mk(g=>{for(let k=-3;k<=3;k++)g.box(T3(k*.25,1.5,.1,.05,3,.05),[50,50,46]);g.box(T3(0,2.2,.12,1.8,.07,.06),[50,50,46]);g.box(T3(0,.9,.12,1.8,.07,.06),[50,50,46])});
- MODELS.node={
+ /* Hiding cover for stealth quests, one look per zone. A prop's glowing pieces (ge) are drawn as a second, emissive mesh. */
+const NOG={box(){},cyl(){},sphere(){},ico(){},torus(){}};
+const coverPair=(f,glow)=>[mk(g=>f(g,NOG,0,0,0)),glow?mk(ge=>f(NOG,ge,0,0,0)):null];
+MODELS.cover={vale:coverPair(hidingReedsProp),dunes:coverPair(hidingCoverDunesProp),frost:coverPair(hidingCoverFrostProp),gloam:coverPair(hidingCoverGloamProp),ember:coverPair(hidingCoverEmberProp,true)};
+MODELS.node={
+  tracks:[mk(g=>trackMarksProp(g,null,0,0,0)),null],clue:[mk(g=>clueMarkerProp(g,null,0,0,0)),null],search:[mk(g=>searchSpotProp(g,null,0,0,0)),null],stash:[mk(g=>searchSpotProp(g,null,0,0,0)),null],
   herb:[mk(g=>{for(let k=0;k<7;k++){const a=k/7*TAU;g.box(T3(Math.cos(a)*.13,.12,Math.sin(a)*.13,.05,.28,.13,a,.35),[54,104,46])}}),mk(g=>{for(let k=0;k<4;k++){const a=k/4*TAU+.4;g.sphere(T3(Math.cos(a)*.11,.32,Math.sin(a)*.11,.065,.065,.065),[255,255,255],6,4)}})],
   ore:[mk(g=>{g.box(T3(0,.1,0,.7,.22,.55,.3),[66,60,58])}),mk(g=>{for(let k=0;k<5;k++){const a=k*1.4;g.box(T3(Math.cos(a)*.16,.32,Math.sin(a)*.16,.13,.6-k*.06,.13,a,.3*Math.cos(a),.3*Math.sin(a)),[255,255,255])}})],
   relic:[mk(g=>{g.box(T3(0,.25,0,.42,.5,.42),[120,110,96])}),mk(g=>g.sphere(T3(0,.64,0,.13,.13,.13),[255,255,255],8,6))],
@@ -4192,6 +4560,7 @@ function renderWorld(dt){
   drawGlowPlants(m,env);
   for(const o of G.fishS||[]){const x=o.x*U,z=o.y*U;if(Math.hypot(x-CAM.tx,z-CAM.tz)>30)continue;const y=groundH(x,z),up=o.t<=0;decal(x,z,y+.05,.8,.8,G.time*.6,6,[.7,.85,1],up?.5:.2,.55);if(up)sprite(x,y+.35+Math.sin(G.time*3+o.i)*.06,z,.18,.18,'#ff6040',.9)}
   for(const o of G.skins||[]){if(o.t<=0)continue;const x=o.x*U,z=o.y*U,y=groundH(x,z),c=RESF.hide.c[o.g-1];sprite(x,y+.25,z,.55,.55,c,.28);decal(x,z,y+.04,.5,.5,G.time,4,hexC(c).map(v=>v/255),.45,.6)}
+  {const CM=MODELS.cover[G.map.id]||MODELS.cover.vale;for(const c of G.cover||[]){const x=c.x*U,z=c.y*U,y=groundH(x,z),T_=M4.trs(x,y,z,c.rot);drawMesh(CM[0],T_);if(CM[1])drawMesh(CM[1],T_,2)}}
   for(const n of[...(G.nodes||[]),...(G.moonO||[])]){const x=n.x*U,z=n.y*U,y=groundH(x,z),M=MODELS.node[n.kind]||MODELS.node.relic,k=NODEK[n.kind]||NODEK.herb,rot=n.i*1.3;drawMesh(M[0],M4.trs(x,y,z,rot));if(M[1])drawMesh(M[1],M4.trs(x,y,z,rot),3,0,0,lin(k.c));
    sprite(x,y+.5,z,.9,.9,k.c,.3);sprite(x,y,z,.12,4+Math.sin(G.time*3)*.3,k.c,.4,1);decal(x,z,y+.04,.6,.6,G.time,5,hexC(k.c).map(v=>v/255),.55,.6)}
   for(const b of G.beacons||[]){const x=b.x*U,z=b.y*U,y=groundH(x,z),lit=G.event&&G.event.q===b.q;drawMesh(MODELS.node.beacon[0],M4.trs(x,y,z,0));
@@ -4530,6 +4899,7 @@ function bugURL(){const q=new URLSearchParams({template:'bug_report.yml',device:
    When a release changes something players will notice, add an entry at the top with the next id.
    The id is how returning players get told there is something new. Write for players, not developers. */
 const UPDATES=[
+ {id:57,date:'6 Nov 2026',title:'Tracking, investigation and stealth',items:['Three new kinds of quest, each with a first quest to try.','Tracking: Huntress Corra\'s The Lamb-taker (level 11, after Old Greymuzzle). Only the next print shows; read it and it tells you which way the trail goes. At the end, the quarry is waiting.','Investigation: Hassa\'s The Missing Water-skins (level 22). Find what is out of place around Qarim\'s Rest. Each clue goes in your quest log, and once you have them all, the spot they point to appears.','Stealth: Elder Marwen\'s Quiet Feet in the Fen (level 14, after Lost in the Fen). Mark three ghoul stashes without being seen. Stand in the reeds to hide: monsters see you at about a third of the usual distance. If one gives chase, slip away and start again.','The tracks, clues, dig site and reed cover were made by Gemini and approved in the Studio.']},
  {id:56,date:'6 Nov 2026',title:'Boss phases',items:['Every boss now fights in three phases. Below 70% health it fights in earnest, and below 35% it grows frenzied.','At each change it pauses, can\'t be hurt for a moment, calls its helpers and sends out a shockwave: step out of the ring.','In the first phase a boss uses only two of its moves. Later it uses all of them, and when frenzied it chains two moves together.','It chooses moves by how far away you are: close moves when you\'re near, charges and volleys when you keep your distance.','After a slam, charge or shockwave it stands Exposed for a moment and takes extra damage. Learn the moves and strike then.','A boss can\'t be stunned again for a few seconds after a stun, and charges stay inside its arena.']},
  {id:55,date:'6 Nov 2026',title:'Commanders',items:['Each wild zone now has a Commander leading a pack: the Fen Chieftain in Lantern Fen, the Raider Warchief in Raider\'s Hollow, the Rime Chieftain at Mirror Lake, the Thorn Matriarch in Gloamwood and the Cinder Warlord on the Ashen Slopes. Look for the turning red ring under its feet.','Every few seconds it gives an order to the monsters fighting near it. Press the attack makes them hit harder and swing sooner; Hold the line makes them harder to hurt. Monsters following an order have a small red or blue ring.','Once a fight turns against it, a Commander rallies the pack and calls nearby monsters in.','Kill it and its pack is Shaken for a few seconds: slower, easier to hurt and no longer flanking. It returns after a minute and a half.','Ranged monsters no longer fire through their allies; they step aside to find a clear shot.']},
  {id:54,date:'6 Nov 2026',title:'New looks for thirteen monsters',items:[
@@ -4868,7 +5238,7 @@ function renderPanel(){const k=G.panel,a=G.panelArg,main=$h('bkMain');$h('book')
   else if(done.length&&qpages===1&&rows.length<4)h+=`<p style="margin:6px 4px 0;color:var(--ink2);font-size:13px">Completed: ${done.length} of ${QUESTS.length}</p>`;
   h+=`</div>`;
   if(sel){const st=P.q[sel.id];h+=`<div class="qdet"><h3>${esc(sel.title)}</h3><div class="muted"><span class="qkind">${QKIND[sel.kind]}${sel.camp?' · Campaign':''}</span> ${esc(NPCS[sel.giver].name)}, ${esc(NPCS[sel.giver].town)} · level ${sel.lv}</div>
-   <div><b>Objective:</b> ${esc(sel.obj)}${sel.n>1?` — ${st?st.n:0} / ${sel.n}`:''}${st&&st.s==='ready'?' <b style="color:#7ee07a">Complete</b>':''}</div><div>${esc(st?(st.s==='ready'?(sel.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(sel)].name+' in '+NPCS[qTurn(sel)].town+'.':sel.wait):sel.offer)}</div>${st?'':`<div class="obar" style="margin:0">Find ${esc(NPCS[sel.giver].name)} in ${esc(NPCS[sel.giver].town)} and talk to them to take this quest.</div>`}${rewards(sel)}
+   ${sel.clues&&st&&st.got?`<div class="muted"><b>Clues:</b> ${sel.clues.filter((_,i)=>st.got.includes(i)).map(esc).join(' ')||'none yet'}</div>`:''}<div><b>Objective:</b> ${esc(sel.obj)}${sel.n>1?` — ${st?st.n:0} / ${sel.n}`:''}${st&&st.s==='ready'?' <b style="color:#7ee07a">Complete</b>':''}</div><div>${esc(st?(st.s==='ready'?(sel.kind==='deliver'?'Speak to ':'Return to ')+NPCS[qTurn(sel)].name+' in '+NPCS[qTurn(sel)].town+'.':sel.wait):sel.offer)}</div>${st?'':`<div class="obar" style="margin:0">Find ${esc(NPCS[sel.giver].name)} in ${esc(NPCS[sel.giver].town)} and talk to them to take this quest.</div>`}${rewards(sel)}
    ${st&&st.s==='active'?`<div class="row" style="justify-content:flex-end"><button class="cbtn ${G.confirm==='drop'+sel.id?'warn':''}" data-act="qdrop" data-q="${sel.id}">${G.confirm==='drop'+sel.id?'Press again to drop':'Drop'}</button></div>`:''}</div>`}
   h+=`</div>`}
  else if(k==='spells'){title='Spells';const tab=G.spTab||'sk';const pts=talentPoints();h=`<div class="tabs"><button class="tab ${tab==='sk'?'on':''}" data-act="stab" data-t="sk">${svg('book')}Skills</button><button class="tab ${tab==='tal'?'on':''}" data-act="stab" data-t="tal">${svg('target')}Talents${pts?` (${pts})`:''}</button></div><div class="pad">`;
@@ -5317,7 +5687,7 @@ function boot(data){cacheEls();
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.snapshot)hot.snapshot(()=>({save:G.mode==='play'?serialize():null}));
 if(hot&&hot.ready)hot.ready(boot);else boot(hot&&hot.data||{});
-window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,cmdTick,cmdFall,cmdSpawn,cmdOrd,cmdTaken,tacLineBlocked,BOSSPH,bossLogic,bossPick,bossPartner,bossShift,bossOpen,bossMove,bossStunOk,bossReset,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
+window.__veyl={TOOLS,toolBuy,toolTime,toolExtra,toolHave,toolHeld,toolShow,toolAnim,toolsClean,toolKind,SHOPLIST,itemCard,equipFromBag,canWear,gearReq,GEARREQ,monBlock,MONARM,RESIST,statLines,BENCH,benchStart,benchTick,benchEnd,benchStat,get benchLast(){return benchLast},get bench(){return G.bench},MODELS,angDiff,project,CAT,catTick,catAnim,catTris,drawCat,catSpot,NIGHTFX,auroraK,glowSpots,drawGlowPlants,SERVICES,EVIDENCE,storyEvidence,serviceReady,serviceUse,gameDay,bugURL,bugDevice,burst,spark,rise,fxK,applyText,HINTS,hintTick,hintSeen,hintText,hintHide,OPT,STASH,stashS,stashPut,stashTake,stashGrow,stashCap,FISH,FOODS,fishSpots,fishStart,fishReel,fishPos,addCons,AREAG,SKIN,forgeNeeds,FORGEWOOD,skinIt,spawnResources,RESF,SCENES,storyRite,riteLive,storyFinale,startEvent,WX,UPDATES,ENVOYS,storyChoose,choiceHTML,qTurn,qAvail,qDoneText,useNode,LETTERS,storyS,storyTick,storyNpcs,envoyHere,letterHTML,lettersHTML,ACH,ACHG,achS,achAdd,achCheck,achHTML,achTitle,achSeen,walkSpot,MOON,MOONO,moonAt,moonNow,moonEvent,moonInfo,moonTick,moonElite,moonPlain,useMoon,moonCanElite,WXP,weatherAt,weatherNow,WORLDTIME,TIMEO,worldClock,worldNow,sceneEnv,baseEnv,dayIcon,hitEnemy,TACTICS,TACBY,tacRoute,tacFree,tacSwing,tacSwingEnd,tacLand,tacGuarded,tacSidestep,tacSightK,tacHearK,tacWadeK,cmdTick,cmdFall,cmdSpawn,cmdOrd,cmdTaken,tacLineBlocked,QTYPES,QKIND,heroHidden,stealthTick,qTrailNext,qElite,compass,useNode,refreshQuestWorld,BOSSPH,bossLogic,bossPick,bossPartner,bossShift,bossOpen,bossMove,bossStunOk,bossReset,tacNight,tacNoise,tacClear,HOLLOWMERE,NPCS,beginPlay,RES,RESN,resGain,resHit,resHurt,resDmg,resHeal,resNote,serialize,hud,BLOCK,dodgeDown,dodgeUp,blockFacing,PROFRANK,FORGELEG,profRank,forgeRar,forgeSocket,PROFS,FORGEGOLD,profChoose,profSwitch,profBest,profFee,canForge,addMat,haveMat,DUR,itemDur,itemBroken,wearAll,wearTick,repairCost,repairItem,repairAll,repairables,die,gemFuse,gemSocket,gemRemove,gemBonus,gemKey,gemParse,awardGems,returnGems,toTitle,importHeroText,parseHeroFile,heroFileText,heroCheck,readSlot,heroes,freeSlot,rewards,readErrors,perf:()=>({fps:pfFps,worst:pfWorst}),get glLost(){return glLost},pDebuff,pHas,mkEnemy,usePotion,T,SOLID,BUILD,harvest,forge,brew,itemIcon,input,wadeSlow,pollPad,QUESTS,AREAS,EN,refreshQuestWorld,useNode,startEvent,killEnemy,hitEnemy,areaOpen,checkSpots,updateTracker,SFX,CLASSES,hurtPlayer,rollItem,dodgeRoll,jump,G,CAM,get P(){return P},get S(){return S},useAbility,enterMap,startNew,gainXP,openPanel,closePanel,interact,QUESTS,update,toggleMount,attackPress,recalc,XPN,talentPoints,readSave,webGraph,webLearn,webCan,WEB,execAbility,ABFX,loadSave};
 })();
 </script>
 

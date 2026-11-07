@@ -1018,6 +1018,39 @@ await test('Monsters with their own model are light enough, keep their moving pa
   const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing them logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
   if(G.enemies.filter(e=>!e.dead).length<own.length)bad.push('some monsters disappeared while being drawn');
   G.enemies=[];return bad}`));
+// New quest types (12.b): a trail read in order with a quarry at the end, clues that reveal a search spot, and stealth that resets when spotted.
+await reset();
+await test('Tracking, investigation and stealth quests play through, and their Gemini props draw', () => ev(`async()=>{const V=window.__veyl,G=V.G,bad=[],TS=V.TS||32;
+  const Q=id=>V.QUESTS.find(q=>q.id===id),mine=id=>G.nodes.filter(n=>n.q.id===id);
+  for(const[id,k]of[['v8','track'],['d15','investigate'],['v9','stealth']]){const q=Q(id);if(!q)bad.push('no quest '+id);else if(q.kind!==k)bad.push(id+' is '+q.kind);if(!V.QKIND[k])bad.push('no label for '+k)}
+  if(V.compass(0,-1)!=='north'||V.compass(1,0)!=='east'||V.compass(-1,1)!=='south-west')bad.push('the compass points the wrong way');
+  V.startNew('reaver','Tracker');const P=V.P;P.lvl=20;P.iframes=1e9;V.closePanel(true);
+  // Tracking
+  P.q.v8={s:'active',n:0,got:[]};V.enterMap('vale');V.closePanel(true);V.refreshQuestWorld();const t=Q('v8');
+  for(let k=0;k<t.nodes.length;k++){const ns=mine('v8');if(ns.length!==1||ns[0].i!==k){bad.push('trail step '+k+' shows '+ns.map(n=>n.i));break}
+   if(G.enemies.some(e=>e.elite==='v8'&&!e.dead))bad.push('the quarry appeared early, at step '+k);V.useNode(ns[0])}
+  const quarry=G.enemies.find(e=>e.elite==='v8'&&!e.dead);if(!quarry)bad.push('no quarry at the end of the trail');else{if(quarry.d.name!=='The Lamb-taker')bad.push('quarry named '+quarry.d.name);V.killEnemy(quarry)}
+  if(P.q.v8.s!=='ready')bad.push('tracking quest not complete: '+JSON.stringify(P.q.v8));
+  // Investigation
+  P.q.d15={s:'active',n:0,got:[]};V.enterMap('dunes');V.closePanel(true);V.refreshQuestWorld();const iq=Q('d15');
+  if(mine('d15').length!==iq.nodes.length)bad.push('clues shown: '+mine('d15').length);if(mine('d15').some(n=>n.kind==='search'))bad.push('the search spot showed before the clues');
+  for(const n of mine('d15'))V.useNode(n);const sr=mine('d15');if(sr.length!==1||sr[0].kind!=='search')bad.push('after the clues: '+sr.map(n=>n.kind));else{const before=G.enemies.filter(e=>e.summoned).length;V.useNode(sr[0]);if(G.enemies.filter(e=>e.summoned).length<before+iq.searchAmbush.n)bad.push('no ambush at the search spot')}
+  if(P.q.d15.s!=='ready')bad.push('investigation not complete: '+JSON.stringify(P.q.d15));
+  const html=V.panelHTML?V.panelHTML('quests'):'';
+  // Stealth
+  P.q.v9={s:'active',n:0,got:[]};V.enterMap('vale');V.closePanel(true);G.enemies=[];V.refreshQuestWorld();const sq=Q('v9');
+  if(mine('v9').length!==3)bad.push('stashes shown: '+mine('v9').length);if(G.cover.length!==sq.cover.length)bad.push('cover pieces: '+G.cover.length);
+  const g=V.mkEnemy('ghoul',13,sq.area[0]*TS,sq.area[1]*TS);G.enemies.push(g);P.x=G.cover[0].x+200;P.y=G.cover[0].y;const open=V.tacSightK(g);P.x=G.cover[0].x;P.y=G.cover[0].y;const hid=V.tacSightK(g);
+  if(!V.heroHidden())bad.push('standing in cover did not hide the hero');if(Math.abs(hid/open-V.QTYPES.cover.sight)>.01)bad.push('cover sight '+(hid/open).toFixed(2));
+  V.useNode(mine('v9')[0]);if(P.q.v9.n!==1)bad.push('marking a stash did not count');V.stealthTick();if(P.q.v9.n!==1)bad.push('reset while unseen');
+  g.state='chase';V.stealthTick();if(P.q.v9.n!==0||P.q.v9.got.length)bad.push('being spotted did not reset: '+JSON.stringify(P.q.v9));if(mine('v9').length!==3)bad.push('stashes did not come back');
+  g.state='idle';for(const n of mine('v9'))V.useNode(n);if(P.q.v9.s!=='ready')bad.push('stealth quest not complete');
+  // Drawing: cover and every new node kind in each zone
+  const before=V.readErrors().length;for(const id of['vale','dunes','frost','gloam','ember']){V.enterMap(id);V.closePanel(true);G.enemies=[];G.cover=[{x:P.x+40,y:P.y,rot:0}];
+   G.nodes=['tracks','clue','search','stash'].map((k,i)=>({q:sq,i,x:P.x-40+i*20,y:P.y+40,kind:k,name:k}));for(let i=0;i<6;i++)await new Promise(r=>requestAnimationFrame(r))}
+  const errs=V.readErrors().slice(before);if(errs.length)bad.push('drawing logged '+errs.length+' error(s): '+JSON.stringify(errs[0]).slice(0,200));
+  return bad}`));
+
 // Boss phases (8.a, 8.b): three phases, distance-aware move choice, a shift it can't be hurt in, open windows, anti-stunlock, charges kept in the arena.
 await reset();
 await test('Bosses fight in three phases, pick moves by distance, stand open after big moves and resist stunlocks', () => ev(`()=>{${TAC_SETUP}
